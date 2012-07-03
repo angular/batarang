@@ -16,6 +16,7 @@
 
   <script src="js/services/appContext.js"></script>
   <script src="js/services/chromeExtension.js"></script>
+  <script src="js/services/filesystem.js"></script>
 
   <script src="js/controllers/OptionsCtrl.js"></script>
   <script src="js/controllers/PerfCtrl.js"></script>
@@ -84,7 +85,8 @@
           </div>
         </div>
       </div>
-      <button class="btn" ng-click="clearHistogram()">Clear Data</button>
+      <button class="btn btn-success" ng-click="exportData()">Save Data as JSON</button>
+      <button class="btn btn-danger" ng-click="clearHistogram()">Clear Data</button>
 
     </div>
   </div>

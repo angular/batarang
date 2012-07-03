@@ -6,7 +6,7 @@ panelApp.filter('sortByTime', function () {
   };
 });
 
-panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext) {
+panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem) {
 
   $scope.enable = false;
 
@@ -15,6 +15,10 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext) {
 
   $scope.clearHistogram = function () {
     appContext.clearHistogram();
+  };
+
+  $scope.exportData = function () {
+    filesystem.exportJSON('file.json', $scope.histogram);
   };
 
   var first = true;
