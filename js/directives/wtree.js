@@ -18,8 +18,8 @@ panelApp.directive('wtree', function($compile) {
             '<ul>' +
               '<li ng-repeat="item in val.watchers">' +
                 '<a href ng-class="{hidden: item.split(\'\n\').length < 2}" ng-click="showState = !showState">toggle</a> ' +
-                '<span ng-class="{hidden: showState || item.split(\'\n\').length < 2}">{{item | first}} ...</span>' +
-                '<pre ng-class="{hidden: !showState && item.split(\'\n\').length > 1}">' +
+                '<code ng-class="{hidden: showState && item.split(\'\n\').length > 1}">{{item | first}}</code>' +
+                '<pre ng-class="{hidden: !showState || item.split(\'\n\').length < 2}">' +
                   '{{item}}' +
                 '</pre>' +
               '</li>' +
