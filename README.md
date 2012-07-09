@@ -1,7 +1,7 @@
 # AngularJS Batarang
 
 ## Installation
-You'll need [Google Chrome Canary](https://tools.google.com/dlpage/chromesxs) to use the extension.
+You'll need [Google Chrome Canary](https://tools.google.com/dlpage/chromesxs) or, if you are using Linux, [Google Chrome Dev Channel](http://www.chromium.org/getting-involved/dev-channel/) to use the extension.
 
 
 1.  Navigate to `chrome://flags/` in Canary, and enable "Experimental Extension APIs"
