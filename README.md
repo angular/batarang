@@ -35,7 +35,7 @@ Underneath that is a graph showing the relative performance of all of the applic
 ### Options
 ![Batarang options tab screenshot](https://github.com/angular/angularjs-batarang/raw/master/img/options.png)
 
-Last, there is the options tab. The options tab has two checkboxes: one for "show scopes" and one for "show bindings." Each of these options, when enabled, highlights the respective feature of the application being debugged; scopes will have a red outline, and bindings will have a blue outline.
+Last, there is the options tab. The options tab has three checkboxes: one for "show applications", one for "show scopes" and one for "show bindings." Each of these options, when enabled, highlights the respective feature being debugged; applications will have a green outline, scopes will have a red outline, and bindings will have a blue outline.
 
 ### Elements
 ![Batarang console screenshot](https://github.com/angular/angularjs-batarang/raw/master/img/inspect.png)
