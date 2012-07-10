@@ -265,6 +265,12 @@ panelApp.factory('appContext', function(chromeExtension) {
       }
     },
 
+    getDebug: function (cb) {
+      chromeExtension.eval(function (window) {
+        return document.cookie.indexOf('__ngDebug=true') != -1;
+      }, cb);
+    },
+
     // takes a bool
     setLog: function (setting) {
       chromeExtension.eval('function (window) {' +

@@ -8,7 +8,7 @@ panelApp.filter('sortByTime', function () {
 
 panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem) {
 
-  $scope.enable = false;
+  //$scope.enable = false;
 
   $scope.histogram = [];
   $scope.timeline = [];
@@ -21,23 +21,25 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
     filesystem.exportJSON('file.json', $scope.histogram);
   };
 
-  var first = true;
-  $scope.$watch('enable', function (newVal, oldVal) {
+  appContext.getDebug(function (result) {
+    $scope.enable = result;
 
-    // prevent refresh on initial pageload
-    if (first) {
-      first = false;
-    } else {
-      appContext.setDebug(newVal);
-    }
-    if (newVal) {
-      //updateTimeline();
-      updateHistogram();
-    }
+    $scope.$watch('enable', function (newVal, oldVal) {
+      // prevent refresh on initial pageload
+      if (first) {
+        first = false;
+      } else {
+        appContext.setDebug(newVal);
+      }
+      if (newVal) {
+        //updateTimeline();
+        updateHistogram();
+      }
+    });
   });
 
-  $scope.log = false;
-  
+  var first = true;
+
   $scope.$watch('log', function (newVal, oldVal) {
     appContext.setLog(newVal);
     
