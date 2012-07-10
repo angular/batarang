@@ -87,4 +87,12 @@ panelApp.controller('OptionsCtrl', function OptionsCtrl($scope, appContext, chro
       });
     }
   });
+
+  chromeExtension.eval(function () {
+    return window.angular.version.full +
+      ' ' +
+      window.angular.version.codeName;
+  }, function (version) {
+    $scope.version = version;
+  });
 });
