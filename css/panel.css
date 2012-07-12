@@ -16,3 +16,12 @@
 body {
   margin: 10px;
 }
+.well-top {
+  border-radius: 4px 4px 0 0;
+  margin-bottom: 0;
+}
+.well-bottom {
+  border-radius: 0 0 4px 4px;
+  border-top: none;
+  background-color: #E0E0E0;
+}
