@@ -4,14 +4,19 @@
   <link rel="stylesheet" type="text/css" href="css/jquery-ui.css">
   <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
   <link rel="stylesheet" type="text/css" href="css/bootstrap-responsive.css">
+  <link rel="stylesheet" type="text/css" href="css/d3.css">
   <link rel="stylesheet" type="text/css" href="css/panel.css">
 
+  <!-- libs -->
   <script src="js/lib/angular.js"></script>
   <script src="js/lib/jquery-1.7.2.min.js"></script>
   <script src="js/lib/jquery-ui-1.8.21.custom.min.js"></script>
+  <script src="js/lib/d3.js"></script>
+  <script src="js/lib/d3.layout.js"></script>
 
   <script src="js/panelApp.js"></script>
 
+  <script src="js/directives/d3.js"></script>
   <script src="js/directives/mtree.js"></script>
   <script src="js/directives/slider.js"></script>
   <script src="js/directives/wtree.js"></script>
@@ -22,6 +27,7 @@
   <script src="js/services/chromeExtension.js"></script>
   <script src="js/services/filesystem.js"></script>
 
+  <script src="js/controllers/DepsCtrl.js"></script>
   <script src="js/controllers/OptionsCtrl.js"></script>
   <script src="js/controllers/PerfCtrl.js"></script>
   <script src="js/controllers/TabCtrl.js"></script>
@@ -32,7 +38,7 @@
 
   <div class="row-fluid">
     <ul class="nav nav-tabs span12">
-      <li ng-repeat="tabId in ['Model', 'Performance', 'Options', 'Help']"
+      <li ng-repeat="tabId in ['Model', 'Performance', 'Dependencies', 'Options', 'Help']"
         ng-class="{active: $parent.selectedTab == tabId}"
         ng-click="$parent.selectedTab = tabId">
 
@@ -58,7 +64,7 @@
     <h2>Performance</h2>
     <form class="well form-inline" class="row-fluid">
       <label class="checkbox span4" for="extra">
-        <input type="checkbox" ng-model="enable" id="extra"> Enable <span class="label label-important">Causes tab to refresh</span>
+        <input type="checkbox" ng-model="enable" id="extra"> Enable <span class="label label-important">Causes tab to refresh <i class="icon-refresh icon-white"></i></span>
       </label>
       <label class="checkbox span4" for="log">
         <input type="checkbox" ng-model="log" id="log"> Log to console
@@ -113,6 +119,9 @@
     </div>
   </div>
 
+  <div ng-class="{hidden: $parent.selectedTab != 'Dependencies'}" ng-controller="DepsCtrl" class="row-fluid">
+    <d3 val="deps"></d3>
+  </div>
 
   <div ng-class="{hidden: $parent.selectedTab != 'Options'}" ng-controller="OptionsCtrl" class="row-fluid">
 
