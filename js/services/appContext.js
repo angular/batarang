@@ -220,6 +220,10 @@ panelApp.factory('appContext', function(chromeExtension) {
       return _debugCache.trees;
     },
 
+    getDeps: function () {
+      return _debugCache.deps;
+    },
+
     // Actions
     // -------
 
@@ -273,6 +277,7 @@ panelApp.factory('appContext', function(chromeExtension) {
 
     // takes a bool
     setLog: function (setting) {
+      setting = !!setting;
       chromeExtension.eval('function (window) {' +
         'window.__ngDebug.log = ' + setting.toString() + ';' +
       '}');
