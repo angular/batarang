@@ -1,4 +1,5 @@
-// model tree
+// D3 visualization
+// TODO: D3 as a service
 panelApp.directive('d3', function($compile) {
   return {
     restrict: 'E',
@@ -7,15 +8,31 @@ panelApp.directive('d3', function($compile) {
       val: '=val'
     },
     link: function (scope, element, attrs) {
-      var dom = document.createElement('div');
-      element.append(dom);
-
-      var classes = [{"name":"$provide","size":0,"imports":[]},{"name":"$rootScope","size":0,"imports":["$injector","$exceptionHandler","$parse"]},{"name":"$injector","size":0,"imports":[]},{"name":"$exceptionHandler","size":0,"imports":["$log"]},{"name":"$log","size":0,"imports":["$window"]},{"name":"$window","size":0,"imports":[]},{"name":"$parse","size":0,"imports":["$filter","$sniffer"]},{"name":"$filter","size":0,"imports":["$injector"]},{"name":"$sniffer","size":0,"imports":["$window"]},{"name":"$rootElement","size":0,"imports":[]},{"name":"$compile","size":0,"imports":["$injector","$interpolate","$exceptionHandler","$http","$templateCache","$parse","$controller","$rootScope"]},{"name":"$interpolate","size":0,"imports":["$parse"]},{"name":"$http","size":0,"imports":["$httpBackend","$browser","$cacheFactory","$rootScope","$q","$injector"]},{"name":"$httpBackend","size":0,"imports":["$browser","$window","$document"]},{"name":"$browser","size":0,"imports":["$window","$log","$sniffer","$document"]},{"name":"$document","size":0,"imports":["$window"]},{"name":"$cacheFactory","size":0,"imports":[]},{"name":"$q","size":0,"imports":["$rootScope","$exceptionHandler"]},{"name":"$templateCache","size":0,"imports":["$cacheFactory"]},{"name":"$controller","size":0,"imports":["$injector","$window"]},{"name":"scriptDirective","size":0,"imports":["$injector","$exceptionHandler","$templateCache"]},{"name":"styleDirective","size":0,"imports":["$injector","$exceptionHandler"]},{"name":"ngControllerDirective","size":0,"imports":["$injector","$exceptionHandler"]},{"name":"aDirective","size":0,"imports":["$injector","$exceptionHandler"]},{"name":"ngClickDirective","size":0,"imports":["$injector","$exceptionHandler","$parse"]},{"name":"ngRepeatDirective","size":0,"imports":["$injector","$exceptionHandler"]},{"name":"inputDirective","size":0,"imports":["$injector","$exceptionHandler","$browser","$sniffer"]},{"name":"ngModelDirective","size":0,"imports":["$injector","$exceptionHandler"]},{"name":"formDirective","size":0,"imports":["$injector","$exceptionHandler"]},{"name":"ngSubmitDirective","size":0,"imports":["$injector","$exceptionHandler"]},{"name":"thing","size":0,"imports":[]},{"name":"otherThing","size":0,"imports":["thing","$http"]}];
-
       // Based on code from: http://mbostock.github.com/d3/talk/20111116/bundle.html
 
-      var packages = {
+      // Initialize Element
+      // ------------------
+      var dom = document.createElement('div');
+      element.append(dom);
+      var div = d3.select(dom);
 
+      // Constants
+      // ---------
+      var w = 600,
+          h = 600,
+          rx = w / 2,
+          ry = h / 2,
+          m0,
+          rotate = 0;
+
+      // Helpers
+      // -------
+
+      var sanitize = function (key) {
+        return key.replace('$', 'dollar')
+      }
+
+      var packages = {
         // Lazily construct the package hierarchy from class names.
         root: function(classes) {
           var map = {};
@@ -59,21 +76,10 @@ panelApp.directive('d3', function($compile) {
 
           return imports;
         }
-
       };
 
-      var w = 600,
-          h = 600,
-          rx = w / 2,
-          ry = h / 2,
-          m0,
-          rotate = 0;
-
-      var splines = [];
-
-      var sanitize = function (key) {
-        return key.replace('$', 'dollar')
-      }
+      // Instantiate and Style D3 Objects
+      // --------------------------------
 
       var cluster = d3.layout.cluster()
           .size([360, ry - 120])
@@ -87,16 +93,6 @@ panelApp.directive('d3', function($compile) {
           .radius(function(d) { return d.y; })
           .angle(function(d) { return d.x / 180 * Math.PI; });
 
-      // Chrome 15 bug: <http://code.google.com/p/chromium/issues/detail?id=98951>
-      var div = d3.select(dom);
-      /*
-          .style("top", "-80px")
-          .style("left", "-160px")
-          .style("width", w + "px")
-          .style("height", w + "px")
-          .style("position", "absolute");
-      */
-
       var svg = div.append("svg:svg")
           .attr("width", w)
           .attr("height", w)
@@ -108,39 +104,49 @@ panelApp.directive('d3', function($compile) {
           .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
           .on("mousedown", mousedown);
 
-      //scope.$watch('val', function () {
-      var nodes = cluster.nodes(packages.root(classes)),
-          links = packages.imports(nodes),
-          splines = bundle(links);
+      // Render the data whenever "val" changes
+      scope.$watch('val', function (newVal, oldVal) {
+        var classes = newVal;
 
-      var path = svg.selectAll("path.link")
-          .data(links)
-        .enter().append("svg:path")
-          .attr("class", function(d) { return "link source-" + sanitize(d.source.key) + " target-" + sanitize(d.target.key); })
-          .attr("d", function(d, i) { return line(splines[i]); });
+        if (!classes || classes.length === 0) {
+          return;
+        }
 
-      svg.selectAll("g.node")
-          .data(nodes.filter(function(n) { return !n.children; }))
-        .enter().append("svg:g")
-          .attr("class", "node")
-          .attr("id", function(d) { return "node-" + sanitize(d.key); })
-          .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-        .append("svg:text")
-          .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
-          .attr("dy", ".31em")
-          .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-          .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
-          .text(function(d) { return d.key; })
-          .on("mouseover", mouseover)
-          .on("mouseout", mouseout);
+        var nodes = cluster.nodes(packages.root(classes)),
+            links = packages.imports(nodes),
+            splines = bundle(links);
 
+        var path = svg.selectAll("path.link")
+            .data(links)
+          .enter().append("svg:path")
+            .attr("class", function(d) { return "link source-" + sanitize(d.source.key) + " target-" + sanitize(d.target.key); })
+            .attr("d", function(d, i) { return line(splines[i]); });
+
+        svg.selectAll("g.node")
+            .data(nodes.filter(function(n) { return !n.children; }))
+          .enter().append("svg:g")
+            .attr("class", "node")
+            .attr("id", function(d) { return "node-" + sanitize(d.key); })
+            .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+          .append("svg:text")
+            .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+            .attr("dy", ".31em")
+            .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+            .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
+            .text(function(d) { return d.key; })
+            .on("mouseover", mouseover)
+            .on("mouseout", mouseout);
+      });
+
+      /*
       d3.select("input[type=range]").on("change", function() {
         line.tension(this.value / 100);
         path.attr("d", function(d, i) { return line(splines[i]); });
       });
-      //});
+      */
 
       //TODO: decide where to attach these events
+
       /*
       d3.select(window)
           .on("mousemove", mousemove)
