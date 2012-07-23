@@ -12,9 +12,7 @@ panelApp.directive('d3', function($compile) {
 
       // Initialize Element
       // ------------------
-      var dom = document.createElement('div');
-      element.append(dom);
-      var div = d3.select(dom);
+      var div = d3.select(element[0]);
 
       // Constants
       // ---------
@@ -28,6 +26,7 @@ panelApp.directive('d3', function($compile) {
       // Helpers
       // -------
 
+      // generate element ids that do not have '$'
       var sanitize = function (key) {
         return key.replace('$', 'dollar')
       }
@@ -36,6 +35,28 @@ panelApp.directive('d3', function($compile) {
         // Lazily construct the package hierarchy from class names.
         root: function(classes) {
           var map = {};
+
+          // add "classes" with no dependencies
+          var exist = {},
+            toAdd = [];
+          classes.forEach(function (cl) {
+            exist[cl.name] = true;
+          });
+          classes.forEach(function (cl) {
+            cl.imports.forEach(function (im) {
+              if (!exist[im]) {
+                toAdd.push(im);
+                exist[im] = true;
+              }
+            });
+          });
+          toAdd.forEach(function (a) {
+            classes.push({
+              name: a,
+              size: 0,
+              imports: []
+            });
+          });
 
           function find(name, data) {
             var node = map[name], i;
@@ -94,8 +115,9 @@ panelApp.directive('d3', function($compile) {
           .angle(function(d) { return d.x / 180 * Math.PI; });
 
       var svg = div.append("svg:svg")
-          .attr("width", w)
-          .attr("height", w)
+          .attr("preserveAspectRatio", "xMinYMin meet")
+          .attr("viewBox", [0, 0, w, h].join(' '))
+          .attr("height", h)
         .append("svg:g")
           .attr("transform", "translate(" + rx + "," + ry + ")");
 
@@ -105,12 +127,15 @@ panelApp.directive('d3', function($compile) {
           .on("mousedown", mousedown);
 
       // Render the data whenever "val" changes
+      // --------------------------------------
       scope.$watch('val', function (newVal, oldVal) {
         var classes = newVal;
 
-        if (!classes || classes.length === 0) {
+        if (oldVal || !classes || classes.length === 0) {
           return;
         }
+
+        //div[0].innerHTML = '';
 
         var nodes = cluster.nodes(packages.root(classes)),
             links = packages.imports(nodes),

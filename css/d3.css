@@ -38,3 +38,14 @@ path.arc {
 .link.target {
   stroke: #2ca02c;
 }
+
+d3 {
+  display: block;
+  max-width: 600px;
+  height: 100%;
+  margin: auto;
+}
+
+svg text {
+  font-size: 1.4em;
+}

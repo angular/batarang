@@ -136,7 +136,8 @@ panelApp.factory('appContext', function(chromeExtension) {
 
       // get histogram data
       var histogram = [],
-        timeline;
+        timeline,
+        deps;
 
       // performance
       if (window.__ngDebug) {
@@ -152,6 +153,7 @@ panelApp.factory('appContext', function(chromeExtension) {
           }
         }(window.__ngDebug.watchExp));
 
+        deps = __ngDebug.deps;
         timeline = __ngDebug.timeline;
       }
 
@@ -159,7 +161,8 @@ panelApp.factory('appContext', function(chromeExtension) {
         roots: rootIds,
         trees: trees,
         histogram: histogram,
-        timeline: timeline
+        timeline: timeline,
+        deps: deps
       };
     },
     function (data) {

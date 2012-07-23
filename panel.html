@@ -120,7 +120,12 @@
   </div>
 
   <div ng-class="{hidden: $parent.selectedTab != 'Dependencies'}" ng-controller="DepsCtrl" class="row-fluid">
-    <d3 val="deps"></d3>
+    <div class="span12">
+    <h2>Service Dependencies</h2>
+      <div class="well">
+        <d3 val="deps"></d3>
+      </div>
+    </div>
   </div>
 
   <div ng-class="{hidden: $parent.selectedTab != 'Options'}" ng-controller="OptionsCtrl" class="row-fluid">
