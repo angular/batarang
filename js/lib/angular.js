@@ -1,5 +1,5 @@
 /**
- * @license AngularJS v1.0.0
+ * @license AngularJS v1.0.1
  * (c) 2010-2012 Google, Inc. http://angularjs.org
  * License: MIT
  */
@@ -1240,18 +1240,18 @@ function setupModuleLoader(window) {
  * An object that contains information about the current AngularJS version. This object has the
  * following properties:
  *
- * - `full` – `{string}` – Full version string, such as "0.9.18".
- * - `major` – `{number}` – Major version number, such as "0".
- * - `minor` – `{number}` – Minor version number, such as "9".
- * - `dot` – `{number}` – Dot version number, such as "18".
- * - `codeName` – `{string}` – Code name of the release, such as "jiggling-armfat".
+ * - `full` â€“ `{string}` â€“ Full version string, such as "0.9.18".
+ * - `major` â€“ `{number}` â€“ Major version number, such as "0".
+ * - `minor` â€“ `{number}` â€“ Minor version number, such as "9".
+ * - `dot` â€“ `{number}` â€“ Dot version number, such as "18".
+ * - `codeName` â€“ `{string}` â€“ Code name of the release, such as "jiggling-armfat".
  */
 var version = {
-  full: '1.0.0',    // all of these placeholder strings will be replaced by rake's
+  full: '1.0.1',    // all of these placeholder strings will be replaced by rake's
   major: 1,    // compile task
   minor: 0,
-  dot: 0,
-  codeName: 'temporal-domination'
+  dot: 1,
+  codeName: 'thorium-shielding'
 };
 
 
@@ -3030,6 +3030,7 @@ function Browser(window, document, $log, $sniffer) {
   self.url = function(url, replace) {
     // setter
     if (url) {
+      if (lastBrowserUrl == url) return;
       lastBrowserUrl = url;
       if ($sniffer.history) {
         if (replace) history.replaceState(null, '', url);
@@ -3251,16 +3252,16 @@ function $BrowserProvider(){
  * @param {string} cacheId Name or id of the newly created cache.
  * @param {object=} options Options object that specifies the cache behavior. Properties:
  *
- *   - `{number=}` `capacity` — turns the cache into LRU cache.
+ *   - `{number=}` `capacity` â€” turns the cache into LRU cache.
  *
  * @returns {object} Newly created cache object with the following set of methods:
  *
- * - `{object}` `info()` — Returns id, size, and options of cache.
- * - `{void}` `put({string} key, {*} value)` — Puts a new key-value pair into the cache.
- * - `{{*}} `get({string} key) — Returns cached value for `key` or undefined for cache miss.
- * - `{void}` `remove({string} key) — Removes a key-value pair from the cache.
- * - `{void}` `removeAll() — Removes all cached values.
- * - `{void}` `destroy() — Removes references to this cache from $cacheFactory.
+ * - `{object}` `info()` â€” Returns id, size, and options of cache.
+ * - `{void}` `put({string} key, {*} value)` â€” Puts a new key-value pair into the cache.
+ * - `{{*}} `get({string} key) â€” Returns cached value for `key` or undefined for cache miss.
+ * - `{void}` `remove({string} key) â€” Removes a key-value pair from the cache.
+ * - `{void}` `removeAll() â€” Removes all cached values.
+ * - `{void}` `destroy() â€” Removes references to this cache from $cacheFactory.
  *
  */
 function $CacheFactoryProvider() {
@@ -5354,8 +5355,8 @@ function $LocationProvider(){
 
       // traverse the DOM up to find first A tag
       while (lowercase(elm[0].nodeName) !== 'a') {
-        if (elm[0] === $rootElement[0]) return;
-        elm = elm.parent();
+        // ignore rewriting if no A tag (reached root element, or no parent - removed from document)
+        if (elm[0] === $rootElement[0] || !(elm = elm.parent())[0]) return;
       }
 
       var absHref = elm.prop('href'),
@@ -6457,14 +6458,14 @@ function $ParseProvider() {
  *
  * **Methods**
  *
- * - `resolve(value)` – resolves the derived promise with the `value`. If the value is a rejection
+ * - `resolve(value)` â€“ resolves the derived promise with the `value`. If the value is a rejection
  *   constructed via `$q.reject`, the promise will be rejected instead.
- * - `reject(reason)` – rejects the derived promise with the `reason`. This is equivalent to
+ * - `reject(reason)` â€“ rejects the derived promise with the `reason`. This is equivalent to
  *   resolving it with a rejection constructed via `$q.reject`.
  *
  * **Properties**
  *
- * - promise – `{Promise}` – promise object associated with this deferred.
+ * - promise â€“ `{Promise}` â€“ promise object associated with this deferred.
  *
  *
  * # The Promise API
@@ -6477,7 +6478,7 @@ function $ParseProvider() {
  *
  * **Methods**
  *
- * - `then(successCallback, errorCallback)` – regardless of when the promise was or will be resolved
+ * - `then(successCallback, errorCallback)` â€“ regardless of when the promise was or will be resolved
  *   or rejected calls one of the success or error callbacks asynchronously as soon as the result
  *   is available. The callbacks are called with a single argument the result or rejection reason.
  *
@@ -6809,26 +6810,26 @@ function $RouteProvider(){
    *
    *    Object properties:
    *
-   *    - `controller` – `{function()=}` – Controller fn that should be associated with newly
+   *    - `controller` â€“ `{function()=}` â€“ Controller fn that should be associated with newly
    *      created scope.
-   *    - `template` – `{string=}` –  html template as a string that should be used by
+   *    - `template` â€“ `{string=}` â€“  html template as a string that should be used by
    *      {@link ng.directive:ngView ngView} or
    *      {@link ng.directive:ngInclude ngInclude} directives.
    *      this property takes precedence over `templateUrl`.
-   *    - `templateUrl` – `{string=}` – path to an html template that should be used by
+   *    - `templateUrl` â€“ `{string=}` â€“ path to an html template that should be used by
    *      {@link ng.directive:ngView ngView}.
    *    - `resolve` - `{Object.<string, function>=}` - An optional map of dependencies which should
    *      be injected into the controller. If any of these dependencies are promises, they will be
    *      resolved and converted to a value before the controller is instantiated and the
    *      `$aftreRouteChange` event is fired. The map object is:
    *
-   *      - `key` – `{string}`: a name of a dependency to be injected into the controller.
+   *      - `key` â€“ `{string}`: a name of a dependency to be injected into the controller.
    *      - `factory` - `{string|function}`: If `string` then it is an alias for a service.
    *        Otherwise if function, then it is {@link api/AUTO.$injector#invoke injected}
    *        and the return value is treated as the dependency. If the result is a promise, it is resolved
    *        before its value is injected into the controller.
    *
-   *    - `redirectTo` – {(string|function())=} – value to update
+   *    - `redirectTo` â€“ {(string|function())=} â€“ value to update
    *      {@link ng.$location $location} path with and trigger route redirection.
    *
    *      If `redirectTo` is a function, it will be called with the following parameters:
@@ -8281,7 +8282,7 @@ function $HttpProvider() {
      *
      *
      * # General usage
-     * The `$http` service is a function which takes a single argument — a configuration object —
+     * The `$http` service is a function which takes a single argument â€” a configuration object â€”
      * that is used to generate an http request and returns  a {@link ng.$q promise}
      * with two $http specific methods: `success` and `error`.
      *
@@ -8299,7 +8300,7 @@ function $HttpProvider() {
      * </pre>
      *
      * Since the returned value of calling the $http function is a Promise object, you can also use
-     * the `then` method to register callbacks, and these callbacks will receive a single argument –
+     * the `then` method to register callbacks, and these callbacks will receive a single argument â€“
      * an object representing the response. See the api signature and type info below for more
      * details.
      *
@@ -8396,7 +8397,7 @@ function $HttpProvider() {
      *
      * The interceptors are service factories that are registered with the $httpProvider by
      * adding them to the `$httpProvider.responseInterceptors` array. The factory is called and
-     * injected with dependencies (if specified) and returns the interceptor  — a function that
+     * injected with dependencies (if specified) and returns the interceptor  â€” a function that
      * takes a {@link ng.$q promise} and returns the original or a new promise.
      *
      * <pre>
@@ -8482,23 +8483,23 @@ function $HttpProvider() {
      * @param {object} config Object describing the request to be made and how it should be
      *    processed. The object has following properties:
      *
-     *    - **method** – `{string}` – HTTP method (e.g. 'GET', 'POST', etc)
-     *    - **url** – `{string}` – Absolute or relative URL of the resource that is being requested.
-     *    - **params** – `{Object.<string|Object>}` – Map of strings or objects which will be turned to
+     *    - **method** â€“ `{string}` â€“ HTTP method (e.g. 'GET', 'POST', etc)
+     *    - **url** â€“ `{string}` â€“ Absolute or relative URL of the resource that is being requested.
+     *    - **params** â€“ `{Object.<string|Object>}` â€“ Map of strings or objects which will be turned to
      *      `?key1=value1&key2=value2` after the url. If the value is not a string, it will be JSONified.
-     *    - **data** – `{string|Object}` – Data to be sent as the request message data.
-     *    - **headers** – `{Object}` – Map of strings representing HTTP headers to send to the server.
-     *    - **transformRequest** – `{function(data, headersGetter)|Array.<function(data, headersGetter)>}` –
+     *    - **data** â€“ `{string|Object}` â€“ Data to be sent as the request message data.
+     *    - **headers** â€“ `{Object}` â€“ Map of strings representing HTTP headers to send to the server.
+     *    - **transformRequest** â€“ `{function(data, headersGetter)|Array.<function(data, headersGetter)>}` â€“
      *      transform function or an array of such functions. The transform function takes the http
      *      request body and headers and returns its transformed (typically serialized) version.
-     *    - **transformResponse** – `{function(data, headersGetter)|Array.<function(data, headersGetter)>}` –
+     *    - **transformResponse** â€“ `{function(data, headersGetter)|Array.<function(data, headersGetter)>}` â€“
      *      transform function or an array of such functions. The transform function takes the http
      *      response body and headers and returns its transformed (typically deserialized) version.
-     *    - **cache** – `{boolean|Cache}` – If true, a default $http cache will be used to cache the
+     *    - **cache** â€“ `{boolean|Cache}` â€“ If true, a default $http cache will be used to cache the
      *      GET request, otherwise if a cache instance built with
      *      {@link ng.$cacheFactory $cacheFactory}, this cache will be used for
      *      caching.
-     *    - **timeout** – `{number}` – timeout in milliseconds.
+     *    - **timeout** â€“ `{number}` â€“ timeout in milliseconds.
      *    - **withCredentials** - `{boolean}` - whether to to set the `withCredentials` flag on the
      *      XHR object. See {@link https://developer.mozilla.org/en/http_access_control#section_5
      *      requests with credentials} for more information.
@@ -8511,10 +8512,10 @@ function $HttpProvider() {
      *   these functions are destructured representation of the response object passed into the
      *   `then` method. The response object has these properties:
      *
-     *   - **data** – `{string|Object}` – The response body transformed with the transform functions.
-     *   - **status** – `{number}` – HTTP status code of the response.
-     *   - **headers** – `{function([headerName])}` – Header getter function.
-     *   - **config** – `{Object}` – The configuration object that was used to generate the request.
+     *   - **data** â€“ `{string|Object}` â€“ The response body transformed with the transform functions.
+     *   - **status** â€“ `{number}` â€“ HTTP status code of the response.
+     *   - **headers** â€“ `{function([headerName])}` â€“ Header getter function.
+     *   - **config** â€“ `{Object}` â€“ The configuration object that was used to generate the request.
      *
      * @property {Array.<Object>} pendingRequests Array of config objects for currently pending
      *   requests. This is primarily meant to be used for debugging purposes.
@@ -9019,7 +9020,7 @@ function createHttpBackend($browser, XHR, $browserDefer, callbacks, rawDocument,
  * $locale service provides localization rules for various Angular components. As of right now the
  * only public api is:
  *
- * * `id` – `{string}` – locale id formatted as `languageId-countryId` (e.g. `en-us`)
+ * * `id` â€“ `{string}` â€“ locale id formatted as `languageId-countryId` (e.g. `en-us`)
  */
 function $LocaleProvider(){
   this.$get = function() {
@@ -9321,7 +9322,7 @@ function $FilterProvider($provide) {
        <hr>
        Any: <input ng-model="search.$"> <br>
        Name only <input ng-model="search.name"><br>
-       Phone only <input ng-model="search.phone"å><br>
+       Phone only <input ng-model="search.phone"Ã¥><br>
        <table id="searchObjResults">
          <tr><th>Name</th><th>Phone</th><tr>
          <tr ng-repeat="friend in friends | filter:search">
@@ -9495,7 +9496,7 @@ function currencyFilter($locale) {
  *
  * @param {number|string} number Number to format.
  * @param {(number|string)=} [fractionSize=2] Number of decimal places to round the number to.
- * @returns {string} Number rounded to decimalPlaces and places a “,” after each third digit.
+ * @returns {string} Number rounded to decimalPlaces and places a â€œ,â€ after each third digit.
  *
  * @example
    <doc:example>
@@ -10465,7 +10466,7 @@ var nullFormCtrl = {
  * @property {Object} $error Is an object hash, containing references to all invalid controls or
  *  forms, where:
  *
- *  - keys are validation tokens (error names) — such as `REQUIRED`, `URL` or `EMAIL`),
+ *  - keys are validation tokens (error names) â€” such as `REQUIRED`, `URL` or `EMAIL`),
  *  - values are arrays of controls or forms that are invalid with given error.
  *
  * @description
@@ -12329,9 +12330,9 @@ var ngCloakDirective = ngDirective({
  *
  * MVC components in angular:
  *
- * * Model — The Model is data in scope properties; scopes are attached to the DOM.
- * * View — The template (HTML with data bindings) is rendered into the View.
- * * Controller — The `ngController` directive specifies a Controller class; the class has
+ * * Model â€” The Model is data in scope properties; scopes are attached to the DOM.
+ * * View â€” The template (HTML with data bindings) is rendered into the View.
+ * * Controller â€” The `ngController` directive specifies a Controller class; the class has
  *   methods that typically express the business logic behind the application.
  *
  * Note that an alternative way to define controllers is via the `{@link ng.$route}`
@@ -13080,10 +13081,10 @@ var ngPluralizeDirective = ['$locale', '$interpolate', function($locale, $interp
  *
  * Special properties are exposed on the local scope of each template instance, including:
  *
- *   * `$index` – `{number}` – iterator offset of the repeated element (0..length-1)
- *   * `$first` – `{boolean}` – true if the repeated element is first in the iterator.
- *   * `$middle` – `{boolean}` – true if the repeated element is between the first and last in the iterator.
- *   * `$last` – `{boolean}` – true if the repeated element is last in the iterator.
+ *   * `$index` â€“ `{number}` â€“ iterator offset of the repeated element (0..length-1)
+ *   * `$first` â€“ `{boolean}` â€“ true if the repeated element is first in the iterator.
+ *   * `$middle` â€“ `{boolean}` â€“ true if the repeated element is between the first and last in the iterator.
+ *   * `$last` â€“ `{boolean}` â€“ true if the repeated element is last in the iterator.
  *
  *
  * @element ANY
@@ -13092,12 +13093,12 @@ var ngPluralizeDirective = ['$locale', '$interpolate', function($locale, $interp
  * @param {repeat_expression} ngRepeat The expression indicating how to enumerate a collection. Two
  *   formats are currently supported:
  *
- *   * `variable in expression` – where variable is the user defined loop variable and `expression`
+ *   * `variable in expression` â€“ where variable is the user defined loop variable and `expression`
  *     is a scope expression giving the collection to enumerate.
  *
  *     For example: `track in cd.tracks`.
  *
- *   * `(key, value) in expression` – where `key` and `value` can be any user defined identifiers,
+ *   * `(key, value) in expression` â€“ where `key` and `value` can be any user defined identifiers,
  *     and `expression` is the scope expression giving the collection to enumerate.
  *
  *     For example: `(name, age) in {'adam':10, 'amalie':12}`.
@@ -13764,7 +13765,7 @@ var scriptDirective = ['$templateCache', function($templateCache) {
  * Optionally `ngOptions` attribute can be used to dynamically generate a list of `<option>`
  * elements for a `<select>` element using an array or an object obtained by evaluating the
  * `ngOptions` expression.
- *˝˝
+ *ËË
  * When an item in the select menu is select, the value of array element or object property
  * represented by the selected option will be bound to the model identified by the `ngModel`
  * directive of the parent select element.
