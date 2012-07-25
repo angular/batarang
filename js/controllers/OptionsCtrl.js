@@ -6,7 +6,10 @@ panelApp.controller('OptionsCtrl', function OptionsCtrl($scope, appContext, chro
     app: false
   };
 
-  // TODO: refactor
+  //TODO: improve look of highlighting; for instance, if an element is bound and a scope,
+  // you will only see the most recently applied outline
+
+  // TODO: refactor; remove chromeExtension calls in favor of adding methods to appContext
   $scope.$watch('debugger.scopes', function (newVal, oldVal) {
     if (newVal) {
       chromeExtension.eval(function () {
@@ -66,6 +69,7 @@ panelApp.controller('OptionsCtrl', function OptionsCtrl($scope, appContext, chro
           var styleSheet = document.styleSheets[document.styleSheets.length - 1];
           styleSheet.insertRule(selector + '{' + rule + '}', styleSheet.cssRules.length);
         };
+        // TODO: rules for ng-app (is it added as a class?)
         addCssRule('[ng-app]', 'border: 1px solid green');
         //addCssRule('ng-app:', 'border: 1px solid green');
         addCssRule('[app-run]', 'border: 1px solid green');
@@ -96,4 +100,9 @@ panelApp.controller('OptionsCtrl', function OptionsCtrl($scope, appContext, chro
   }, function (version) {
     $scope.version = version;
   });
+
+  appContext.getAngularSrc(function (status) {
+    $scope.status = status;
+  });
+  
 });

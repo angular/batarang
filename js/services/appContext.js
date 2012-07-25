@@ -229,6 +229,30 @@ panelApp.factory('appContext', function(chromeExtension) {
       return _debugCache.deps;
     },
 
+    getAngularSrc: function (cb) {
+      chromeExtension.eval("function (window, args) {" +
+        "if (!window.angular) {" +
+          "return 'info';" +
+        "}" +
+        "var elts = window.angular.element('script[src]');" +
+        "var re = /\/angular(-\d+(\.(\d+))+(rc)?)?(\.min)?\.js$/;" +
+        "var elt;" +
+        "for (i = 0; i < elts.length; i++) {" +
+          "elt = elts[i];" +
+          "if (re.exec(elt.src)) {" +
+            "if (elt.src.indexOf('code.angularjs.org') !== -1) {" +
+              "return 'error';" +
+            "} else if (elt.src.indexOf('ajax.googleapis.com') !== -1) {" +
+              "return 'good';" +
+            "} else {" +
+              "return 'info';" +
+            "}" + 
+          "}" +
+        "}" +
+        "return 'info';" +
+      "}", cb);
+    },
+
     // Actions
     // -------
 

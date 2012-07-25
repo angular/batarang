@@ -76,12 +76,13 @@
     <div ng-class="{hidden: !enable}" class="row-fluid">
       <div class="span6">
         <h3>Watch Tree</h3>
-        <div class="well" style="height: 400px; overflow-y: auto;">
+        <div class="well well-top" style="height: 400px; overflow-y: auto;">
+          <wtree val="trees[selectedRoot]" inspect="inspect"></wtree>
+        </div>
+        <div class="well well-bottom">
           <label for="select-root" ng-class="{hidden: roots.length <= 1}">Root 
             <select id="select-root" ng-options="p.value as p.label for p in roots" ng-model="selectedRoot"></select>
           </label>
-
-          <wtree val="trees[selectedRoot]" inspect="inspect"></wtree>
         </div>
       </div>
 
@@ -154,7 +155,9 @@
     <div class="span6">
       <h2>Info</h2>
       <div class="well">
-        Angular version: {{version}}
+        <p>Angular version: {{version}}</p>
+        <p>Angular CDN status: {{status}}</p>
+        <p><button ng-click="check">check</button></p>
       </div>
     </div>
 

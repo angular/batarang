@@ -55,7 +55,6 @@ panelApp.directive('d3', function($compile, d3) {
           toAdd.forEach(function (a) {
             classes.push({
               name: a,
-              size: 0,
               imports: []
             });
           });
@@ -123,21 +122,39 @@ panelApp.directive('d3', function($compile, d3) {
         .append("svg:g")
           .attr("transform", "translate(" + rx + "," + ry + ")");
 
-      svg.append("svg:path")
-          .attr("class", "arc")
-          .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
-          .on("mousedown", mousedown);
-
       // Render the data whenever "val" changes
       // --------------------------------------
       scope.$watch('val', function (newVal, oldVal) {
-        var classes = newVal;
+        var classes;
 
-        if (oldVal || !classes || classes.length === 0) {
+        if (!newVal || newVal.length === 0) {
+          svg.selectAll('*').remove();
           return;
         }
 
-        //div[0].innerHTML = '';
+        if (oldVal && oldVal.length === newVal.length) {
+          var changed = false;
+          for (i = 0; i < oldVal.length; i++) {
+            if (oldVal[i].name !== newVal[i].name || newVal[i].imports.length !== oldVal[i].imports.length) {
+              changed = true;
+              break;
+            }
+          }
+          if (!changed) {
+            return;
+          }
+        }
+        classes = newVal.slice(0);
+        classes.sort(function (a, b) {
+          return .5 - (a.name < b.name);
+        });
+
+        svg.selectAll('*').remove();
+
+        svg.append("svg:path")
+          .attr("class", "arc")
+          .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
+          .on("mousedown", mousedown);
 
         var nodes = cluster.nodes(packages.root(classes)),
             links = packages.imports(nodes),

@@ -117,48 +117,22 @@ var inject = function () {
         }());
       }
 
-      var module = angular.module;
-      angular.module = function (moduleName) {
-        //console.log(arguments);
-        var mod = module.apply(this, arguments);
-
-        var methods = [
-          'constant',
-          'controller',
-          'directive',
-          'factory',
-          'filter',
-          'provider',
-          'service',
-          'value'
-        ];
-        methods.forEach(function (met) {
-          var temp = mod[met];
-          mod[met] = function (thingName, definition) {
-            var def;
-            if (typeof definition === 'function') {
-              def = annotate(definition);
-            } else {
-              def = definition.slice(0);
-              def.pop();
-            }
-            debug.deps.push({
-              name: thingName,
-              type: met,
-              size: def.length,
-              imports: def
-            });
-
-            return temp.apply(this, arguments);
-          }
-        });
-
-        //console.log(mod);
-        return mod;
-      };
-
       var ng = angular.module('ng');
       ng.config(function ($provide) {
+        [
+          'provider',
+          'factory',
+          'service'
+        ].forEach(function (met) {
+          var temp = $provide[met];
+          $provide[met] = function (thingName, definition) {
+            debug.deps.push({
+              name: thingName,
+              imports: annotate(definition)
+            });
+            return temp.apply(this, arguments);
+          };
+        });
 
         $provide.decorator('$rootScope', function ($delegate) {
           
