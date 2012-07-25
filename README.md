@@ -9,6 +9,10 @@ You'll need [Google Chrome Canary](https://tools.google.com/dlpage/chromesxs) or
 3.  [Download the packed extension](https://github.com/downloads/angular/angularjs-batarang/angularjs-batarang.crx)
 4.  Open the file (should open with Canary, otherwise try dragging/dropping the file into Canary) and follow the prompts to install.
 
+## Screencast
+
+Check out [this screencast](http://www.youtube.com/embed/q-7mhcHXSfM) that walks you through the Batarang's features.
+
 ## Using the Batarang
 First, navigate Chrome Canary to the AngularJS application that you want to debug. [Open the Developer Tools](https://developers.google.com/chrome-developer-tools/docs/overview#access). There should be an AngularJS icon. Click on it to open he AngularJS Batarang.
 
