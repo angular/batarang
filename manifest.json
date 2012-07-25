@@ -5,7 +5,7 @@
   "background": {
     "page": "background.html"
   },
-  "devtools_page": "devtools.html",
+  "devtools_page": "devtoolsBackground.html",
   "manifest_version": 2,
   "permissions": [
     "tabs",
