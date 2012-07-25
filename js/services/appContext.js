@@ -181,6 +181,8 @@ panelApp.factory('appContext', function(chromeExtension) {
   // Public API
   // ==========
   return {
+    // Fix selection of scope
+    // https://github.com/angular/angularjs-batarang/issues/6
     executeOnScope: function(scopeId, fn, args, cb) {
       if (typeof args === 'function') {
         cb = args;
@@ -295,6 +297,9 @@ panelApp.factory('appContext', function(chromeExtension) {
     // ------------------
 
     // TODO: depreciate this; only poll from now on?
+    // There are some cases where you need to gather data on a once-per-bootstrap basis, for
+    // instance getting the version of AngularJS
+    
     // TODO: move to chromeExtension?
     watchRefresh: function (cb) {
       var port = chrome.extension.connect();

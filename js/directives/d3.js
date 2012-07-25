@@ -1,6 +1,6 @@
 // D3 visualization
 // TODO: D3 as a service
-panelApp.directive('d3', function($compile) {
+panelApp.directive('d3', function($compile, d3) {
   return {
     restrict: 'E',
     terminal: true,
@@ -31,6 +31,8 @@ panelApp.directive('d3', function($compile) {
         return key.replace('$', 'dollar')
       }
 
+      // TODO: refactor the data transformation to make it faster
+      // For instance, build up the ideal structure in inject/degug.js
       var packages = {
         // Lazily construct the package hierarchy from class names.
         root: function(classes) {

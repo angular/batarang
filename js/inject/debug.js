@@ -2,6 +2,9 @@ var inject = function () {
   document.head.appendChild((function () {
     var fn = function bootstrap (window) {
 
+      // Helper to determine if the root 'ng' module has been loaded
+      // window.angular may be available if the app is bootstrapped asynchronously, but 'ng' might
+      // finish loading later.
       var ngLoaded = function () {
         if (!window.angular) {
           return false;
@@ -43,6 +46,10 @@ var inject = function () {
       if (window.__ngDebug) {
         return;
       }
+
+      // Instrumentation
+      // ---------------
+
       //var bootstrap = window.angular.bootstrap;
       var debug = window.__ngDebug = {
         watchers: {},
@@ -51,16 +58,6 @@ var inject = function () {
         watchList: {},
         deps: []
       };
-      /*
-      var injector = angular.injector;
-      angular.injector = function () {
-        console.log(arguments);
-        var ret = injector.apply(this, arguments);
-
-        
-        return ret;
-      };
-      */
 
       var annotate = angular.injector().annotate;
 
@@ -151,13 +148,6 @@ var inject = function () {
               size: def.length,
               imports: def
             });
-            /*
-            console.log(
-              'module: ' + moduleName,
-              'type: ' + met,
-              thingName,
-              'requires: ' + def);
-            */
 
             return temp.apply(this, arguments);
           }
@@ -166,26 +156,6 @@ var inject = function () {
         //console.log(mod);
         return mod;
       };
-
-      /*
-      angular.providerHook(function (name, path, fn) {
-        var curDep = debug.deps;
-
-        var i;
-        for (i = path.length - 1; i >= 0; i -= 1) {
-          if (!curDep[path[i]]) {
-            curDep[path[i]] = {};
-          }
-          curDep = curDep[path[i]];
-        }
-
-        if ((path.length === 0 || path[0] !== name) && !curDep[name]) {
-          curDep[name] = {};
-        }
-        
-        return fn();
-      });
-*/
 
       var ng = angular.module('ng');
       ng.config(function ($provide) {
@@ -298,8 +268,9 @@ var inject = function () {
                 end: Math.round(end - firstLog)
               });
             }
-            //debug.dirty = true;
 
+            // If the debugging option is enabled, log to console
+            // --------------------------------------------------
             if (debug.log) {
               if (fn) {
                 if (fn.name) {
@@ -323,6 +294,7 @@ var inject = function () {
       });
     };
 
+    // Return a script element with the above code embedded in it
     var script = window.document.createElement('script');
     script.innerHTML = '(' + fn.toString() + '(window))';
     
@@ -333,45 +305,4 @@ var inject = function () {
 // only inject if cookie is set
 if (document.cookie.indexOf('__ngDebug=true') != -1) {
   document.addEventListener('DOMContentLoaded', inject);
-/*
-  (function () {
-
-
-    var hackBootstrap = function () {
-      var bootstrap = angular.bootstrap;
-      window.angular.bootstrap = function () {
-        inject();
-        bootstrap.apply(this, arguments);
-      };
-    };
-
-    // else, patch angular.bootstrap
-    if (window.angular) {
-      hackBootstrap();
-    } else {
-      // TODO: the AngularJS script it being asynchronously loaded and manually bootstrapped.
-      // Not sure what I can do here
-
-      // current strategy: run at DOMContentLoaded and hope for the best
-      document.addEventListener('DOMContentLoaded', function () {
-        var areWeThereYet = function (ev) {
-          if (ev.srcElement.tagName === 'SCRIPT') {
-            var oldOnload = ev.srcElement.onload;
-            ev.srcElement.onload = function () {
-              if (window.angular) {
-                document.removeEventListener('DOMNodeInserted', areWeThereYet);
-                hackBootstrap();
-              }
-              if (oldOnload) {
-                oldOnload.apply(this, arguments);
-              }
-            };
-          }
-        }
-        document.addEventListener('DOMNodeInserted', areWeThereYet);
-      });
-    }
-
-  }());
-*/
 }

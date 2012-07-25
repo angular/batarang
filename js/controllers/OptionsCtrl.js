@@ -6,6 +6,7 @@ panelApp.controller('OptionsCtrl', function OptionsCtrl($scope, appContext, chro
     app: false
   };
 
+  // TODO: refactor
   $scope.$watch('debugger.scopes', function (newVal, oldVal) {
     if (newVal) {
       chromeExtension.eval(function () {
