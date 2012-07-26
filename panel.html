@@ -98,7 +98,7 @@
         <h3>Watch Expressions</h3>
 
         <div class="well well-top" style="height: 400px; overflow-y: auto;">
-          <div ng-repeat="watch in histogram|sortByTime:[min,max]">
+          <div ng-repeat="watch in histogram|sortByTime:min:max">
             <span style="font-family: monospace;">{{watch.name | first}} </span>
             <span> | {{watch.percent}}% | {{watch.time}}ms</span>
             <div class="progress">

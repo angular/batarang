@@ -1,10 +1,8 @@
 // Sort watchers by time
 // Used by the performance tab
 panelApp.filter('sortByTime', function () {
-  return function (input, range) {
-    var copy = input.slice(0),
-      min = range[0],
-      max = range[1];
+  return function (input, min, max) {
+    var copy = input.slice(0);
 
     copy = copy.sort(function (a, b) {
       return b.time - a.time;
