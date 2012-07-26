@@ -80,6 +80,7 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
   var updateTree = function () {
     var rts = appContext.getListOfRoots();
     if (!rts) {
+      // if app not bootstrapped, return undefined
       return;
     }
     var roots = [];

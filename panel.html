@@ -1,11 +1,11 @@
 <!doctype html>
 <html ng-csp ng-app="panelApp">
 <head>
-  <link rel="stylesheet" type="text/css" href="css/jquery-ui.css">
-  <link rel="stylesheet" type="text/css" href="css/bootstrap.css">
-  <link rel="stylesheet" type="text/css" href="css/bootstrap-responsive.css">
-  <link rel="stylesheet" type="text/css" href="css/d3.css">
-  <link rel="stylesheet" type="text/css" href="css/panel.css">
+  <link rel="stylesheet" href="css/jquery-ui.css">
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <link rel="stylesheet" href="css/bootstrap-responsive.css">
+  <link rel="stylesheet" href="css/d3.css">
+  <link rel="stylesheet" href="css/panel.css">
 
   <!-- libs -->
   <script src="js/lib/angular.js"></script>
@@ -41,16 +41,16 @@
   <div class="row-fluid">
     <ul class="nav nav-tabs span12">
       <li ng-repeat="tabId in ['Model', 'Performance', 'Dependencies', 'Options', 'Help']"
-        ng-class="{active: $parent.selectedTab == tabId}"
+        ng-class="{active: selectedTab == tabId}"
         ng-click="$parent.selectedTab = tabId">
 
-        <a href="#">{{tabId}}</a>
+        <a href>{{tabId}}</a>
       </li>
     </ul>
   </div>
 
 
-  <div ng-class="{hidden: $parent.selectedTab != 'Model'}" ng-controller="TreeCtrl" class="row-fluid">
+  <div ng-class="{hidden: selectedTab != 'Model'}" ng-controller="TreeCtrl" class="row-fluid">
     <h2>Model Tree</h2>
     <div ng-class="{hidden: roots.length <= 1}">
       <label for="select-root">Root <select id="select-root" ng-options="p.value as p.label for p in roots" ng-model="selectedRoot"></select></label>
@@ -61,7 +61,7 @@
   </div>
 
 
-  <div ng-class="{hidden: $parent.selectedTab != 'Performance'}" ng-controller="PerfCtrl" class="row-fluid">
+  <div ng-class="{hidden: selectedTab != 'Performance'}" ng-controller="PerfCtrl" class="row-fluid">
 
     <h2>Performance</h2>
     <form class="well form-inline" class="row-fluid">
@@ -122,16 +122,16 @@
     </div>
   </div>
 
-  <div ng-class="{hidden: $parent.selectedTab != 'Dependencies'}" ng-controller="DepsCtrl" class="row-fluid">
+  <div ng-class="{hidden: selectedTab != 'Dependencies'}" ng-controller="DepsCtrl" class="row-fluid">
     <div class="span12">
-    <h2>Service Dependencies</h2>
+      <h2>Service Dependencies</h2>
       <div class="well">
-        <d3 val="deps"></d3>
+        <bat-d3 val="deps"></d3>
       </div>
     </div>
   </div>
 
-  <div ng-class="{hidden: $parent.selectedTab != 'Options'}" ng-controller="OptionsCtrl" class="row-fluid">
+  <div ng-class="{hidden: selectedTab != 'Options'}" ng-controller="OptionsCtrl" class="row-fluid">
 
     <div class="span6">
       <h2>Options</h2>

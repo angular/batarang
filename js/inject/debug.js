@@ -18,7 +18,6 @@ var inject = function () {
         return true;
       };
 
-      // TODO: remove needless recursion
       if (!ngLoaded()) {
         (function () {
           // TODO: var name

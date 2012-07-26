@@ -103,24 +103,24 @@ panelApp.directive('batD3', function (d3) {
       // Instantiate and Style D3 Objects
       // --------------------------------
 
-      var cluster = d3.layout.cluster()
-          .size([360, ry - 120])
-          .sort(function(a, b) { return d3.ascending(a.key, b.key); });
+      var cluster = d3.layout.cluster().
+        size([360, ry - 120]).
+        sort(function(a, b) { return d3.ascending(a.key, b.key); });
 
       var bundle = d3.layout.bundle();
 
-      var line = d3.svg.line.radial()
-          .interpolate("bundle")
-          .tension(.85)
-          .radius(function(d) { return d.y; })
-          .angle(function(d) { return d.x / 180 * Math.PI; });
+      var line = d3.svg.line.radial().
+        interpolate("bundle").
+        tension(.85).
+        radius(function(d) { return d.y; }).
+        angle(function(d) { return d.x / 180 * Math.PI; });
 
-      var svg = div.append("svg:svg")
-          .attr("preserveAspectRatio", "xMinYMin meet")
-          .attr("viewBox", [0, 0, w, h].join(' '))
-          .attr("height", h)
-        .append("svg:g")
-          .attr("transform", "translate(" + rx + "," + ry + ")");
+      var svg = div.append("svg:svg").
+              attr("preserveAspectRatio", "xMinYMin meet").
+              attr("viewBox", [0, 0, w, h].join(' ')).
+              attr("height", h).
+            append("svg:g").
+              attr("transform", "translate(" + rx + "," + ry + ")");
 
       // Render the data whenever "val" changes
       // --------------------------------------
@@ -269,9 +269,6 @@ panelApp.directive('batD3', function (d3) {
       function dot(a, b) {
         return a[0] * b[0] + a[1] * b[1];
       }
-
-      // compile and go!
-      $compile(element.contents())(scope.$new());
     }
   };
 });

@@ -71,8 +71,6 @@ panelApp.controller('OptionsCtrl', function OptionsCtrl($scope, appContext, chro
         };
         // TODO: rules for ng-app (is it added as a class?)
         addCssRule('[ng-app]', 'border: 1px solid green');
-        //addCssRule('ng-app:', 'border: 1px solid green');
-        addCssRule('[app-run]', 'border: 1px solid green');
       });
     } else {
       chromeExtension.eval(function () {
@@ -87,8 +85,6 @@ panelApp.controller('OptionsCtrl', function OptionsCtrl($scope, appContext, chro
           }
         };
         removeCssRule('[ng-app]', 'border: 1px solid green');
-        //removeCssRule('ng-app:', 'border: 1px solid green');
-        removeCssRule('[app-run]', 'border: 1px solid green');
       });
     }
   });
