@@ -52,7 +52,6 @@ var inject = function () {
       //var bootstrap = window.angular.bootstrap;
       var debug = window.__ngDebug = {
         watchers: {},
-        timeline: [],
         watchExp: {},
         watchList: {},
         deps: []

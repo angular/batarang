@@ -136,7 +136,6 @@ panelApp.factory('appContext', function(chromeExtension) {
 
       // get histogram data
       var histogram = [],
-        timeline,
         deps;
 
       // performance
@@ -154,14 +153,12 @@ panelApp.factory('appContext', function(chromeExtension) {
         }(window.__ngDebug.watchExp));
 
         deps = __ngDebug.deps;
-        timeline = __ngDebug.timeline;
       }
 
       return {
         roots: rootIds,
         trees: trees,
         histogram: histogram,
-        timeline: timeline,
         deps: deps
       };
     },
@@ -209,10 +206,6 @@ panelApp.factory('appContext', function(chromeExtension) {
     // Getters
     // -------
 
-    getTimeline: function () {
-      return _debugCache.timeline;
-    },
-
     getHistogram: function () {
       return _debugCache.histogram;
     },
@@ -255,12 +248,6 @@ panelApp.factory('appContext', function(chromeExtension) {
 
     // Actions
     // -------
-
-    clearTimeline: function (cb) {
-      chromeExtension.eval(function (window) {
-        window.__ngDebug.timeline = [];
-      }, cb);
-    },
     
     clearHistogram: function (cb) {
       chromeExtension.eval(function (window) {

@@ -1,7 +1,6 @@
 panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem) {
 
   $scope.histogram = [];
-  $scope.timeline = [];
 
   $scope.min = 0;
   $scope.max = 100;
@@ -43,13 +42,6 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
 
   $scope.inspect = function () {
     appContext.inspect(this.val.id);
-  };
-
-  var updateTimeline = function () {
-    var timeline = appContext.getTimeline();
-    if (timeline && timeline.length > $scope.timeline.length) {
-      $scope = $scope.concat(timeline.splice($scope.length - 1));
-    }
   };
 
   var updateHistogram = function () {
