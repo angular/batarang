@@ -13,6 +13,9 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
     filesystem.exportJSON('file.json', $scope.histogram);
   };
 
+  // TODO: remove this (newVal === oldVal ?)
+  var first = true;
+
   appContext.getDebug(function (result) {
     $scope.enable = result;
 
@@ -23,21 +26,15 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
       } else {
         appContext.setDebug(newVal);
       }
-      if (newVal) {
-        //updateTimeline();
-        updateHistogram();
-      }
     });
   });
 
-  var first = true;
-
   $scope.$watch('log', function (newVal, oldVal) {
     appContext.setLog(newVal);
-    
-    appContext.watchRefresh(function () {
-      appContext.setLog(newVal);
-    });
+  });
+  
+  appContext.watchRefresh(function () {
+    appContext.setLog(newVal);
   });
 
   $scope.inspect = function () {
