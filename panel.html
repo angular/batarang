@@ -56,7 +56,7 @@
       <label for="select-root">Root <select id="select-root" ng-options="p.value as p.label for p in roots" ng-model="selectedRoot"></select></label>
     </div>
     <pre>
-      <mtree val="trees[selectedRoot]" inspect="inspect" edit="edit"></mtree>
+      <bat-mtree val="trees[selectedRoot]" inspect="inspect" edit="edit"></mtree>
     </pre>
   </div>
 
@@ -77,7 +77,7 @@
       <div class="span6">
         <h3>Watch Tree</h3>
         <div class="well well-top" style="height: 400px; overflow-y: auto;">
-          <wtree val="trees[selectedRoot]" inspect="inspect"></wtree>
+          <bat-wtree val="trees[selectedRoot]" inspect="inspect"></wtree>
         </div>
         <div class="well well-bottom">
           <label for="select-root" ng-class="{hidden: roots.length <= 1}">Root 
@@ -111,7 +111,7 @@
         <div class="well well-bottom">
           <form class="form-inline">
             <label>Filter expressions</label>
-            <slider minimum="min" maximum="max"></slider>
+            <bat-slider minimum="min" maximum="max"></slider>
           </form>
           <button class="btn btn-success" ng-click="exportData()"><i class="icon-download-alt icon-white"></i> Save Data as JSON</button>
           <button class="btn btn-danger" ng-click="clearHistogram()">Clear Data</button>

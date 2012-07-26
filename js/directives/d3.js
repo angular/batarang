@@ -1,6 +1,6 @@
 // D3 visualization
 // TODO: D3 as a service
-panelApp.directive('d3', function($compile, d3) {
+panelApp.directive('batD3', function (d3) {
   return {
     restrict: 'E',
     terminal: true,

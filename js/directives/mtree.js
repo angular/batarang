@@ -1,5 +1,5 @@
 // model tree
-panelApp.directive('mtree', function($compile) {
+panelApp.directive('batMtree', function($compile) {
   return {
     restrict: 'E',
     terminal: true,

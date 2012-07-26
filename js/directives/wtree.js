@@ -1,5 +1,5 @@
 // watchers tree
-panelApp.directive('wtree', function($compile) {
+panelApp.directive('batWtree', function($compile) {
   return {
     restrict: 'E',
     terminal: true,
