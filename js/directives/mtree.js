@@ -23,7 +23,7 @@ panelApp.directive('batMtree', function($compile) {
               '</li>' +
             '</ul>' +
             '<div ng-repeat="child in val.children">' +
-              '<mtree val="child" inspect="inspect" edit="edit"></mtree>' +
+              '<bat-mtree val="child" inspect="inspect" edit="edit"></bat-mtree>' +
             '</div>' +
           '</div>' +
         '</div>');

@@ -25,7 +25,7 @@ panelApp.directive('batWtree', function($compile) {
               '</li>' +
             '</ul>' +
             '<div ng-repeat="child in val.children">' +
-              '<wtree val="child" inspect="inspect"></wtree>' +
+              '<bat-wtree val="child" inspect="inspect"></bat-wtree>' +
             '</div>' +
           '</div>' +
         '</div>');
