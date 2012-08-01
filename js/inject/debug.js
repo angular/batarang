@@ -225,21 +225,11 @@ var inject = function () {
           
           // patch apply
           // -----------
-          var firstLog = 0;
           var apply = $delegate.__proto__.$apply;
           $delegate.__proto__.$apply = function (fn) {
             var start = window.performance.webkitNow();
             var ret = apply.apply(this, arguments);
             var end = window.performance.webkitNow();
-            if (Math.round(end - start) === 0) {
-              if (debug.timeline.length === 0) {
-                firstLog = start;
-              }
-              debug.timeline.push({
-                start: Math.round(start - firstLog),
-                end: Math.round(end - firstLog)
-              });
-            }
 
             // If the debugging option is enabled, log to console
             // --------------------------------------------------
