@@ -1,5 +1,5 @@
 
-panelApp.controller('TreeCtrl', function TreeCtrl($scope, chromeExtension, appContext) {
+panelApp.controller('TreeCtrl', function TreeCtrl($scope, appContext) {
 
   $scope.inspect = function () {
     appContext.inspect(this.val.id);
