@@ -32,10 +32,6 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
   $scope.$watch('log', function (newVal, oldVal) {
     appContext.setLog(newVal);
   });
-  
-  appContext.watchRefresh(function () {
-    appContext.setLog(newVal);
-  });
 
   $scope.inspect = function () {
     appContext.inspect(this.val.id);
