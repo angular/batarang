@@ -272,7 +272,6 @@ panelApp.factory('appContext', function(chromeExtension) {
 
     removeCssRule: function (args) {
       chromeExtension.eval(function (window, args) {
-        helpers.removeCssRule(selector, style);
         var styleSheet = document.styleSheets[document.styleSheets.length - 1];
         var i;
         for (i = styleSheet.cssRules.length - 1; i >= 0; i -= 1) {
