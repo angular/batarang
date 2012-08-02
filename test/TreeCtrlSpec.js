@@ -1,4 +1,4 @@
-describe('panelApp:TreeCtrl', function () {
+describe('panelApp:ModelCtrl', function () {
 
   beforeEach(module('panelApp'));
   beforeEach(module(function($provide) {
@@ -6,7 +6,7 @@ describe('panelApp:TreeCtrl', function () {
     $provide.factory('chromeExtension', createChromeExtensionMock);
   }));
 
-  describe('TreeCtrl', function() {
+  describe('ModelCtrl', function() {
     var ctrl,
       $scope,
       appContext,
@@ -22,7 +22,7 @@ describe('panelApp:TreeCtrl', function () {
       //inspect.reset();
       appContext = _appContext_;
       chromeExtension = _chromeExtension_;
-      ctrl = $controller('TreeCtrl', {$scope: $scope});
+      ctrl = $controller('ModelCtrl', {$scope: $scope});
     }));
 
     it('should call inspect when there is an element to inspect', function () {

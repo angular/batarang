@@ -1,5 +1,5 @@
 
-panelApp.controller('TreeCtrl', function TreeCtrl($scope, appContext) {
+panelApp.controller('ModelCtrl', function ModelCtrl($scope, appContext) {
 
   $scope.inspect = function () {
     appContext.inspect(this.val.id);

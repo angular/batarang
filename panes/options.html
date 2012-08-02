@@ -1,0 +1,31 @@
+<div ng-controller="OptionsCtrl">
+
+  <div class="span6">
+    <h2>Options</h2>
+    <form class="well">
+
+      <label class="checkbox" for="app">
+        <input type="checkbox" ng-model="debugger.app" id="app"> Show applications
+      </label>
+
+      <label class="checkbox" for="bindings">
+        <input type="checkbox" ng-model="debugger.bindings" id="bindings"> Show bindings
+      </label>
+
+      <label class="checkbox" for="scopes">
+        <input type="checkbox" ng-model="debugger.scopes" id="scopes"> Show scopes
+      </label>
+
+    </form>
+  </div>
+  
+  <div class="span6">
+    <h2>Info</h2>
+    <div class="well">
+      <p>Angular version: {{version}}</p>
+      <p>Angular CDN status: {{status}}</p>
+      <p><button ng-click="check">check</button></p>
+    </div>
+  </div>
+
+</div>
