@@ -15,8 +15,9 @@ panelApp.controller('OptionsCtrl', function OptionsCtrl($scope, appContext, appH
   appContext.getAngularVersion(function (version) {
     $scope.version = version;
   });
-
+  /*
   appContext.getAngularSrc(function (status) {
     $scope.status = status;
   });
+  */
 });
