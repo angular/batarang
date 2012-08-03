@@ -17,5 +17,6 @@
       "js": ["js/inject/debug.js"],
       "run_at": "document_start"
     }
-  ]
+  ],
+  "minimum_chrome_version": "21.0.1180.57"
 }
