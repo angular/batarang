@@ -1,13 +1,15 @@
 # AngularJS Batarang
 
-## Installation
-You'll need [Google Chrome Canary](https://tools.google.com/dlpage/chromesxs) or, if you are using Linux, [Google Chrome Dev Channel](http://www.chromium.org/getting-involved/dev-channel/) to use the extension.
+## Installing from the Web Store
 
+https://chrome.google.com/webstore/detail/ighdmehidhipcmcojjgiloacoafjmpfk
 
-1.  Navigate to `chrome://flags/` in Canary, and enable "Experimental Extension APIs"
+## Installing from Source
+
+1.  Clone the repository: `git clone git://github.com/downloads/angular/angularjs-batarang`
 2.  Navigate to `chrome://chrome/extensions/` and enable Developer Mode.
-3.  [Download the packed extension](https://github.com/downloads/angular/angularjs-batarang/angularjs-batarang.crx)
-4.  Open the file (should open with Canary, otherwise try dragging/dropping the file into Canary) and follow the prompts to install.
+3.  Choose "Load unpacked extension"
+4.  Open the directory you just cloned (should open with Chrome, otherwise try dragging/dropping the file into Chrome) and follow the prompts to install.
 
 ## Screencast
 
