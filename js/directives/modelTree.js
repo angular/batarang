@@ -1,12 +1,12 @@
 // model tree
-panelApp.directive('batMtree', function($compile) {
+panelApp.directive('batModelTree', function($compile) {
   return {
     restrict: 'E',
     terminal: true,
     scope: {
-      val: '=val',
-      edit: '=edit',
-      inspect: '=inspect'
+      val: '=',
+      edit: '=',
+      inspect: '='
     },
     link: function (scope, element, attrs) {
       // this is more complicated then it should be
@@ -15,15 +15,15 @@ panelApp.directive('batMtree', function($compile) {
         '<div class="scope-branch">' +
           '<a href ng-click="inspect()">Scope ({{val.id}})</a> | ' +
           '<a href ng-click="showState = !showState">toggle</a>' +
-          '<div ng-class="{hidden: showState}">' +
+          '<div ng-hide="showState">' +
             '<ul>' +
               '<li ng-repeat="(key, item) in val.locals">' +
                 '{{key}}' +
-                '<input ng-class="{hidden: !item}" ng-model="item" ng-change="edit()()">' +
+                '<input ng-show="item" ng-model="item" ng-change="edit()()">' +
               '</li>' +
             '</ul>' +
             '<div ng-repeat="child in val.children">' +
-              '<bat-mtree val="child" inspect="inspect" edit="edit"></bat-mtree>' +
+              '<bat-model-tree val="child" inspect="inspect" edit="edit"></bat-model-tree>' +
             '</div>' +
           '</div>' +
         '</div>');

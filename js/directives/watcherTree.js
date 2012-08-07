@@ -1,5 +1,5 @@
 // watchers tree
-panelApp.directive('batWtree', function($compile) {
+panelApp.directive('batWatcherTree', function($compile) {
   return {
     restrict: 'E',
     terminal: true,
@@ -14,18 +14,18 @@ panelApp.directive('batWtree', function($compile) {
         '<div class="scope-branch">' +
           '<a href ng-click="inspect()">Scope ({{val.id}})</a> | ' +
           '<a href ng-click="showState = !showState">toggle</a>' +
-          '<div ng-class="{hidden: showState}">' +
+          '<div ng-hide="showState">' +
             '<ul>' +
               '<li ng-repeat="item in val.watchers">' +
-                '<a href ng-class="{hidden: item.split(\'\n\').length < 2}" ng-click="showState = !showState">toggle</a> ' +
-                '<code ng-class="{hidden: showState && item.split(\'\n\').length > 1}">{{item | first}}</code>' +
-                '<pre ng-class="{hidden: !showState || item.split(\'\n\').length < 2}">' +
+                '<a href ng-hide="item.split(\'\n\').length < 2" ng-click="showState = !showState">toggle</a> ' +
+                '<code ng-hide="showState && item.split(\'\n\').length > 1">{{item | first}}</code>' +
+                '<pre ng-hide="!showState || item.split(\'\n\').length < 2">' +
                   '{{item}}' +
                 '</pre>' +
               '</li>' +
             '</ul>' +
             '<div ng-repeat="child in val.children">' +
-              '<bat-wtree val="child" inspect="inspect"></bat-wtree>' +
+              '<bat-watcher-tree val="child" inspect="inspect"></bat-watcher-tree>' +
             '</div>' +
           '</div>' +
         '</div>');
