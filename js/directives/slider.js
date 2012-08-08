@@ -9,10 +9,10 @@ panelApp.directive('batSlider', function($compile) {
     },
     link: function (scope, element, attrs) {
 
-      var dom = $('<div class="ui-slider ui-slider-horizontal ui-widget ui-widget-content ui-corner-all">' +
-          '<div class="ui-slider-range ui-widget-header"></div>' +
-          '<a class="ui-slider-handle ui-state-default ui-corner-all" href="#"></a>' +
-          '<a class="ui-slider-handle ui-state-default ui-corner-all" href="#"></a>' +
+      var dom = $('<div class="ui-slider">' +
+          '<a class="ui-slider-handle" href></a>' +
+          '<a class="ui-slider-handle" href></a>' +
+          '<div class="ui-slider-range"></div>' +
         '</div>');
 
       element.append(dom);
