@@ -95,17 +95,14 @@ panelApp.factory('appContext', function(chromeExtension) {
           // copy scope's locals
           node.locals = {};
 
-          for (var i in scope) {
-            if (i[0] !== '$' && scope.hasOwnProperty(i) && i !== 'this') {
-              if (typeof scope[i] === 'number' || typeof scope[i] === 'boolean') {
-                node.locals[i] = scope[i];
-              } else if (typeof scope[i] === 'string') {
-                node.locals[i] = '"' + scope[i] + '"';
-              } else {
-                node.locals[i] = JSON.stringify(decycle(scope[i]));
-              }
+          var scopeLocals = {};
+          for (prop in scope) {
+            if (scope.hasOwnProperty(prop) && prop !== 'this' && prop[0] !== '$') {
+              scopeLocals[prop] = scope[prop];
             }
           }
+
+          node.locals = decycle(scopeLocals);
 
           node.id = scope.$id;
           
