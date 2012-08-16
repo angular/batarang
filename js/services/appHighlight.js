@@ -1,5 +1,5 @@
 // Service for highlighting parts of the application
-panelApp.factory('appHighlight', function (appContext) {
+panelApp.factory('appHighlight', function (appCss) {
 
   //TODO: improve look of highlighting; for instance, if an element is bound and a scope,
   // you will only see the most recently applied outline
@@ -27,9 +27,9 @@ panelApp.factory('appHighlight', function (appContext) {
         var style = styles[i];
         api[i] = function (setting) {
           if (setting) {
-            appContext.addCssRule(style);
+            appCss.addCssRule(style);
           } else {
-            appContext.removeCssRule(style);
+            appCss.removeCssRule(style);
           }
         }
       }());

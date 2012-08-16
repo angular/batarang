@@ -1,5 +1,5 @@
 // Service for doing stuff in the context of the application being debugged
-panelApp.factory('appContext', function(chromeExtension) {
+panelApp.factory('appContext', function (chromeExtension) {
 
   // Private vars
   // ============
@@ -260,25 +260,6 @@ panelApp.factory('appContext', function(chromeExtension) {
     // Actions
     // -------
 
-    addCssRule: function (args) {
-      chromeExtension.eval(function (window, args) {
-        var styleSheet = document.styleSheets[document.styleSheets.length - 1];
-        styleSheet.insertRule(args.selector + '{' + args.style + '}', styleSheet.cssRules.length);
-      }, args);
-    },
-
-    removeCssRule: function (args) {
-      chromeExtension.eval(function (window, args) {
-        var styleSheet = document.styleSheets[document.styleSheets.length - 1];
-        var i;
-        for (i = styleSheet.cssRules.length - 1; i >= 0; i -= 1) {
-          if (styleSheet.cssRules[i].cssText === args.selector + ' { ' + args.style + '; }') {
-            styleSheet.deleteRule(i);
-          }
-        }
-      }, args);
-    },
-
     clearHistogram: function (cb) {
       chromeExtension.eval(function (window) {
         window.__ngDebug.watchExp = {};
@@ -304,12 +285,12 @@ panelApp.factory('appContext', function(chromeExtension) {
     setDebug: function (setting) {
       if (setting) {
         chromeExtension.eval(function (window) {
-          window.document.cookie = '__ngDebug=true;'
+          window.document.cookie = '__ngDebug=true;';
           window.document.location.reload();
         });
       } else {
         chromeExtension.eval(function (window) {
-          window.document.cookie = '__ngDebug=false;'
+          window.document.cookie = '__ngDebug=false;';
           window.document.location.reload();
         });
       }

@@ -1,3 +1,4 @@
+// abstraction layer for Chrome Extension APIs
 panelApp.value('chromeExtension', {
   sendRequest: function (requestName, cb) {
     chrome.extension.sendRequest({
