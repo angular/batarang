@@ -1,6 +1,67 @@
 var inject = function () {
   document.head.appendChild((function () {
+
+    // Helpers
+    // =======
+
+    // Based on cycle.js
+    // 2011-08-24
+    // https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
+
+    // Make a deep copy of an object or array, assuring that there is at most
+    // one instance of each object or array in the resulting structure. The
+    // duplicate references (which might be forming cycles) are replaced with
+    // an object of the form
+    //      {$ref: PATH}
+    // where the PATH is a JSONPath string that locates the first occurance.
+    var decycle = function (object) {
+      var objects = [],   // Keep a reference to each unique object or array
+          paths = [];     // Keep the path to each unique object or array
+
+      return (function derez(value, path) {
+        var i,          // The loop counter
+            name,       // Property name
+            nu;         // The new object or array
+        switch (typeof value) {
+        case 'object':
+          if (!value) {
+            return null;
+          }
+          for (i = 0; i < objects.length; i += 1) {
+            if (objects[i] === value) {
+              return {$ref: paths[i]};
+            }
+          }
+          objects.push(value);
+          paths.push(path);
+          if (Object.prototype.toString.apply(value) === '[object Array]') {
+            nu = [];
+            for (i = 0; i < value.length; i += 1) {
+              nu[i] = derez(value[i], path + '[' + i + ']');
+            }
+          } else {
+            nu = {};
+            for (name in value) {
+              if (Object.prototype.hasOwnProperty.call(value, name)) {
+                nu[name] = derez(value[name],
+                  path + '[' + JSON.stringify(name) + ']');
+              }
+            }
+          }
+          return nu;
+        case 'number':
+        case 'string':
+        case 'boolean':
+          return value;
+        }
+      }(object, '$'));
+    };
+    // End
+    // ===
+
     var fn = function bootstrap (window) {
+
+      var angular = window.angular;
 
       // Helper to determine if the root 'ng' module has been loaded
       // window.angular may be available if the app is bootstrapped asynchronously, but 'ng' might
@@ -51,10 +112,26 @@ var inject = function () {
 
       //var bootstrap = window.angular.bootstrap;
       var debug = window.__ngDebug = {
-        watchers: {},
-        watchExp: {},
-        watchList: {},
+        watchers: {}, // map of scopes --> watchers
+
+        watchPerf: {}, // maps of watch/apply exp/fns to perf data
+        applyPerf: {},
+
+        scopes: {}, // map of scope.$ids --> scope objects
+        rootScopes: [], // array of refs to root scopes
+
         deps: []
+      };
+
+
+      var getScopeLocals = function (scope) {
+        var scopeLocals = {}, prop;
+        for (prop in scope) {
+          if (scope.hasOwnProperty(prop) && prop !== 'this' && prop[0] !== '$') {
+            scopeLocals[prop] = scope[prop];
+          }
+        }
+        return scopeLocals;
       };
 
       var annotate = angular.injector().annotate;
@@ -117,6 +194,7 @@ var inject = function () {
 
       var ng = angular.module('ng');
       ng.config(function ($provide) {
+        // methods to patch
         [
           'provider',
           'factory',
@@ -144,112 +222,132 @@ var inject = function () {
             }
           };
 
-          // patch registering watchers
-          // --------------------------
-          var watch = $delegate.__proto__.$watch;
-          $delegate.__proto__.$watch = function() {
-            if (!debug.watchers[this.$id]) {
-              debug.watchers[this.$id] = [];
+          var applyFnToLogString = function (fn) {
+            var str;
+            if (fn) {
+              if (fn.name) {
+                str = fn.name;
+              } else if (fn.toString().split('\n').length > 1) {
+                str = 'fn () { ' + fn.toString().split('\n')[1].trim() + ' /* ... */ }';
+              } else {
+                str = fn.toString().trim().substr(0, 30) + '...';
+              }
+            } else {
+              str = '$apply';
             }
-            var str = watchFnToHumanReadableString(arguments[0]);
+            return str;
+          };
 
-            debug.watchers[this.$id].push(str);
+
+          // patch registering watchers
+          // ==========================
+
+          var _watch = $delegate.__proto__.$watch;
+          $delegate.__proto__.$watch = function(watchExpression, applyFunction) {
+            var thatScope = this;
+            var watchStr = watchFnToHumanReadableString(watchExpression);
             
-            
-            var w = arguments[0];
+            if (!debug.watchPerf[watchStr]) {
+              debug.watchPerf[watchStr] = {
+                time: 0,
+                calls: 0
+              };
+            }
+
+            // patch watchExpression
+            // ---------------------
+
+            var w = watchExpression;
             if (typeof w === 'function') {
-              arguments[0] = function () {
+              watchExpression = function () {
                 var start = window.performance.webkitNow();
                 var ret = w.apply(this, arguments);
                 var end = window.performance.webkitNow();
-                if (!debug.watchExp[str]) {
-                  debug.watchExp[str] = {
-                    time: 0,
-                    calls: 0
-                  };
-                }
-                debug.watchExp[str].time += (end - start);
-                debug.watchExp[str].calls += 1;
+                debug.watchPerf[watchStr].time += (end - start);
+                debug.watchPerf[watchStr].calls += 1;
                 return ret;
               };
             } else {
               var thatScope = this;
-              arguments[0] = function () {
+              watchExpression = function () {
                 var start = window.performance.webkitNow();
                 var ret = thatScope.$eval(w);
                 var end = window.performance.webkitNow();
-                if (!debug.watchExp[str]) {
-                  debug.watchExp[str] = {
-                    time: 0,
-                    calls: 0
-                  };
-                }
-                debug.watchExp[str].time += (end - start);
-                debug.watchExp[str].calls += 1;
+                debug.watchPerf[watchStr].time += (end - start);
+                debug.watchPerf[watchStr].calls += 1;
                 return ret;
               };
             }
 
-            var fn = arguments[1];
-            arguments[1] = function () {
-              var start = window.performance.webkitNow();
-              var ret = fn.apply(this, arguments);
-              var end = window.performance.webkitNow();
-              var str = fn.toString();
-              if (typeof debug.watchList[str] !== 'number') {
-                debug.watchList[str] = 0;
-                //debug.watchList[str].total = 0;
-              }
-              debug.watchList[str] += (end - start);
-              //debug.watchList[str].total += (end - start);
-              //debug.dirty = true;
-              return ret;
-            };
+            // patch applyFunction
+            // -------------------
+            if (applyFunction) {
+              var applyStr = applyFunction.toString();
+              var unpatchedApplyFunction = applyFunction;
+              applyFunction = function () {
+                var start = window.performance.webkitNow();
+                var ret = unpatchedApplyFunction.apply(this, arguments);
+                var end = window.performance.webkitNow();
 
-            return watch.apply(this, arguments);
+                debug.scopes[thatScope.$id] = getScopeLocals(thatScope)
+                //TODO: move these checks out of here and into registering the watcher
+                if (!debug.applyPerf[applyStr]) {
+                  debug.applyPerf[applyStr] = {
+                    time: 0,
+                    calls: 0
+                  };
+                }
+                debug.applyPerf[applyStr].time += (end - start);
+                debug.applyPerf[applyStr].calls += (end - start);
+                return ret;
+              };
+            }
+
+            return _watch.apply(this, arguments);
           };
+
 
           // patch destroy
           // -------------
 
-          /*
-          var destroy = $delegate.__proto__.$destroy;
+          var _destroy = $delegate.__proto__.$destroy;
           $delegate.__proto__.$destroy = function () {
             if (debug.watchers[this.$id]) {
               delete debug.watchers[this.$id];
+              delete debug.scopes[this.$id];
             }
-            debug.dirty = true;
-            return destroy.apply(this, arguments);
+            return _destroy.apply(this, arguments);
           };
-          */
-          
+
+          var _new = $delegate.__proto__.$new;
+          $delegate.__proto__.$new = function () {
+            var ret = _new.apply(this, arguments);
+
+            // create empty watchers array for this scope
+            if (!debug.watchers[ret.$id]) {
+              debug.watchers[ret.$id] = [];
+            }
+
+            return ret;
+          }
+
           // patch apply
           // -----------
-          var apply = $delegate.__proto__.$apply;
+          var _apply = $delegate.__proto__.$apply;
           $delegate.__proto__.$apply = function (fn) {
             var start = window.performance.webkitNow();
-            var ret = apply.apply(this, arguments);
+            var ret = _apply.apply(this, arguments);
             var end = window.performance.webkitNow();
 
             // If the debugging option is enabled, log to console
             // --------------------------------------------------
             if (debug.log) {
-              if (fn) {
-                if (fn.name) {
-                  fn = fn.name;
-                } else if (fn.toString().split('\n').length > 1) {
-                  fn = 'fn () { ' + fn.toString().split('\n')[1].trim() + ' /* ... */ }';
-                } else {
-                  fn = fn.toString().trim().substr(0, 30) + '...';
-                }
-              } else {
-                fn = '$apply';
-              }
-              console.log(fn + '\t\t' + (end - start).toPrecision(4) + 'ms');
+              console.log(applyFnToLogString(fn) + '\t\t' + (end - start).toPrecision(4) + 'ms');
             }
 
             return ret;
           };
+
 
           return $delegate;
         });
