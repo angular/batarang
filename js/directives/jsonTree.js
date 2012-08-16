@@ -11,9 +11,6 @@ panelApp.directive('batJsonTree', function($compile) {
       // this is more complicated then it should be
       // see: https://github.com/angular/angular.js/issues/898
 
-      //var childScope = scope.$new();
-
-
       var buildDom = function (object) {
         var html = '';
         if (object == undefined) {
@@ -38,9 +35,7 @@ panelApp.directive('batJsonTree', function($compile) {
       };
 
       scope.$watch('val', function (newVal, oldVal) {
-        // TODO: clean up scopes
         element.html(buildDom(newVal));
-        //$compile(element.contents())(scope);
       });
     }
   };
