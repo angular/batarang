@@ -118,7 +118,7 @@ var inject = function () {
         applyPerf: {},
 
         scopes: {}, // map of scope.$ids --> scope objects
-        rootScopes: [], // array of refs to root scopes
+        rootScopes: {}, // map of $ids --> refs to root scopes
 
         deps: []
       };
@@ -268,7 +268,6 @@ var inject = function () {
                 return ret;
               };
             } else {
-              var thatScope = this;
               watchExpression = function () {
                 var start = window.performance.webkitNow();
                 var ret = thatScope.$eval(w);
@@ -281,7 +280,7 @@ var inject = function () {
 
             // patch applyFunction
             // -------------------
-            if (applyFunction) {
+            if (typeof applyFunction === 'function') {
               var applyStr = applyFunction.toString();
               var unpatchedApplyFunction = applyFunction;
               applyFunction = function () {
@@ -323,13 +322,17 @@ var inject = function () {
           $delegate.__proto__.$new = function () {
             var ret = _new.apply(this, arguments);
 
+            if (ret.$root) {
+              debug.rootScopes[ret.$root.$id] = ret.$root;
+            }
+
             // create empty watchers array for this scope
             if (!debug.watchers[ret.$id]) {
               debug.watchers[ret.$id] = [];
             }
 
             return ret;
-          }
+          };
 
           // patch apply
           // -----------

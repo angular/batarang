@@ -19,7 +19,9 @@ panelApp.factory('appContext', function (chromeExtension) {
       }
     },
     function (data) {
-      _debugCache = data;
+      if (data) {
+        _debugCache = data;
+      }
       _pollListeners.forEach(function (fn) {
         fn();
       });
@@ -29,12 +31,6 @@ panelApp.factory('appContext', function (chromeExtension) {
     });
   };
   getDebugData();
-
-  // Helpers
-  // =======
-
-
-
 
   // Public API
   // ==========
@@ -82,7 +78,6 @@ panelApp.factory('appContext', function (chromeExtension) {
     getDeps: function () {
       return _debugCache.deps;
     },
-
 
     getAngularVersion: function (cb) {
       chromeExtension.eval(function () {
@@ -157,7 +152,7 @@ panelApp.factory('appContext', function (chromeExtension) {
 
     getDebug: function (cb) {
       chromeExtension.eval(function (window) {
-        return document.cookie.indexOf('__ngDebug=true') != -1;
+        return document.cookie.indexOf('__ngDebug=true') !== -1;
       }, cb);
     },
 
@@ -169,7 +164,7 @@ panelApp.factory('appContext', function (chromeExtension) {
       '}');
     },
 
-    // takes # of miliseconds
+    // takes # of milliseconds
     setPollInterval: function (setting) {
       _pollInterval = setting;
     },
