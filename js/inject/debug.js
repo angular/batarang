@@ -133,7 +133,7 @@ var inject = function () {
         });
 
         $provide.decorator('$rootScope', function ($delegate) {
-          
+
           var watchFnToHumanReadableString = function (fn) {
             if (fn.exp) {
               return fn.exp.trim();
@@ -154,14 +154,14 @@ var inject = function () {
             var str = watchFnToHumanReadableString(arguments[0]);
 
             debug.watchers[this.$id].push(str);
-            
-            
+
+
             var w = arguments[0];
             if (typeof w === 'function') {
               arguments[0] = function () {
-                var start = window.performance.webkitNow();
+                var start = (window.performance.now || window.performance.webkitNow).call(window.performance);
                 var ret = w.apply(this, arguments);
-                var end = window.performance.webkitNow();
+                var end = (window.performance.now || window.performance.webkitNow).call(window.performance);
                 if (!debug.watchExp[str]) {
                   debug.watchExp[str] = {
                     time: 0,
@@ -175,9 +175,9 @@ var inject = function () {
             } else {
               var thatScope = this;
               arguments[0] = function () {
-                var start = window.performance.webkitNow();
+                var start = (window.performance.now || window.performance.webkitNow).call(window.performance);
                 var ret = thatScope.$eval(w);
-                var end = window.performance.webkitNow();
+                var end = (window.performance.now || window.performance.webkitNow).call(window.performance);
                 if (!debug.watchExp[str]) {
                   debug.watchExp[str] = {
                     time: 0,
@@ -192,9 +192,9 @@ var inject = function () {
 
             var fn = arguments[1];
             arguments[1] = function () {
-              var start = window.performance.webkitNow();
+              var start = (window.performance.now || window.performance.webkitNow).call(window.performance);
               var ret = fn.apply(this, arguments);
-              var end = window.performance.webkitNow();
+              var end = (window.performance.now || window.performance.webkitNow).call(window.performance);
               var str = fn.toString();
               if (typeof debug.watchList[str] !== 'number') {
                 debug.watchList[str] = 0;
@@ -222,14 +222,14 @@ var inject = function () {
             return destroy.apply(this, arguments);
           };
           */
-          
+
           // patch apply
           // -----------
           var apply = $delegate.__proto__.$apply;
           $delegate.__proto__.$apply = function (fn) {
-            var start = window.performance.webkitNow();
+            var start = (window.performance.now || window.performance.webkitNow).call(window.performance);
             var ret = apply.apply(this, arguments);
-            var end = window.performance.webkitNow();
+            var end = (window.performance.now || window.performance.webkitNow).call(window.performance);
 
             // If the debugging option is enabled, log to console
             // --------------------------------------------------
@@ -259,7 +259,7 @@ var inject = function () {
     // Return a script element with the above code embedded in it
     var script = window.document.createElement('script');
     script.innerHTML = '(' + fn.toString() + '(window))';
-    
+
     return script;
   }()));
 };
