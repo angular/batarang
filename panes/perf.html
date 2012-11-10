@@ -1,51 +1,57 @@
 <div ng-controller="PerfCtrl">
-
-  <h2>Performance</h2>
-  <form class="well form-inline" class="row-fluid">
-    <label class="checkbox span4" for="extra">
-      <input type="checkbox" ng-model="enable" id="extra"> Enable <span class="label label-important">Causes tab to refresh <i class="icon-refresh icon-white"></i></span>
+  <div class="header">
+    <h2>Performance</h2>
+    <label class="checkbox pull-left" for="extra">
+      <input type="checkbox" ng-model="enable" id="extra"> Enable
+      <span class="label label-important">Causes tab to refresh <i class="icon-refresh icon-white"></i></span>
     </label>
-    <label class="checkbox span4" for="log">
+    <label class="checkbox pull-left" for="log">
       <input type="checkbox" ng-model="log" id="log"> Log to console
     </label>
-  </form>
+  </div>
 
-  <div ng-hide="!enable" class="row-fluid">
-    <div class="span6">
-      <h3>Watch Tree</h3>
-      <div class="well well-top" style="height: 400px; overflow-y: auto;">
-        <bat-watcher-tree val="trees[selectedRoot]" inspect="inspect"></bat-watcher-tree>
-      </div>
-      <div class="well well-bottom">
-        <label for="select-root" ng-hide="roots.length <= 1">Root
-          <select id="select-root" ng-options="p.value as p.label for p in roots" ng-model="selectedRoot"></select>
-        </label>
-      </div>
-    </div>
-
-    <div class="span6">
-      <h3>Watch Expressions</h3>
-
-      <div class="well well-top" style="height: 400px; overflow-y: auto;">
-        <div ng-repeat="watch in histogram|sortByTime:min:max">
-          <span style="font-family: monospace;">{{watch.name | first}} </span>
-          <span> | {{watch.percent}}% | {{watch.time}}ms</span>
-          <div class="progress">
-            <div ng-style="{width: (watch.percent) + '%'}" class= "bar">
-            </div>
+  <div class="canvas">
+    <div class="col-wrapper" ng-hide="!enable">
+      <div class="column">
+        <div class="head">
+          <h3>Watch Tree</h3>
+        </div>
+        <div class="col-body">
+          <div ng-hide="roots.length <= 1">
+            <label for="select-root" class="select-root">
+              Root: <select id="select-root" ng-options="p.value as p.label for p in roots" ng-model="selectedRoot"></select>
+            </label>
+          </div>
+          <div>
+            <bat-watcher-tree val="trees[selectedRoot]" inspect="inspect"></bat-watcher-tree>
           </div>
         </div>
       </div>
 
-      <div class="well well-bottom">
-        <form class="form-inline">
-          <label>Filter expressions</label>
-          <bat-slider minimum="min" maximum="max"></bat-slider>
-        </form>
-        <button class="btn btn-success" ng-click="exportData()"><i class="icon-download-alt icon-white"></i> Save Data as JSON</button>
-        <button class="btn btn-danger" ng-click="clearHistogram()">Clear Data</button>
+      <div class="column">
+        <div class="head">
+          <h3>Watch Expressions</h3>
+        </div>
+        <div class="tools">
+          <form class="form-inline">
+            <label>Filter expressions</label>
+            <bat-slider minimum="min" maximum="max"></bat-slider>
+          </form>
+          <button class="btn btn-success" ng-click="exportData()"><i class="icon-download-alt icon-white"></i> Save Data as JSON</button>
+          <button class="btn btn-danger" ng-click="clearHistogram()">Clear Data</button>
+        </div>
+        <div class="col-body">
+          <div ng-repeat="watch in histogram|sortByTime:min:max">
+            <span class="watch_code">{{watch.name | first}} </span>
+            <span> | {{watch.percent}}% | {{watch.time}}ms</span>
+            <div class="progress">
+              <div ng-style="{width: (watch.percent) + '%'}" class= "bar">
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
     </div>
   </div>
+
 </div>

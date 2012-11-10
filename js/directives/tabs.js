@@ -11,25 +11,25 @@ panelApp.directive('batTabs', function() {
           pane.selected = false;
         });
         pane.selected = true;
-      }
+      };
 
       this.addPane = function(pane) {
         if (panes.length === 0) {
           $scope.select(pane);
         }
         panes.push(pane);
-      }
+      };
     },
     template:
-      '<div class="container-fluid">' +
-        '<div class="row-fluid">' +
-          '<ul class="nav nav-tabs span12">' +
+      '<div class="wrapper">' +
+        '<div class="sidebar">' +
+          '<ul class="nav nav-tabs">' +
             '<li ng-repeat="pane in panes" ng-class="{active:pane.selected}">'+
               '<a href="" ng-click="select(pane)">{{pane.title}}</a>' +
             '</li>' +
           '</ul>' +
         '</div>' +
-        '<div class="row-fluid" ng-transclude></div>' +
+        '<div class="content-box"><div class="row-fluid" ng-transclude></div></div>' +
       '</div>',
     replace: true
   };
