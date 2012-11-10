@@ -1,9 +1,16 @@
 <div ng-controller="ModelCtrl">
-  <h2>Model Tree</h2>
-  <div ng-hide="roots.length <= 1">
-    <label for="select-root">Root <select id="select-root" ng-options="p.value as p.label for p in roots" ng-model="selectedRoot"></select></label>
+  <div class="header">
+    <h2>Model Tree</h2>
   </div>
-  <pre>
-    <bat-model-tree val="trees[selectedRoot]" inspect="inspect" edit="edit"></bat-model-tree>
-  </pre>
+
+  <div class="canvas">
+    <div ng-hide="roots.length <= 1">
+      <label for="select-root" class="select-root">
+        Root: <select id="select-root" ng-options="p.value as p.label for p in roots" ng-model="selectedRoot"></select>
+      </label>
+    </div>
+    <pre class="tree">
+      <bat-model-tree val="trees[selectedRoot]" inspect="inspect" edit="edit"></bat-model-tree>
+    </pre>
+  </div>
 </div>

@@ -20,7 +20,7 @@ panelApp.directive('batModelTree', function($compile) {
           '<div ng-show="showModels">' +
             '<bat-json-tree val="val.locals" ></bat-json-tree>' +
           '</div>' +
-          
+
           '<div ng-hide="hideScopes">' +
             '<div ng-repeat="child in val.children">' +
               '<bat-model-tree val="child" inspect="inspect" edit="edit"></bat-model-tree>' +

@@ -111,7 +111,7 @@ panelApp.directive('batD3', function (d3) {
 
       var line = d3.svg.line.radial().
         interpolate("bundle").
-        tension(.85).
+        tension(0.85).
         radius(function(d) { return d.y; }).
         angle(function(d) { return d.x / 180 * Math.PI; });
 
@@ -146,7 +146,7 @@ panelApp.directive('batD3', function (d3) {
         }
         classes = newVal.slice(0);
         classes.sort(function (a, b) {
-          return .5 - (a.name < b.name);
+          return 0.5 - (a.name < b.name);
         });
 
         svg.selectAll('*').remove();
