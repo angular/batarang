@@ -5,18 +5,23 @@ panelApp.factory('appContext', function (chromeExtension) {
   // ============
 
   var _debugCache = {},
+    _scopeCache = {},
+    _watchCache = {},
     _pollListeners = [],
     _pollInterval = 500;
 
   // TODO: make this private and have it automatically poll?
   var getDebugData = function (callback) {
     chromeExtension.eval(function (window) {
-      // Detect whether or not this is an AngularJS app
-      if (!window.angular || !window.__ngDebug) {
+      if (!window.__ngDebug) {
         return {};
-      } else {
-        return window.__ngDebug;
       }
+      return {
+        deps: window.__ngDebug.deps,
+        applyPerf: window.__ngDebug.applyPerf,
+        watchPerf: window.__ngDebug.watchPerf,
+        roots: window.__ngDebug.getRootScopeIds()
+      };
     },
     function (data) {
       if (data) {
@@ -64,15 +69,33 @@ panelApp.factory('appContext', function (chromeExtension) {
     // -------
 
     getHistogram: function () {
-      return _debugCache.histogram;
+      return _debugCache.watchPerf;
     },
 
     getListOfRoots: function () {
       return _debugCache.roots;
     },
 
-    getModelTrees: function () {
-      return _debugCache.trees;
+    getModelTree: function (id) {
+      chromeExtension.eval("function (window, args) {" +
+        "return window.__ngDebug.getScopeTree(args.id);" +
+      "}", {id: id}, function (tree) {
+        if (tree) {
+          _scopeCache[id] = tree;
+        }
+      });
+      return _scopeCache[id];
+    },
+
+    getWatchTree: function (id) {
+      chromeExtension.eval("function (window, args) {" +
+        "return window.__ngDebug.getWatchTree(args.id);" +
+      "}", {id: id}, function (tree) {
+        if (tree) {
+          _watchCache[id] = tree;
+        }
+      });
+      return _watchCache[id];
     },
 
     getDeps: function () {
@@ -104,7 +127,7 @@ panelApp.factory('appContext', function (chromeExtension) {
               "return 'good';" +
             "} else {" +
               "return 'info';" +
-            "}" + 
+            "}" +
           "}" +
         "}" +
         "return 'info';" +

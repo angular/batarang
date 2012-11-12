@@ -1,5 +1,9 @@
-// model tree
-panelApp.directive('batModelTree', function($compile) {
+panelApp.directive('batModelTree', function ($compile) {
+
+  // make toggle settings persist across $compile
+  var modelState = {};
+  var scopeState = {};
+
   return {
     restrict: 'E',
     terminal: true,
@@ -13,15 +17,15 @@ panelApp.directive('batModelTree', function($compile) {
       // see: https://github.com/angular/angular.js/issues/898
       element.append(
         '<div class="scope-branch">' +
-          '<a href ng-click="inspect()">Scope ({{val.id}})</a> | ' +
-          '<a href ng-click="hideScopes = !hideScopes">scopes</a> | ' +
-          '<a href ng-click="showModels = !showModels">models</a>' +
+          '<a href ng-click="inspect()">Scope ({{val.id}})</a>' +
+          '<span ng-show="val.children.length"> | <a href ng-click="scopeState[val.id] = !scopeState[val.id]">scopes</a></span>' +
+          '<span ng-show="val.locals"> | <a href ng-click="modelState[val.id] = !modelState[val.id]">models</a></span>' +
 
-          '<div ng-show="showModels">' +
+          '<div ng-show="modelState[val.id]">' +
             '<bat-json-tree val="val.locals" ></bat-json-tree>' +
           '</div>' +
           
-          '<div ng-hide="hideScopes">' +
+          '<div ng-hide="scopeState[val.id]">' +
             '<div ng-repeat="child in val.children">' +
               '<bat-model-tree val="child" inspect="inspect" edit="edit"></bat-model-tree>' +
             '</div>' +
@@ -29,7 +33,11 @@ panelApp.directive('batModelTree', function($compile) {
 
         '</div>');
 
-      $compile(element.contents())(scope.$new());
+      var childScope = scope.$new();
+      childScope.modelState = modelState;
+      childScope.scopeState = scopeState;
+
+      $compile(element.contents())(childScope);
     }
   };
 });

@@ -1,10 +1,9 @@
-// JSON tree
 panelApp.directive('batJsonTree', function($compile) {
   return {
     restrict: 'E',
     terminal: true,
     scope: {
-      val: '=',
+      val: '='
       //edit: '=',
     },
     link: function (scope, element, attrs) {
@@ -17,11 +16,11 @@ panelApp.directive('batJsonTree', function($compile) {
           html += 'null';
         } else if (object instanceof Array) {
           var i;
-          html += '<div class="scope-branch">['
+          html += '<div class="scope-branch">[';
           for (i = 0; i < object.length; i++) {
             html += buildDom(object[i]) + ', ';
           }
-          html += ']</div>'
+          html += ']</div>';
         } else if (object instanceof Object) {
           for (prop in object) {
             if (object.hasOwnProperty(prop)) {

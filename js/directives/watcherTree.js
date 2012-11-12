@@ -1,5 +1,9 @@
 // watchers tree
 panelApp.directive('batWatcherTree', function($compile) {
+
+  // make toggle settings persist across $compile
+  var scopeState = {};
+
   return {
     restrict: 'E',
     terminal: true,
@@ -13,8 +17,8 @@ panelApp.directive('batWatcherTree', function($compile) {
       element.append(
         '<div class="scope-branch">' +
           '<a href ng-click="inspect()">Scope ({{val.id}})</a> | ' +
-          '<a href ng-click="showState = !showState">toggle</a>' +
-          '<div ng-hide="showState">' +
+          '<a href ng-click="scopeState[val.id] = !scopeState[val.id]">toggle</a>' +
+          '<div ng-hide="scopeState[val.id]">' +
             '<ul>' +
               '<li ng-repeat="item in val.watchers">' +
                 '<a href ng-hide="item.split(\'\n\').length < 2" ng-click="showState = !showState">toggle</a> ' +
@@ -30,7 +34,10 @@ panelApp.directive('batWatcherTree', function($compile) {
           '</div>' +
         '</div>');
 
-      $compile(element.contents())(scope.$new());
+      var childScope = scope.$new();
+      childScope.scopeState = scopeState;
+
+      $compile(element.contents())(childScope);
     }
   };
 });

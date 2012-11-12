@@ -2,6 +2,8 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
 
   $scope.histogram = [];
 
+  $scope.roots = [];
+
   $scope.min = 0;
   $scope.max = 100;
 
@@ -63,56 +65,25 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
   };
 
   var updateTree = function () {
-    var rts = appContext.getListOfRoots();
-    if (!rts) {
-      // if app not bootstrapped, return undefined
+    var roots = appContext.getListOfRoots();
+    if (!roots) {
       return;
     }
-    var roots = [];
-    rts.forEach(function (item) {
-      roots.push({
+    
+    $scope.tree = appContext.getWatchTree($scope.selectedRoot);
+
+    $scope.roots.length = roots.length;
+    roots.forEach(function (item, i) {
+      $scope.roots[i] = {
         label: item,
         value: item
-      });
-    });
-
-    $scope.roots = roots;
-    var trees = appContext.getModelTrees();
-    if (!$scope.trees || $scope.trees.length !== trees.length) {
-      $scope.trees = trees;
-    } else {
-
-      var syncBranch = function (oldTree, newTree) {
-        if (!oldTree || !newTree) {
-          return;
-        }
-        oldTree.locals = newTree.locals;
-        if (oldTree.children.length !== newTree.children.length) {
-          oldTree.children = newTree.children;
-        } else {
-          oldTree.children.forEach(function (oldBranch, i) {
-            var newBranch = newTree.children[i];
-            syncBranch(newBranch, oldBranch);
-          });
-        }
       };
-
-      var treeId, oldTree, newTree;
-      for (treeId in $scope.trees) {
-        if ($scope.trees.hasOwnProperty(treeId)) {
-          oldTree = $scope.trees[treeId];
-          newTree = trees[treeId];
-          syncBranch(oldTree, newTree);
-        }
-      }
-    }
-
+    });
     if (roots.length === 0) {
       $scope.selectedRoot = null;
     } else if (!$scope.selectedRoot) {
-      $scope.selectedRoot = roots[0].value;
+      $scope.selectedRoot = $scope.roots[0].value;
     }
-    $scope.$apply();
   };
   appContext.watchPoll(updateTree);
   appContext.watchPoll(updateHistogram);

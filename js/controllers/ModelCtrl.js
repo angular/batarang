@@ -17,44 +17,14 @@ panelApp.controller('ModelCtrl', function ModelCtrl($scope, appContext) {
 
   $scope.roots = [];
 
+
   var updateTree = function () {
-    if ($('input:focus').length > 0) {
-      return;
-    }
     var roots = appContext.getListOfRoots();
     if (!roots) {
       return;
     }
     
-    var trees = appContext.getModelTrees();
-    if (!$scope.trees || $scope.trees.length !== trees.length) {
-      $scope.trees = trees;
-    } else {
-
-      var syncBranch = function (oldTree, newTree) {
-        if (!oldTree || !newTree) {
-          return;
-        }
-        oldTree.locals = newTree.locals;
-        if (oldTree.children.length !== newTree.children.length) {
-          oldTree.children = newTree.children;
-        } else {
-          oldTree.children.forEach(function (oldBranch, i) {
-            var newBranch = newTree.children[i];
-            syncBranch(oldBranch, newBranch);
-          });
-        }
-      };
-
-      var treeId, oldTree, newTree;
-      for (treeId in $scope.trees) {
-        if ($scope.trees.hasOwnProperty(treeId)) {
-          oldTree = $scope.trees[treeId];
-          newTree = trees[treeId];
-          syncBranch(oldTree, newTree);
-        }
-      }
-    }
+    $scope.tree = appContext.getModelTree($scope.selectedRoot);
 
     $scope.roots.length = roots.length;
     roots.forEach(function (item, i) {

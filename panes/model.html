@@ -1,9 +1,9 @@
 <div ng-controller="ModelCtrl">
-  <h2>Model Tree</h2>
+  <h2>Models</h2>
   <div ng-hide="roots.length <= 1">
     <label for="select-root">Root <select id="select-root" ng-options="p.value as p.label for p in roots" ng-model="selectedRoot"></select></label>
   </div>
   <pre>
-    <bat-model-tree val="trees[selectedRoot]" inspect="inspect" edit="edit"></bat-model-tree>
+    <bat-model-tree val="tree" inspect="inspect" edit="edit"></bat-model-tree>
   </pre>
 </div>

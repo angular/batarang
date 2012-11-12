@@ -1,64 +1,6 @@
 var inject = function () {
   document.head.appendChild((function () {
 
-    // Helpers
-    // =======
-
-    // Based on cycle.js
-    // 2011-08-24
-    // https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
-
-    // Make a deep copy of an object or array, assuring that there is at most
-    // one instance of each object or array in the resulting structure. The
-    // duplicate references (which might be forming cycles) are replaced with
-    // an object of the form
-    //      {$ref: PATH}
-    // where the PATH is a JSONPath string that locates the first occurance.
-    var decycle = function (object) {
-      var objects = [],   // Keep a reference to each unique object or array
-          paths = [];     // Keep the path to each unique object or array
-
-      return (function derez(value, path) {
-        var i,          // The loop counter
-            name,       // Property name
-            nu;         // The new object or array
-        switch (typeof value) {
-        case 'object':
-          if (!value) {
-            return null;
-          }
-          for (i = 0; i < objects.length; i += 1) {
-            if (objects[i] === value) {
-              return {$ref: paths[i]};
-            }
-          }
-          objects.push(value);
-          paths.push(path);
-          if (Object.prototype.toString.apply(value) === '[object Array]') {
-            nu = [];
-            for (i = 0; i < value.length; i += 1) {
-              nu[i] = derez(value[i], path + '[' + i + ']');
-            }
-          } else {
-            nu = {};
-            for (name in value) {
-              if (Object.prototype.hasOwnProperty.call(value, name)) {
-                nu[name] = derez(value[name],
-                  path + '[' + JSON.stringify(name) + ']');
-              }
-            }
-          }
-          return nu;
-        case 'number':
-        case 'string':
-        case 'boolean':
-          return value;
-        }
-      }(object, '$'));
-    };
-    // End
-    // ===
-
     var fn = function bootstrap (window) {
 
       var angular = window.angular;
@@ -107,8 +49,81 @@ var inject = function () {
         return;
       }
 
+      // polyfill for performance.now on older webkit
+      if (!performance.now) {
+        performance.now = performance.webkitNow;
+      }
+
+      // Helpers
+      // =======
+
+      // Based on cycle.js
+      // 2011-08-24
+      // https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
+
+      // Make a deep copy of an object or array, assuring that there is at most
+      // one instance of each object or array in the resulting structure. The
+      // duplicate references (which might be forming cycles) are replaced with
+      // an object of the form
+      //      {$ref: PATH}
+      // where the PATH is a JSONPath string that locates the first occurance.
+      var decycle = function (object) {
+        var objects = [],   // Keep a reference to each unique object or array
+            paths = [];     // Keep the path to each unique object or array
+
+        return (function derez(value, path) {
+          var i,          // The loop counter
+              name,       // Property name
+              nu;         // The new object or array
+          switch (typeof value) {
+          case 'object':
+            if (!value) {
+              return null;
+            }
+            for (i = 0; i < objects.length; i += 1) {
+              if (objects[i] === value) {
+                return {$ref: paths[i]};
+              }
+            }
+            objects.push(value);
+            paths.push(path);
+            if (Object.prototype.toString.apply(value) === '[object Array]') {
+              nu = [];
+              for (i = 0; i < value.length; i += 1) {
+                nu[i] = derez(value[i], path + '[' + i + ']');
+              }
+            } else {
+              nu = {};
+              for (name in value) {
+                if (Object.prototype.hasOwnProperty.call(value, name)) {
+                  nu[name] = derez(value[name],
+                    path + '[' + JSON.stringify(name) + ']');
+                }
+              }
+            }
+            return nu;
+          case 'number':
+          case 'string':
+          case 'boolean':
+            return value;
+          }
+        }(object, '$'));
+      };
+      // End
+      // ===
+
       // Instrumentation
       // ---------------
+
+      var getScopeLocals = function (scope) {
+        var scopeLocals = {}, prop;
+        for (prop in scope) {
+          if (scope.hasOwnProperty(prop) && prop !== 'this' && prop[0] !== '$') {
+            scopeLocals[prop] = decycle(scope[prop]);
+          }
+        }
+        return scopeLocals;
+      };
 
       //var bootstrap = window.angular.bootstrap;
       var debug = window.__ngDebug = {
@@ -117,21 +132,73 @@ var inject = function () {
         watchPerf: {}, // maps of watch/apply exp/fns to perf data
         applyPerf: {},
 
-        scopes: {}, // map of scope.$ids --> scope objects
+        scopes: {}, // map of scope.$ids --> model objects
         rootScopes: {}, // map of $ids --> refs to root scopes
+        rootScopeDirty: {},
+
+        getRootScopeIds: function () {
+          var ids = [];
+          angular.forEach(debug.rootScopes, function (elt, id) {
+            ids.push(id);
+          });
+          return ids;
+        },
+        getScopeTree: function (id) {
+          if (debug.rootScopeDirty[id] === false) {
+            return;
+          }
+          var traverse = function (sc) {
+            var tree = {
+              id: sc.$id,
+              locals: debug.scopes[sc.$id],
+              children: []
+            };
+
+            var child = sc.$$childHead;
+            if (child) {
+              do {
+                tree.children.push(traverse(child));
+              } while (child !== sc.$$childTail && (child = child.$$nextSibling));
+            }
+
+            return tree;
+          };
+
+          var root = debug.rootScopes[id];
+          var tree = traverse(root);
+
+          if (tree) {
+            debug.rootScopeDirty[id] = false;
+          }
+
+          return tree;
+        },
+
+        getWatchTree: function (id) {
+          var traverse = function (sc) {
+            var tree = {
+              id: sc.$id,
+              watchers: debug.watchers[sc.$id],
+              children: []
+            };
+
+            var child = sc.$$childHead;
+            if (child) {
+              do {
+                tree.children.push(traverse(child));
+              } while (child !== sc.$$childTail && (child = child.$$nextSibling));
+            }
+
+            return tree;
+          };
+
+          var root = debug.rootScopes[id];
+          var tree = traverse(root);
+
+          return tree;
+        },
 
         deps: []
-      };
-
-
-      var getScopeLocals = function (scope) {
-        var scopeLocals = {}, prop;
-        for (prop in scope) {
-          if (scope.hasOwnProperty(prop) && prop !== 'this' && prop[0] !== '$') {
-            scopeLocals[prop] = scope[prop];
-          }
-        }
-        return scopeLocals;
       };
 
       var annotate = angular.injector().annotate;
@@ -154,7 +221,7 @@ var inject = function () {
           }
           function assertArgFn(arg, name, acceptArrayAnnotation) {
             if (acceptArrayAnnotation && angular.isArray(arg)) {
-                arg = arg[arg.length - 1];
+              arg = arg[arg.length - 1];
             }
 
             assertArg(angular.isFunction(arg), name, 'not a function, got ' +
@@ -182,7 +249,7 @@ var inject = function () {
               }
             } else if (angular.isArray(fn)) {
               last = fn.length - 1;
-              assertArgFn(fn[last], 'fn')
+              assertArgFn(fn[last], 'fn');
               $inject = fn.slice(0, last);
             } else {
               assertArgFn(fn, 'fn', true);
@@ -201,9 +268,9 @@ var inject = function () {
           'service'
         ].forEach(function (met) {
           var temp = $provide[met];
-          $provide[met] = function (thingName, definition) {
+          $provide[met] = function (name, definition) {
             debug.deps.push({
-              name: thingName,
+              name: name,
               imports: annotate(definition)
             });
             return temp.apply(this, arguments);
@@ -243,7 +310,7 @@ var inject = function () {
           // ==========================
 
           var _watch = $delegate.__proto__.$watch;
-          $delegate.__proto__.$watch = function(watchExpression, applyFunction) {
+          $delegate.__proto__.$watch = function (watchExpression, applyFunction) {
             var thatScope = this;
             var watchStr = watchFnToHumanReadableString(watchExpression);
             
@@ -253,6 +320,10 @@ var inject = function () {
                 calls: 0
               };
             }
+            if (!debug.watchers[thatScope.$id]) {
+              debug.watchers[thatScope.$id] = [];
+            }
+            debug.watchers[thatScope.$id].push(watchStr);
 
             // patch watchExpression
             // ---------------------
@@ -260,18 +331,18 @@ var inject = function () {
             var w = watchExpression;
             if (typeof w === 'function') {
               watchExpression = function () {
-                var start = window.performance.webkitNow();
+                var start = performance.now();
                 var ret = w.apply(this, arguments);
-                var end = window.performance.webkitNow();
+                var end = performance.now();
                 debug.watchPerf[watchStr].time += (end - start);
                 debug.watchPerf[watchStr].calls += 1;
                 return ret;
               };
             } else {
               watchExpression = function () {
-                var start = window.performance.webkitNow();
+                var start = performance.now();
                 var ret = thatScope.$eval(w);
-                var end = window.performance.webkitNow();
+                var end = performance.now();
                 debug.watchPerf[watchStr].time += (end - start);
                 debug.watchPerf[watchStr].calls += 1;
                 return ret;
@@ -284,11 +355,11 @@ var inject = function () {
               var applyStr = applyFunction.toString();
               var unpatchedApplyFunction = applyFunction;
               applyFunction = function () {
-                var start = window.performance.webkitNow();
+                var start = performance.now();
                 var ret = unpatchedApplyFunction.apply(this, arguments);
-                var end = window.performance.webkitNow();
+                var end = performance.now();
 
-                debug.scopes[thatScope.$id] = getScopeLocals(thatScope)
+                debug.scopes[thatScope.$id] = getScopeLocals(thatScope);
                 //TODO: move these checks out of here and into registering the watcher
                 if (!debug.applyPerf[applyStr]) {
                   debug.applyPerf[applyStr] = {
@@ -297,7 +368,8 @@ var inject = function () {
                   };
                 }
                 debug.applyPerf[applyStr].time += (end - start);
-                debug.applyPerf[applyStr].calls += (end - start);
+                debug.applyPerf[applyStr].calls += 1;
+                debug.rootScopeDirty[thatScope.$root.$id] = true;
                 return ret;
               };
             }
@@ -313,6 +385,8 @@ var inject = function () {
           $delegate.__proto__.$destroy = function () {
             if (debug.watchers[this.$id]) {
               delete debug.watchers[this.$id];
+            }
+            if (debug.scopes[this.$id]) {
               delete debug.scopes[this.$id];
             }
             return _destroy.apply(this, arguments);
@@ -320,8 +394,8 @@ var inject = function () {
 
           var _new = $delegate.__proto__.$new;
           $delegate.__proto__.$new = function () {
-            var ret = _new.apply(this, arguments);
 
+            var ret = _new.apply(this, arguments);
             if (ret.$root) {
               debug.rootScopes[ret.$root.$id] = ret.$root;
             }
@@ -331,6 +405,8 @@ var inject = function () {
               debug.watchers[ret.$id] = [];
             }
 
+            debug.rootScopeDirty[ret.$root.$id] = true;
+
             return ret;
           };
 
@@ -338,9 +414,9 @@ var inject = function () {
           // -----------
           var _apply = $delegate.__proto__.$apply;
           $delegate.__proto__.$apply = function (fn) {
-            var start = window.performance.webkitNow();
+            var start = performance.now();
             var ret = _apply.apply(this, arguments);
-            var end = window.performance.webkitNow();
+            var end = performance.now();
 
             // If the debugging option is enabled, log to console
             // --------------------------------------------------
