@@ -19,14 +19,12 @@ panelApp.factory('appContext', function (chromeExtension) {
       }
       return {
         deps: window.__ngDebug.getDeps(),
-        watchPerf: window.__ngDebug.getWatchPerf(),
         roots: window.__ngDebug.getRootScopeIds()
       };
     },
     function (data) {
       if (data) {
         _debugCache = data;
-        _incomingHistogramData = data.watchPerf;
       }
       _pollListeners.forEach(function (fn) {
         fn();
@@ -39,35 +37,6 @@ panelApp.factory('appContext', function (chromeExtension) {
   getDebugData();
 
 
-  var _histogramCache = [];
-  var _incomingHistogramData = [];
-  var _watchNameToPerf = {};
-  var _totalCache = 0;
-
-  var processHistogram = function () {
-    if (_incomingHistogramData.length === 0) {
-      return;
-    }
-
-    _incomingHistogramData.forEach(function (info) {
-      _totalCache += info.time;
-
-      if (_watchNameToPerf[info.name]) {
-        _watchNameToPerf[info.name].time += info.time;
-      } else {
-        _watchNameToPerf[info.name] = info;
-        _histogramCache.push(info);
-      }
-    });
-
-    // recalculate all percentages
-    _histogramCache.forEach(function (item) {
-      item.percent = (100 * item.time / _totalCache).toPrecision(3);
-    });
-
-    // clear the incoming queue
-    _incomingHistogramData = [];
-  };
 
   // Public API
   // ==========
@@ -99,11 +68,6 @@ panelApp.factory('appContext', function (chromeExtension) {
 
     // Getters
     // -------
-
-    getHistogram: function () {
-      processHistogram();
-      return _histogramCache;
-    },
 
     getListOfRoots: function () {
       return _debugCache.roots;
@@ -170,12 +134,6 @@ panelApp.factory('appContext', function (chromeExtension) {
     // Actions
     // -------
 
-    clearHistogram: function (cb) {
-      chromeExtension.eval(function (window) {
-        window.__ngDebug.watchPerf = {};
-      }, cb);
-    },
-    
     refresh: function (cb) {
       chromeExtension.eval(function (window) {
         window.document.location.reload();

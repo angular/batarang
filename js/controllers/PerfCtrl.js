@@ -1,4 +1,4 @@
-panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem) {
+panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, appPerf, filesystem) {
 
   $scope.histogram = [];
 
@@ -8,7 +8,7 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
   $scope.max = 100;
 
   $scope.clearHistogram = function () {
-    appContext.clearHistogram();
+    appPerf.clear();
   };
 
   $scope.exportData = function () {
@@ -40,7 +40,10 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, filesystem
   };
 
   var updateTree = function () {
-    $scope.histogram = appContext.getHistogram();
+    appPerf.get(function (histogram) {
+      $scope.histogram = histogram;
+    });
+    
     var roots = appContext.getListOfRoots();
     if (!roots) {
       return;
