@@ -13,9 +13,7 @@ panelApp.factory('filesystem', function(chromeExtension) {
         fs.root.getFile(name + '.json', {create: true}, function (fileEntry) {
           fileEntry.createWriter(function(fileWriter) {
 
-            var builder = new WebKitBlobBuilder();
-            builder.append(JSON.stringify(data));
-            var blob = builder.getBlob('text/plain');
+            var blob = new Blob([ JSON.stringify(data) ], { type: 'text/plain' });
 
             fileWriter.onwriteend = function () {
               // navigate to file, will download
