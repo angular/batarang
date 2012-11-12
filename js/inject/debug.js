@@ -49,16 +49,15 @@ var inject = function () {
         return;
       }
 
+      // Helpers
+      // =======
+
       // polyfill for performance.now on older webkit
       if (!performance.now) {
         performance.now = performance.webkitNow;
       }
 
-      // Helpers
-      // =======
-
       // Based on cycle.js
-      // 2011-08-24
       // https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
 
       // Make a deep copy of an object or array, assuring that there is at most
@@ -66,7 +65,7 @@ var inject = function () {
       // duplicate references (which might be forming cycles) are replaced with
       // an object of the form
       //      {$ref: PATH}
-      // where the PATH is a JSONPath string that locates the first occurance.
+      // where the PATH is a JSONPath string that locates the first occurrence.
       var decycle = function (object) {
         var objects = [],   // Keep a reference to each unique object or array
             paths = [];     // Keep the path to each unique object or array
@@ -112,9 +111,8 @@ var inject = function () {
       // End
       // ===
 
-      // Instrumentation
-      // ---------------
-
+      // given a scope object, return an object with deep clones
+      // of the models exposed on that scope
       var getScopeLocals = function (scope) {
         var scopeLocals = {}, prop;
         for (prop in scope) {
@@ -125,85 +123,9 @@ var inject = function () {
         return scopeLocals;
       };
 
-      //var bootstrap = window.angular.bootstrap;
-      var debug = window.__ngDebug = {
-        watchers: {}, // map of scopes --> watchers
-
-        watchPerf: {}, // maps of watch/apply exp/fns to perf data
-        applyPerf: {},
-
-        scopes: {}, // map of scope.$ids --> model objects
-        rootScopes: {}, // map of $ids --> refs to root scopes
-        rootScopeDirty: {},
-
-        getRootScopeIds: function () {
-          var ids = [];
-          angular.forEach(debug.rootScopes, function (elt, id) {
-            ids.push(id);
-          });
-          return ids;
-        },
-        getScopeTree: function (id) {
-          if (debug.rootScopeDirty[id] === false) {
-            return;
-          }
-          var traverse = function (sc) {
-            var tree = {
-              id: sc.$id,
-              locals: debug.scopes[sc.$id],
-              children: []
-            };
-
-            var child = sc.$$childHead;
-            if (child) {
-              do {
-                tree.children.push(traverse(child));
-              } while (child !== sc.$$childTail && (child = child.$$nextSibling));
-            }
-
-            return tree;
-          };
-
-          var root = debug.rootScopes[id];
-          var tree = traverse(root);
-
-          if (tree) {
-            debug.rootScopeDirty[id] = false;
-          }
-
-          return tree;
-        },
-
-        getWatchTree: function (id) {
-          var traverse = function (sc) {
-            var tree = {
-              id: sc.$id,
-              watchers: debug.watchers[sc.$id],
-              children: []
-            };
-
-            var child = sc.$$childHead;
-            if (child) {
-              do {
-                tree.children.push(traverse(child));
-              } while (child !== sc.$$childTail && (child = child.$$nextSibling));
-            }
-
-            return tree;
-          };
-
-          var root = debug.rootScopes[id];
-          var tree = traverse(root);
-
-          return tree;
-        },
-
-        deps: []
-      };
-
-      var annotate = angular.injector().annotate;
-
+      // helper to extract dependencies from function arguments
       // not all versions of AngularJS expose annotate
+      var annotate = angular.injector().annotate;
       if (!annotate) {
         annotate = (function () {
 
@@ -258,6 +180,123 @@ var inject = function () {
           };
         }());
       }
+
+
+      // Public API
+      // ==========
+
+      var api = window.__ngDebug = {
+
+        getDeps: function () {
+          return debug.deps;
+        },
+
+        getRootScopeIds: function () {
+          var ids = [];
+          angular.forEach(debug.rootScopes, function (elt, id) {
+            ids.push(id);
+          });
+          return ids;
+        },
+
+        getScopeTree: function (id) {
+          if (debug.rootScopeDirty[id] === false) {
+            return;
+          }
+          var traverse = function (sc) {
+            var tree = {
+              id: sc.$id,
+              locals: debug.scopes[sc.$id],
+              children: []
+            };
+
+            var child = sc.$$childHead;
+            if (child) {
+              do {
+                tree.children.push(traverse(child));
+              } while (child !== sc.$$childTail && (child = child.$$nextSibling));
+            }
+
+            return tree;
+          };
+
+          var root = debug.rootScopes[id];
+          var tree = traverse(root);
+
+          if (tree) {
+            debug.rootScopeDirty[id] = false;
+          }
+
+          return tree;
+        },
+
+        getWatchPerf: function () {
+          var changes = [];
+          angular.forEach(debug.watchPerf, function (info, name) {
+            if (info.time > 0) {
+              changes.push({
+                name: name,
+                time: info.time
+              });
+              info.time = 0;
+            }
+          });
+          return changes;
+        },
+
+        getWatchTree: function (id) {
+          var traverse = function (sc) {
+            var tree = {
+              id: sc.$id,
+              watchers: debug.watchers[sc.$id],
+              children: []
+            };
+
+            var child = sc.$$childHead;
+            if (child) {
+              do {
+                tree.children.push(traverse(child));
+              } while (child !== sc.$$childTail && (child = child.$$nextSibling));
+            }
+
+            return tree;
+          };
+
+          var root = debug.rootScopes[id];
+          var tree = traverse(root);
+
+          return tree;
+        }
+      };
+
+
+      // Private state
+      // =============
+
+      //var bootstrap = window.angular.bootstrap;
+      var debug = {
+        // map of scopes --> watcher function name strings
+        watchers: {},
+
+        // maps of watch/apply exp/fns to perf data
+        watchPerf: {},
+        applyPerf: {},
+
+        // map of scope.$ids --> model objects
+        scopes: {},
+
+        // map of $ids --> refs to root scopes
+        rootScopes: {},
+
+        // map of $ids --> bools
+        rootScopeDirty: {},
+
+        deps: []
+      };
+
+
+      // Instrumentation
+      // ===============
 
       var ng = angular.module('ng');
       ng.config(function ($provide) {
@@ -327,7 +366,6 @@ var inject = function () {
 
             // patch watchExpression
             // ---------------------
-
             var w = watchExpression;
             if (typeof w === 'function') {
               watchExpression = function () {
@@ -378,9 +416,8 @@ var inject = function () {
           };
 
 
-          // patch destroy
-          // -------------
-
+          // patch $destroy
+          // --------------
           var _destroy = $delegate.__proto__.$destroy;
           $delegate.__proto__.$destroy = function () {
             if (debug.watchers[this.$id]) {
@@ -392,6 +429,8 @@ var inject = function () {
             return _destroy.apply(this, arguments);
           };
 
+          // patch $new
+          // ----------
           var _new = $delegate.__proto__.$new;
           $delegate.__proto__.$new = function () {
 
@@ -410,8 +449,8 @@ var inject = function () {
             return ret;
           };
 
-          // patch apply
-          // -----------
+          // patch $apply
+          // ------------
           var _apply = $delegate.__proto__.$apply;
           $delegate.__proto__.$apply = function (fn) {
             var start = performance.now();

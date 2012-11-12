@@ -29,7 +29,7 @@
       <div class="well well-top" style="height: 400px; overflow-y: auto;">
         <div ng-repeat="watch in histogram|sortByTime:min:max">
           <span style="font-family: monospace;">{{watch.name | first}} </span>
-          <span> | {{watch.percent}}% | {{watch.time}}ms</span>
+          <span> | {{watch.percent}}% | {{watch.time | precision}}ms</span>
           <div class="progress">
             <div ng-style="{width: (watch.percent) + '%'}" class= "bar">
             </div>

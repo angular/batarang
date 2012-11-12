@@ -1,4 +1,4 @@
-// Service for doing stuff in the context of the application being debugged
+// Service for running code in the context of the application being debugged
 panelApp.factory('appContext', function (chromeExtension) {
 
   // Private vars
@@ -10,6 +10,7 @@ panelApp.factory('appContext', function (chromeExtension) {
     _pollListeners = [],
     _pollInterval = 500;
 
+
   // TODO: make this private and have it automatically poll?
   var getDebugData = function (callback) {
     chromeExtension.eval(function (window) {
@@ -17,15 +18,15 @@ panelApp.factory('appContext', function (chromeExtension) {
         return {};
       }
       return {
-        deps: window.__ngDebug.deps,
-        applyPerf: window.__ngDebug.applyPerf,
-        watchPerf: window.__ngDebug.watchPerf,
+        deps: window.__ngDebug.getDeps(),
+        watchPerf: window.__ngDebug.getWatchPerf(),
         roots: window.__ngDebug.getRootScopeIds()
       };
     },
     function (data) {
       if (data) {
         _debugCache = data;
+        _incomingHistogramData = data.watchPerf;
       }
       _pollListeners.forEach(function (fn) {
         fn();
@@ -37,10 +38,41 @@ panelApp.factory('appContext', function (chromeExtension) {
   };
   getDebugData();
 
+
+  var _histogramCache = [];
+  var _incomingHistogramData = [];
+  var _watchNameToPerf = {};
+  var _totalCache = 0;
+
+  var processHistogram = function () {
+    if (_incomingHistogramData.length === 0) {
+      return;
+    }
+
+    _incomingHistogramData.forEach(function (info) {
+      _totalCache += info.time;
+
+      if (_watchNameToPerf[info.name]) {
+        _watchNameToPerf[info.name].time += info.time;
+      } else {
+        _watchNameToPerf[info.name] = info;
+        _histogramCache.push(info);
+      }
+    });
+
+    // recalculate all percentages
+    _histogramCache.forEach(function (item) {
+      item.percent = (100 * item.time / _totalCache).toPrecision(3);
+    });
+
+    // clear the incoming queue
+    _incomingHistogramData = [];
+  };
+
   // Public API
   // ==========
   return {
-    // Fix selection of scope
+    // TODO: Fix selection of scope
     // https://github.com/angular/angularjs-batarang/issues/6
     executeOnScope: function(scopeId, fn, args, cb) {
       if (typeof args === 'function') {
@@ -69,7 +101,8 @@ panelApp.factory('appContext', function (chromeExtension) {
     // -------
 
     getHistogram: function () {
-      return _debugCache.watchPerf;
+      processHistogram();
+      return _histogramCache;
     },
 
     getListOfRoots: function () {
@@ -139,7 +172,7 @@ panelApp.factory('appContext', function (chromeExtension) {
 
     clearHistogram: function (cb) {
       chromeExtension.eval(function (window) {
-        window.__ngDebug.watchExp = {};
+        window.__ngDebug.watchPerf = {};
       }, cb);
     },
     
