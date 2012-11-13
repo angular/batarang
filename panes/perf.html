@@ -18,7 +18,7 @@
       </div>
       <div class="well well-bottom">
         <label for="select-root" ng-hide="roots.length <= 1">Root
-          <select id="select-root" ng-options="p.value as p.label for p in roots" ng-model="selectedRoot"></select>
+          <select id="select-root" ng-options="p for p in roots" ng-model="selectedRoot"></select>
         </label>
       </div>
     </div>

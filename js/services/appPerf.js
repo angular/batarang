@@ -1,9 +1,20 @@
 // Service for retrieving and caching performance data
-panelApp.factory('appPerf', function (chromeExtension) {
+panelApp.factory('appPerf', function (chromeExtension, appContext) {
 
   var _histogramCache = [],
     _watchNameToPerf = {},
     _totalCache = 0;
+
+  var clear = function () {
+    _histogramCache = [];
+    _watchNameToPerf = {};
+    _totalCache = 0;
+  };
+
+  // clear cache on page refresh
+  appContext.watchRefresh(function () {
+    clear();
+  });
 
   var getHistogramData = function (callback) {
     chromeExtension.eval(function (window) {
@@ -46,8 +57,6 @@ panelApp.factory('appPerf', function (chromeExtension) {
         callback(_histogramCache);
       });
     },
-    clear: function () {
-      _histogramCache = [];
-    }
+    clear: clear
   };
 });

@@ -1,4 +1,4 @@
-panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, appPerf, filesystem) {
+panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, appPerf, appModel, appWatch, filesystem, poll) {
 
   $scope.histogram = [];
 
@@ -15,22 +15,6 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, appPerf, f
     filesystem.exportJSON('file.json', $scope.histogram);
   };
 
-  // TODO: remove this (newVal === oldVal ?)
-  var first = true;
-
-  appContext.getDebug(function (result) {
-    $scope.enable = result;
-
-    $scope.$watch('enable', function (newVal, oldVal) {
-      // prevent refresh on initial pageload
-      if (first) {
-        first = false;
-      } else {
-        appContext.setDebug(newVal);
-      }
-    });
-  });
-
   $scope.$watch('log', function (newVal, oldVal) {
     appContext.setLog(newVal);
   });
@@ -39,30 +23,25 @@ panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, appPerf, f
     appContext.inspect(this.val.id);
   };
 
-  var updateTree = function () {
+  $scope.$on('poll', function () {
     appPerf.get(function (histogram) {
-      $scope.histogram = histogram;
+      $scope.$apply(function () {
+        $scope.histogram = histogram;
+      });
     });
-    
-    var roots = appContext.getListOfRoots();
-    if (!roots) {
-      return;
-    }
-    
-    $scope.tree = appContext.getWatchTree($scope.selectedRoot);
+    appModel.getRootScopes(function (rootScopes) {
+      $scope.$apply(function () {
+        $scope.roots = rootScopes;
+        if ($scope.roots.length === 0) {
+          $scope.selectedRoot = null;
+        } else if (!$scope.selectedRoot) {
+          $scope.selectedRoot = $scope.roots[0];
+        }
+      });
+    });
+    appWatch.getWatchTree($scope.selectedRoot, function (tree) {
+      $scope.tree = tree;
+    });
+  });
 
-    $scope.roots.length = roots.length;
-    roots.forEach(function (item, i) {
-      $scope.roots[i] = {
-        label: item,
-        value: item
-      };
-    });
-    if (roots.length === 0) {
-      $scope.selectedRoot = null;
-    } else if (!$scope.selectedRoot) {
-      $scope.selectedRoot = $scope.roots[0].value;
-    }
-  };
-  appContext.watchPoll(updateTree);
 });
