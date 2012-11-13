@@ -2,15 +2,12 @@
 
   <h2>Performance</h2>
   <form class="well form-inline" class="row-fluid">
-    <label class="checkbox span4" for="extra">
-      <input type="checkbox" ng-model="enable" id="extra"> Enable <span class="label label-important">Causes tab to refresh <i class="icon-refresh icon-white"></i></span>
-    </label>
     <label class="checkbox span4" for="log">
       <input type="checkbox" ng-model="log" id="log"> Log to console
     </label>
   </form>
 
-  <div ng-hide="!enable" class="row-fluid">
+  <div class="row-fluid">
     <div class="span6">
       <h3>Watch Tree</h3>
       <div class="well well-top" style="height: 400px; overflow-y: auto;">
