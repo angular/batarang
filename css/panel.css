@@ -23,6 +23,19 @@ body {
   background-color: #E0E0E0;
 }
 
+.bat-nav-check {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-bottom-color: transparent;
+  border-radius: 4px 4px 0 0;
+
+  padding: 8px 12px 8px 12px;
+  margin-right: 2px;
+  line-height: 18px;
+}
+.bat-nav-check input[type="checkbox"] {
+  margin: 0;
+}
 
 /*
  * Slider widget style based on jquery-ui-bootstrap

@@ -41,19 +41,10 @@
   <script src="js/controllers/DepsCtrl.js"></script>
   <script src="js/controllers/ModelCtrl.js"></script>
   <script src="js/controllers/OptionsCtrl.js"></script>
-  <script src="js/controllers/PanelCtrl.js"></script>
   <script src="js/controllers/PerfCtrl.js"></script>
 
 </head>
-<body ng-controller="PanelCtrl">
-  <label class="checkbox" for="enable-instrumentation">
-    <input type="checkbox" ng-model="enable" id="enable-instrumentation">
-    Enable
-    <span class="label label-important">
-      Causes refresh
-      <i class="icon-refresh icon-white"></i>
-    </span>
-  </label>
+<body>
   <bat-tabs>
     <bat-pane title="Models" src="panes/model.html"></bat-pane>
     <bat-pane title="Performance" src="panes/perf.html"></bat-pane>

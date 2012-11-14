@@ -10,18 +10,52 @@ panelApp.directive('batTabs', function ($compile, $templateCache, $http) {
             '<li ng-repeat="pane in panes" ng-class="{active:pane.selected}">'+
               '<a href="" ng-click="select(pane)">{{pane.title}}</a>' +
             '</li>' +
+
+            '<li>' +
+              '<div class="bat-nav-check">' +
+                '<input type="checkbox" ng-model="enable" id="enable-instrumentation"> ' +
+                'Enable' +
+              '</div>' +
+            '</li>' +
+
           '</ul>' +
         '</div>' +
         '<div class="row-fluid bat-tabs-inside"></div>' +
         '<div ng-transclude></div>' +
       '</div>',
     replace: true,
-    controller: function ($scope, $element) {
+    controller: function ($scope, appContext) {
       var panes = $scope.panes = [];
 
       this.addPane = function(pane) {
         panes.push(pane);
       };
+
+      // TODO: remove this (newVal === oldVal ?)
+      var first = true;
+
+      appContext.getDebug(function (result) {
+        $scope.enable = result;
+
+        $scope.$watch('enable', function (newVal, oldVal) {
+          // prevent refresh on initial pageload
+          if (first) {
+            first = false;
+          } else {
+            appContext.setDebug(newVal);
+            if (!newVal) {
+              $scope.lastPane = $scope.currentPane;
+              $scope.select($scope.panes[$scope.panes.length - 1]);
+            } else {
+              $scope.select($scope.lastPane);
+            }
+          }
+        });
+
+        if (result) {
+          $scope.select($scope.panes[0]);
+        }
+      });
     },
     link: function (scope, element, attr) {
 
@@ -36,6 +70,9 @@ panelApp.directive('batTabs', function ($compile, $templateCache, $http) {
       }
 
       scope.select = function (pane) {
+        if (!scope.enable && pane !== scope.panes[scope.panes.length - 1]) {
+          return;
+        }
         $http.get(pane.src, { cache: $templateCache }).
           then(function (response) {
             var template = response.data;
@@ -51,9 +88,11 @@ panelApp.directive('batTabs', function ($compile, $templateCache, $http) {
           pane.selected = false;
         });
         pane.selected = true;
+        scope.currentPane = pane;
       };
 
-      scope.select(scope.panes[0]);
+      scope.lastPane = scope.panes[0];
+      scope.select(scope.panes[scope.panes.length - 1]);
     }
 
   };
