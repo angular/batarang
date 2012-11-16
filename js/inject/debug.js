@@ -181,6 +181,19 @@ var inject = function () {
         }());
       }
 
+      var supportObject = function (delegate) {
+        return function (key, value) {
+          var temp;
+          if (typeof key === 'object') {
+            for (temp in key) {
+              delegate(temp, key[temp]);
+            }
+          } else {
+            return delegate(key, value);
+          }
+        }
+      }
+
 
       // Public API
       // ==========
@@ -307,13 +320,13 @@ var inject = function () {
           'service'
         ].forEach(function (met) {
           var temp = $provide[met];
-          $provide[met] = function (name, definition) {
+          $provide[met] = supportObject(function (name, definition) {
             debug.deps.push({
               name: name,
               imports: annotate(definition)
             });
             return temp.apply(this, arguments);
-          };
+          });
         });
 
         $provide.decorator('$rootScope', function ($delegate) {
