@@ -308,10 +308,22 @@ var inject = function () {
         ].forEach(function (met) {
           var temp = $provide[met];
           $provide[met] = function (name, definition) {
-            debug.deps.push({
-              name: name,
-              imports: annotate(definition)
-            });
+            if (typeof name === 'object') {
+              angular.forEach(name, function (value, key) {
+                name[key] = function () {
+                  debug.deps.push({
+                    name: key,
+                    imports: annotate(value)
+                  });
+                  return value.apply(this, arguments);
+                };
+              });
+            } else {
+              debug.deps.push({
+                name: name,
+                imports: annotate(definition)
+              });
+            }
             return temp.apply(this, arguments);
           };
         });
