@@ -301,8 +301,42 @@ var inject = function () {
       var ng = angular.module('ng');
       ng.config(function ($provide) {
         // methods to patch
+
+        // $provide.provider
+        var temp = $provide.provider;
+        $provide.provider = function (name, definition) {
+          if (!definition) {
+            angular.forEach(name, function (definition, name) {
+              var tempGet = definition.$get;
+              definition.$get = function () {
+                debug.deps.push({
+                  name: name,
+                  imports: annotate(tempGet)
+                });
+                return tempGet.apply(this, arguments);
+              };
+            });
+          } else if (typeof definition === 'object') {
+            // it should have a $get
+            var tempGet = definition.$get;
+            definition.$get = function () {
+              debug.deps.push({
+                name: name,
+                imports: annotate(tempGet)
+              });
+              return tempGet.apply(this, arguments);
+            };
+          } else {
+            debug.deps.push({
+              name: name,
+              imports: annotate(definition)
+            });
+          }
+          return temp.apply(this, arguments);
+        };
+
+        // $provide.(factory|service)
         [
-          'provider',
           'factory',
           'service'
         ].forEach(function (met) {
