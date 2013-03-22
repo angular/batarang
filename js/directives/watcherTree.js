@@ -1,5 +1,5 @@
 // watchers tree
-panelApp.directive('batWatcherTree', function($compile) {
+angular.module('panelApp').directive('batWatcherTree', function($compile) {
 
   // make toggle settings persist across $compile
   var scopeState = {};

@@ -37,6 +37,12 @@ body {
   margin: 0;
 }
 
+bat-scope-tree .selected {
+  font-weight: bold;
+  text-decoration: underline;
+  color: #333;
+}
+
 /*
  * Slider widget style based on jquery-ui-bootstrap
  * http://addyosmani.github.com/jquery-ui-bootstrap

@@ -1,5 +1,5 @@
 // Service for exporting as JSON
-panelApp.factory('filesystem', function(chromeExtension) {
+angular.module('panelApp').factory('filesystem', function(chromeExtension) {
 
   // taken from:
   // http://html5-demos.appspot.com/static/html5storage/index.html#slide59

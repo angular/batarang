@@ -1,6 +1,6 @@
 // Sort watchers by time
 // Used by the performance tab
-panelApp.filter('sortByTime', function () {
+angular.module('panelApp').filter('sortByTime', function () {
   return function (input, min, max) {
     var copy = input.slice(0);
 

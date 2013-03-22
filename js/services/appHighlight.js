@@ -1,5 +1,5 @@
 // Service for highlighting parts of the application
-panelApp.factory('appHighlight', function (appCss) {
+angular.module('panelApp').factory('appHighlight', function (appCss) {
 
   //TODO: improve look of highlighting; for instance, if an element is bound and a scope,
   // you will only see the most recently applied outline

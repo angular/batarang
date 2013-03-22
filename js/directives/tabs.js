@@ -1,4 +1,4 @@
-panelApp.directive('batTabs', function ($compile, $templateCache, $http) {
+angular.module('panelApp').directive('batTabs', function ($compile, $templateCache, $http) {
   return {
     restrict: 'E',
     transclude: true,

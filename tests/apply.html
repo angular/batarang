@@ -1,0 +1,20 @@
+<!doctype html>
+<html ng-app="testApp">
+<head>
+  <script src="angular-expose-isolate-scopes.js"></script>
+  <script>
+    angular.module('testApp', [])
+      .controller('TestCtrl', function ($scope) {
+        $scope.someArray = [];
+        setTimeout(function () {
+          $scope.$digest(function() {
+            $scope.someArray.push(1);
+          });
+        }, 0)
+      });
+  </script>
+</head>
+<body ng-controller="TestCtrl">
+  <my-trans-dir this="person"></my-trans-dir>
+</body>
+</html>

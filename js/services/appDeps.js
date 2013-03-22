@@ -1,5 +1,5 @@
 // Service for retrieving and caching application dependencies
-panelApp.factory('appDeps', function (chromeExtension, appContext) {
+angular.module('panelApp').factory('appDeps', function (chromeExtension, appContext) {
 
   var _depsCache = [];
 

@@ -1,5 +1,5 @@
 // Service for running code in the context of the application being debugged
-panelApp.factory('appContext', function (chromeExtension) {
+angular.module('panelApp').factory('appContext', function (chromeExtension) {
 
   // Public API
   // ==========
@@ -79,7 +79,7 @@ panelApp.factory('appContext', function (chromeExtension) {
     // TODO: depreciate this; only poll from now on?
     // There are some cases where you need to gather data on a once-per-bootstrap basis, for
     // instance getting the version of AngularJS
-    
+
     // TODO: move to chromeExtension?
     watchRefresh: function (cb) {
       var port = chrome.extension.connect();

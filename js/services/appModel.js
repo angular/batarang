@@ -1,7 +1,8 @@
 // Service for running code in the context of the application being debugged
-panelApp.factory('appModel', function (chromeExtension, appContext) {
+angular.module('panelApp').factory('appModel', function (chromeExtension, appContext) {
 
-  var _scopeCache = {},
+  var _scopeTreeCache = {},
+    _scopeCache = {},
     _rootScopeCache = [];
 
 
@@ -27,7 +28,22 @@ panelApp.factory('appModel', function (chromeExtension, appContext) {
       });
     },
 
-    getModelTree: function (id, callback) {
+    // only runs callback if model has changed since last call
+    getModel: function (id, callback) {
+      if (!id) {
+        return;
+      }
+      chromeExtension.eval(function (window, args) {
+        return window.__ngDebug.getModel(args.id);
+      }, {id: id}, function (tree) {
+        if (tree) {
+          _scopeCache[id] = tree;
+        }
+        callback(_scopeCache[id]);
+      });
+    },
+
+    getScopeTree: function (id, callback) {
       if (!id) {
         return;
       }
@@ -35,9 +51,15 @@ panelApp.factory('appModel', function (chromeExtension, appContext) {
         return window.__ngDebug.getScopeTree(args.id);
       }, {id: id}, function (tree) {
         if (tree) {
-          _scopeCache[id] = tree;
+          _scopeTreeCache[id] = tree;
         }
-        callback(_scopeCache[id]);
+        callback(_scopeTreeCache[id]);
+      });
+    },
+
+    enableInspector: function (argument) {
+      chromeExtension.eval(function (window, args) {
+        return window.__ngDebug.enable();
       });
     }
   };

@@ -1,5 +1,5 @@
 // Service for running code in the context of the application being debugged
-panelApp.factory('appInfo', function (chromeExtension, appContext) {
+angular.module('panelApp').factory('appInfo', function (chromeExtension, appContext) {
 
   var _versionCache = null,
     _srcCache = null;

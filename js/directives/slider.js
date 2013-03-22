@@ -1,5 +1,5 @@
 // range slider
-panelApp.directive('batSlider', function($compile) {
+angular.module('panelApp').directive('batSlider', function($compile) {
   return {
     restrict: 'E',
     terminal: true,

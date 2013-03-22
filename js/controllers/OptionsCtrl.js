@@ -1,4 +1,4 @@
-panelApp.controller('OptionsCtrl', function OptionsCtrl($scope, appInfo, appHighlight) {
+angular.module('panelApp').controller('OptionsCtrl', function OptionsCtrl($scope, appInfo, appHighlight) {
 
   $scope.debugger = {
     scopes: false,

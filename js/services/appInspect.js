@@ -1,5 +1,5 @@
 // Service for highlighting parts of the application
-panelApp.factory('appInspect', function (chromeExtension) {
+angular.module('panelApp').factory('appInspect', function (chromeExtension) {
   return {
     enable: function () {
       chromeExtension.eval(function (window) {

@@ -1,5 +1,5 @@
 // Service for injecting CSS into the application
-panelApp.factory('appCss', function (chromeExtension) {
+angular.module('panelApp').factory('appCss', function (chromeExtension) {
   return {
     addCssRule: function (args) {
       chromeExtension.eval(function (window, args) {

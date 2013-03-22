@@ -1,5 +1,5 @@
 // Service for retrieving and caching performance data
-panelApp.factory('appPerf', function (chromeExtension, appContext) {
+angular.module('panelApp').factory('appPerf', function (chromeExtension, appContext) {
 
   var _histogramCache = [],
     _watchNameToPerf = {},

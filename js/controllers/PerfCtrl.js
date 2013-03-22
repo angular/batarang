@@ -1,4 +1,4 @@
-panelApp.controller('PerfCtrl', function PerfCtrl($scope, appContext, appPerf, appModel, appWatch, filesystem, poll) {
+angular.module('panelApp').controller('PerfCtrl', function PerfCtrl($scope, appContext, appPerf, appModel, appWatch, filesystem) {
 
   $scope.histogram = [];
 
