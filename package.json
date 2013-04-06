@@ -1,0 +1,13 @@
+{
+  "name": "angularjs-batarang",
+  "devDependencies": {
+    "grunt": "~0.4.1",
+    "grunt-contrib-jshint": "~0.1.1",
+    "grunt-conventional-changelog": "0.0.11",
+    "grunt-karma": "~0.4.3",
+    "grunt-release": "https://github.com/btford/grunt-release/archive/feat-tag-name.tar.gz",
+    "marked": "~0.2.8",
+    "grunt-zip": "~0.7.0",
+    "semver": "~1.1.4"
+  }
+}

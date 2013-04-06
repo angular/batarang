@@ -1,7 +1,0 @@
-#!/bin/bash
-
-# create zip file for the Chrome Web Store
-rm -f batarang-release.zip
-zip -r batarang-release.zip css img js panes panel.html LICENSE manifest.json background.html devtoolsBackground.html
-echo "done"
-echo "upload to: https://chrome.google.com/webstore/developer/dashboard"
