@@ -77,7 +77,7 @@ var inject = function () {
           switch (typeof value) {
           case 'object':
             if (value instanceof HTMLElement) {
-              return value.innerHTML;
+              return value.innerHTML.toString().trim();
             }
             if (!value) {
               return null;
@@ -89,7 +89,7 @@ var inject = function () {
             }
             objects.push(value);
             paths.push(path);
-            if (Object.prototype.toString.apply(value) === '[object Array]') {
+            if (value instanceof Array) {
               nu = [];
               for (i = 0; i < value.length; i += 1) {
                 nu[i] = derez(value[i], path + '[' + i + ']');
@@ -97,7 +97,7 @@ var inject = function () {
             } else {
               nu = {};
               for (name in value) {
-                if (Object.prototype.hasOwnProperty.call(value, name)) {
+                if (name[0] !== '$' && Object.prototype.hasOwnProperty.call(value, name)) {
                   nu[name] = derez(value[name],
                     path + '[' + JSON.stringify(name) + ']');
                 }
