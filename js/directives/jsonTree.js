@@ -21,12 +21,12 @@ angular.module('panelApp').directive('batJsonTree', function($compile) {
           var i;
           html += '<div class="scope-branch">[ ';
           if (object.length > 0) {
-            html += buildDom(object[i]);
+            html += buildDom(object[0]);
             for (i = 1; i < object.length; i++) {
-              html += ',' + buildDom(object[i]);
+              html += ', ' + buildDom(object[i]);
             }
           }
-          html += ']</div>';
+          html += ' ]</div>';
         } else if (object instanceof Object) {
           html += ' { ';
           for (prop in object) {
