@@ -810,6 +810,7 @@ var inject = function () {
             }
 
             debug.scopes[ret.$id] = ret;
+            debug.scopes[this.$id] = this;
             debug.scopeDirty[ret.$id] = true;
 
             return ret;
