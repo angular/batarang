@@ -370,8 +370,6 @@ var inject = function () {
           var selectElt = angular.element(angular.element(popover.children('div')[0]).children()[2]);
           var closeElt = angular.element(angular.element(popover.children('div')[0]).children()[3]);
 
-          console.log(closeElt);
-
           var currentScope = null,
             currentElt = null;
 
@@ -631,16 +629,30 @@ var inject = function () {
                 return tempGet.apply(this, arguments);
               };
             });
-          } else if (typeof definition === 'object') {
+          } else if (definition.$get instanceof Array) {
             // it should have a $get
-            var tempGet = definition.$get;
-            definition.$get = function () {
+            var tempGet = definition.$get[definition.$get.length - 1];
+
+            definition.$get[definition.$get.length - 1] = function () {
               debug.deps.push({
                 name: name,
                 imports: annotate(tempGet)
               });
               return tempGet.apply(this, arguments);
             };
+          } else if (typeof definition === 'object') {
+            // it should have a $get
+            var tempGet = definition.$get;
+
+            // preserve original annotations
+            definition.$get = annotate(definition.$get);
+            definition.$get.push(function () {
+              debug.deps.push({
+                name: name,
+                imports: annotate(tempGet)
+              });
+              return tempGet.apply(this, arguments);
+            });
           } else {
             debug.deps.push({
               name: name,
