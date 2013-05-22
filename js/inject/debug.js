@@ -629,6 +629,17 @@ var inject = function () {
                 return tempGet.apply(this, arguments);
               };
             });
+          } else if (definition instanceof Array) {
+            // it is a constructoctor with array syntax
+            var tempConstructor = definition[definition.length - 1];
+
+            definition[definition.length - 1] = function () {
+              debug.deps.push({
+                name: name,
+                imports: annotate(tempConstructor)
+              });
+              return tempConstructor.apply(this, arguments);
+            };
           } else if (definition.$get instanceof Array) {
             // it should have a $get
             var tempGet = definition.$get[definition.$get.length - 1];
