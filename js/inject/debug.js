@@ -492,7 +492,7 @@ var inject = function () {
               if (data instanceof Array) {
                 toAppend = '<div>' +
                   toAppend +
-                  ((key===data.length-1)?'':',') +
+                  ((key === (data.length - 1))?'':',') +
                   '</div>';
               } else {
                 toAppend = '<div>' +
