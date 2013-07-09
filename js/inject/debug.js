@@ -682,13 +682,22 @@ var inject = function () {
           $provide[met] = function (name, definition) {
             if (typeof name === 'object') {
               angular.forEach(name, function (value, key) {
-                name[key] = function () {
+                var isArray = value instanceof Array;
+                var originalValue = isArray ? value[value.length - 1] : value;
+
+                var newValue = function () {
                   debug.deps.push({
                     name: key,
-                    imports: annotate(value)
+                    imports: annotate(originalValue)
                   });
-                  return value.apply(this, arguments);
+                  return originalValue.apply(this, arguments);
                 };
+
+                if (isArray) {
+                  value[value.length - 1] = newValue;
+                } else {
+                  name[value] = newValue;
+                }
               });
             } else {
               debug.deps.push({
