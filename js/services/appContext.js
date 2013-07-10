@@ -1,6 +1,8 @@
 // Service for running code in the context of the application being debugged
 angular.module('panelApp').factory('appContext', function (chromeExtension) {
 
+  var port = chrome.extension.connect();
+
   // Public API
   // ==========
   return {
@@ -82,18 +84,23 @@ angular.module('panelApp').factory('appContext', function (chromeExtension) {
 
     // TODO: move to chromeExtension?
     watchRefresh: function (cb) {
-      var port = chrome.extension.connect();
       port.postMessage({
         action: 'register',
         inspectedTabId: chrome.devtools.inspectedWindow.tabId
       });
-      port.onMessage.addListener(function(msg) {
+      port.onMessage.addListener(function (msg) {
         if (msg === 'refresh') {
           cb();
         }
       });
-      port.onDisconnect.addListener(function (a) {
-        console.log(a);
+    },
+
+    // TODO: move to chromeExtension?
+    watchModelChange: function (cb) {
+      port.onMessage.addListener(function (msg) {
+        if (msg.action === 'modelChange') {
+          cb(msg);
+        }
       });
     }
 

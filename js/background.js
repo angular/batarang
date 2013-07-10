@@ -1,6 +1,6 @@
 
 // notify of page refreshes
-chrome.extension.onConnect.addListener(function(port) {
+chrome.extension.onConnect.addListener(function (port) {
   port.onMessage.addListener(function (msg) {
     if (msg.action === 'register') {
       var respond = function (tabId, changeInfo, tab) {
@@ -16,4 +16,11 @@ chrome.extension.onConnect.addListener(function(port) {
       });
     }
   });
+
+  chrome.extension.onMessage.addListener(function (msg) {
+    if (msg.action === 'modelChange') {
+      port.postMessage(msg);
+    }
+  });
 });
+

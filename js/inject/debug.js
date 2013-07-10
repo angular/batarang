@@ -57,6 +57,24 @@ var inject = function () {
         performance.now = performance.webkitNow;
       }
 
+      // Send notifications from app context to devtools context
+      // =======================================================
+
+      var eventProxyElement = document.createElement('div');
+      eventProxyElement.id = '__ngDebugElement';
+      eventProxyElement.style.display = 'none';
+      document.body.appendChild(eventProxyElement);
+
+      var customEvent = document.createEvent('Event');
+      customEvent.initEvent('myCustomEvent', true, true);
+
+      function fireCustomEvent (data) {
+        eventProxyElement.innerText = data;
+        eventProxyElement.dispatchEvent(customEvent);
+      }
+
+
+
       // Based on cycle.js
       // https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
 
@@ -269,11 +287,82 @@ var inject = function () {
           return ids;
         },
 
+        fireCustomEvent: fireCustomEvent,
+
         // returns null or cached scope
         getModel: function (id) {
           if (debug.scopeDirty[id]) {
             updateScopeModelCache(debug.scopes[id]);
             return debug.models[id];
+          }
+        },
+
+        getSomeModel: function (id, path) {
+          path = path || [];
+
+          var dest = debug.scopes[id],
+            segment;
+
+          if (!dest) {
+            console.log('no scope');
+            return;
+          }
+
+          while (path.length > 0) {
+            segment = path.shift();
+            dest = dest[segment];
+            if (!dest) {
+              console.log('no dest');
+              return;
+            }
+          }
+
+          if (dest instanceof Array) {
+            return {
+              '~array-length': dest.length
+            };
+          } else if (typeof dest === 'object') {
+            return Object.
+              keys(dest).
+              filter(function (key) {
+                return key[0] !== '$' || key[1] !== '$';
+              }).
+              reduce(function (obj, prop) {
+                obj[prop] = dest[prop] instanceof Array ?
+                  { '~array-length': dest[prop].length } :
+                    typeof dest[prop] === 'object' ?
+                      { '~object': true } :
+                      dest[prop];
+
+                return obj;
+              }, {});
+          } else {
+            return dest;
+          }
+        },
+
+        setSomeModel: function (id, path, value) {
+          path = path || [];
+
+          var dest = debug.scopes[id],
+            segment;
+
+          if (!dest) {
+            return;
+          }
+
+          while (path.length > 1) {
+            segment = path.shift();
+            dest = dest[segment];
+            if (!dest) {
+              return;
+            }
+          }
+
+          if (dest[path[0]]) {
+            debug.scopes[id].$apply(function batarangEditModel () {
+              dest[path[0]] = value;
+            });
           }
         },
 
@@ -889,6 +978,20 @@ var inject = function () {
 
     return script;
   }()));
+
+  var eventProxyElement = document.getElementById('__ngDebugElement');
+
+  if (eventProxyElement) {
+    eventProxyElement.addEventListener('myCustomEvent', function() {
+      var eventData = eventProxyElement.innerText;
+      chrome.extension.sendMessage({
+        action: 'modelChange',
+        value: eventData
+      });
+    });
+    document.removeEventListener('DOMContentLoaded', inject);
+  }
+
 };
 
 // only inject if cookie is set

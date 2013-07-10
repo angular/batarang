@@ -28,19 +28,29 @@ angular.module('panelApp').factory('appModel', function (chromeExtension, appCon
       });
     },
 
-    // only runs callback if model has changed since last call
-    getModel: function (id, callback) {
+    getModel: function (id, path, callback) {
       if (!id) {
         return;
       }
       chromeExtension.eval(function (window, args) {
-        return window.__ngDebug.getModel(args.id);
-      }, {id: id}, function (tree) {
-        if (tree) {
-          _scopeCache[id] = tree;
-        }
-        callback(_scopeCache[id]);
-      });
+        return window.__ngDebug.getSomeModel(args.id, args.path);
+      }, {
+        id: id,
+        path: path
+      }, callback);
+    },
+
+    setModel: function (id, path, value, callback) {
+      if (!id) {
+        return;
+      }
+      chromeExtension.eval(function (window, args) {
+        return window.__ngDebug.setSomeModel(args.id, args.path, args.value);
+      }, {
+        id: id,
+        path: path,
+        value: value
+      }, callback);
     },
 
     getScopeTree: function (id, callback) {
