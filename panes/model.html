@@ -1,29 +1,57 @@
-<div ng-controller="ModelCtrl">
+<div bat-vertical-split ng-controller="ModelCtrl">
 
-  <div class="span6">
+  <div bat-vertical-left>
     <h2>Scopes</h2>
-    <div ng-show="roots.length > 1">
+    <div ng-show="roots().length > 1">
       <label for="select-root">Root
         <select
-          ng-options="root.toString() for root in roots"
+          ng-options="root.toString() for root in roots()"
           ng-model="selectedRoot"></select>
       </label>
     </div>
     <pre>
       <bat-scope-tree
-        val="tree"
+        val="scopeTree()"
         inspect="inspect"
         select="select"
         selected-scope="selectedScope"
         edit="edit"></bat-scope-tree>
     </pre>
+
+    <div class="span6">
+      <button class="btn" ng-click="enableInspector()">Enable Inspector</button>
+    </div>
   </div>
 
-  <div class="span6">
-    <h2>Models<span ng-show="selectedScope"> for ({{selectedScope}})</span></h2>
-    <bat-json-tree val="model"></bat-json-tree>
+  <div bat-vertical-right>
+    <div class="sidebar-pane-stack fill visible">
+
+      <!-- not sure about this -->
+      <div class="sidebar-pane-title" tabindex="0">Computed Style
+        <div class="sidebar-pane-toolbar">
+          <label class="sidebar-pane-subtitle">
+            <input type="checkbox">Show inherited
+          </label>
+        </div>
+      </div>
+
+      <div class="sidebar-pane-title" tabindex="0">Models</div>
+
+      <div class="sidebar-pane visible">
+        <div class="body">
+          <div class="section expanded">
+            <div ng-repeat="(key, val) in watching">
+              <h2>{{key}}</h2>
+              <bat-json-tree
+                val="val"
+                scope-id="key"
+                expand="expand"></bat-json-tree>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
-  <div class="span6">
-    <button class="btn" ng-click="enableInspector()">Enable Inspector</button>
-  </div>
+
 </div>

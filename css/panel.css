@@ -10,9 +10,8 @@
   margin-left: 30px;
   background-color: rgba(0,0,0,0.06);
 }
-body {
-  margin: 10px;
-}
+
+
 .well-top {
   border-radius: 4px 4px 0 0;
   margin-bottom: 0;
@@ -103,4 +102,309 @@ bat-scope-tree .selected {
   background-repeat: repeat-x;
   background-image: -webkit-linear-gradient(top, #049cdb, #0064cd);
   /*background-image: linear-gradient(top, #049cdb, #0064cd);*/
+}
+
+
+
+/* Mimic Chrome's Devtools */
+
+/* reset */
+
+* {
+  box-sizing: border-box;
+}
+
+/* TODO: defaults for other platforms?? */
+body {
+  cursor: default;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  font-size: 12px;
+  margin: 0;
+  tab-size: 4;
+  -webkit-user-select: none;
+  color: rgb(48, 57, 66);
+  font-family: 'Lucida Grande', sans-serif;
+}
+
+img {
+  -webkit-user-drag: none;
+}
+
+/* split */
+
+
+.split-view {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+}
+
+.outline-disclosure,
+.outline-disclosure ol {
+  list-style-type: none;
+  -webkit-padding-start: 12px;
+  margin: 0;
+}
+
+.split-view-vertical > .split-view-contents-first {
+  left: 0;
+}
+
+.split-view-vertical > .split-view-contents {
+  top: 0;
+  bottom: 0;
+}
+
+.split-view-contents {
+  position: absolute;
+  overflow: auto;
+  cursor: default;
+}
+
+.split-view-vertical > .split-view-sidebar.split-view-contents-second:not(.maximized) {
+  border-left: 1px solid rgb(64%, 64%, 64%);
+}
+
+.split-view-vertical > .split-view-contents-second {
+  right: 0;
+}
+
+.split-view-vertical > .split-view-resizer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 5px;
+  z-index: 1500;
+  cursor: ew-resize;
+}
+
+.fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.sidebar-pane-title {
+  position: relative;
+  background: rgb(230, 230, 230);
+  height: 20px;
+  padding: 0 5px;
+  border-top: 1px solid rgb(189, 189, 189);
+  border-bottom: 1px solid rgb(189, 189, 189);
+  line-height: 18px;
+  background-origin: padding;
+  background-clip: padding;
+  margin-top: -1px;
+}
+
+.sidebar-pane-title.expanded::before {
+  background-position: -20px -96px;
+}
+
+.sidebar-pane-title::before {
+  background-position: -4px -96px;
+}
+
+.sidebar-pane-title::before {
+  background-image: url(../img/statusbarButtonGlyphs.png);
+  background-size: 320px 120px;
+  opacity: 0.5;
+  float: left;
+  width: 11px;
+  height: 11px;
+  margin-right: 2px;
+  content: "a";
+  color: transparent;
+  position: relative;
+  top: 3px;
+}
+
+.sidebar-pane-toolbar {
+  line-height: 18px;
+  left: 0;
+  right: 4px;
+  top: 0;
+  height: 20px;
+  position: absolute;
+  pointer-events: none;
+}
+
+.sidebar-pane-toolbar > * {
+  pointer-events: auto;
+}
+
+.sidebar-pane-subtitle {
+  position: absolute;
+  right: 0;
+}
+
+.sidebar-pane-subtitle input, .section > .header input[type=checkbox] {
+  font-size: inherit;
+  height: 1em;
+  width: 1em;
+  margin-left: 0;
+  margin-top: 0;
+  margin-bottom: 0.25em;
+  vertical-align: bottom;
+}
+
+
+/* sidebar tree */
+
+.sidebar-tree,
+.sidebar-tree .children {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.sidebar-tree-item {
+  position: relative;
+  height: 36px;
+  padding: 0 5px 0 5px;
+  white-space: nowrap;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  margin-top: 1px;
+  line-height: 34px;
+  border-top: 1px solid transparent;
+}
+
+.sidebar-tree-item.selected {
+  color: white;
+  border-top: 1px solid rgb(151, 151, 151);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(180, 180, 180)), to(rgb(138, 138, 138)));
+  text-shadow: rgba(0, 0, 0, 0.33) 1px 1px 0;
+  background-origin: padding-box;
+  background-clip: padding-box;
+}
+
+:focus .sidebar-tree-item.selected {
+  border-top: 1px solid rgb(68, 128, 200);
+  background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(92, 147, 213)), to(rgb(21, 83, 170)));
+}
+
+.sidebar-tree-item .icon {
+  float: left;
+  width: 32px;
+  height: 32px;
+  margin-top: 1px;
+  margin-right: 3px;
+}
+
+.sidebar-tree-item .titles {
+  position: relative;
+  top: 5px;
+  line-height: 12px;
+  padding-bottom: 1px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.sidebar-tree-item .titles.no-subtitle {
+  top: 10px;
+}
+
+.sidebar {
+  background-color: rgb(232, 232, 232);
+}
+
+.split-view-vertical > .split-view-sidebar.split-view-contents-first:not(.maximized) {
+  border-right: 1px solid rgb(64%, 64%, 64%);
+}
+
+.profile-launcher-view-tree-item > .icon {
+  padding: 15px;
+  background-image: url(../img/toolbarIcons.png);
+  background-position-x: -160px;
+}
+
+li .status {
+  float: right;
+  height: 16px;
+  margin-top: 9px;
+  margin-left: 4px;
+  line-height: 1em;
+}
+
+li .status:empty {
+  display: none;
+}
+
+
+/* bat-json-tree */
+
+bat-json-tree {
+  font-size: 11px !important;
+  font-family: Menlo, monospace;
+}
+
+bat-json-tree .name {
+  color: rgb(136, 19, 145);
+}
+
+bat-json-tree .console-formatted-string {
+  color: rgb(196, 26, 22);
+}
+
+bat-json-tree
+  .console-formatted-null,
+  .console-formatted-undefined {
+    color: rgb(128, 128, 128);
+  }
+
+bat-json-tree .console-formatted-number {
+  color: rgb(28, 0, 207);
+}
+
+bat-json-tree
+  .console-formatted-object,
+  .console-formatted-node,
+  .console-formatted-array {
+    color: #222;
+  }
+
+bat-json-tree .properties-tree li {
+  margin-left: 12px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  -webkit-user-select: text;
+  cursor: default;
+  padding-top: 2px;
+  line-height: 12px;
+  list-style: none;
+}
+
+bat-json-tree .properties-tree li.parent::before {
+  -webkit-user-select: none;
+  background-image: url(../img/statusbarButtonGlyphs.png);
+  background-size: 320px 120px;
+  opacity: 0.5;
+  content: "a";
+  width: 8px;
+  float: left;
+  margin-right: 4px;
+  color: transparent;
+  text-shadow: none;
+}
+
+bat-json-tree .properties-tree li.parent::before {
+  background-position: -4px -96px;
+}
+
+bat-json-tree .properties-tree li.parent.expanded::before {
+  background-position: -20px -96px;
 }

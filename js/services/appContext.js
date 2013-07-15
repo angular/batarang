@@ -1,5 +1,5 @@
 // Service for running code in the context of the application being debugged
-angular.module('panelApp').factory('appContext', function (chromeExtension) {
+angular.module('panelApp').factory('appContext', function (chromeExtension, $rootScope) {
 
   var port = chrome.extension.connect();
 
@@ -99,7 +99,19 @@ angular.module('panelApp').factory('appContext', function (chromeExtension) {
     watchModelChange: function (cb) {
       port.onMessage.addListener(function (msg) {
         if (msg.action === 'modelChange') {
-          cb(msg);
+          $rootScope.$apply(function () {
+            cb(msg);
+          });
+        }
+      });
+    },
+
+    watchScopeChange: function (cb) {
+      port.onMessage.addListener(function (msg) {
+        if (msg.action === 'scopeChange') {
+          $rootScope.$apply(function () {
+            cb(msg);
+          });
         }
       });
     }

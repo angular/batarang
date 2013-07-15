@@ -1,17 +1,18 @@
 <!doctype html>
 <html ng-csp ng-app="panelApp">
 <head>
+  <!--
   <link rel="stylesheet" href="css/bootstrap.css">
   <link rel="stylesheet" href="css/bootstrap-responsive.css">
+  -->
   <link rel="stylesheet" href="css/d3.css">
   <link rel="stylesheet" href="css/panel.css">
 
   <!-- libs -->
-  <script src="js/lib/angular.js"></script>
-  <script src="js/lib/jquery-1.7.2.min.js"></script>
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/jquery/jquery.js"></script>
   <script src="js/lib/jquery-ui-1.8.21.custom.min.js"></script>
-  <script src="js/lib/d3.js"></script>
-  <script src="js/lib/d3.layout.js"></script>
+  <script src="bower_components/d3/d3.min.js"></script>
 
   <script src="js/panelApp.js"></script>
 
@@ -20,6 +21,7 @@
   <script src="js/directives/scopeTree.js"></script>
   <script src="js/directives/slider.js"></script>
   <script src="js/directives/tabs.js"></script>
+  <script src="js/directives/verticalSplit.js"></script>
   <script src="js/directives/watcherTree.js"></script>
 
   <script src="js/filters/first.js"></script>
@@ -44,12 +46,15 @@
 
 </head>
 <body>
+
   <bat-tabs>
-    <bat-pane title="Models" src="panes/model.html"></bat-pane>
+    <bat-pane title="Scopes" src="panes/model.html"></bat-pane>
     <bat-pane title="Performance" src="panes/perf.html"></bat-pane>
     <bat-pane title="Dependencies" src="panes/deps.html"></bat-pane>
     <bat-pane title="Options" src="panes/options.html"></bat-pane>
     <bat-pane title="Help" src="panes/help.html"></bat-pane>
   </bat-tabs>
+
+
 </body>
 </html>

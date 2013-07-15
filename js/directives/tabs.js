@@ -4,25 +4,57 @@ angular.module('panelApp').directive('batTabs', function ($compile, $templateCac
     transclude: true,
     scope: {},
     template:
-      '<div class="container-fluid">' +
-        '<div class="row-fluid">' +
-          '<ul class="nav nav-tabs span12">' +
-            '<li ng-repeat="pane in panes" ng-class="{active:pane.selected}">'+
-              '<a href="" ng-click="select(pane)">{{pane.title}}</a>' +
-            '</li>' +
+      '<div class="split-view split-view-vertical visible">' +
 
-            '<li>' +
-              '<div class="bat-nav-check">' +
-                '<input type="checkbox" ng-model="enable" id="enable-instrumentation"> ' +
-                'Enable' +
-              '</div>' +
-            '</li>' +
+        '<div ' +
+          'class="split-view-contents ' +
+            'scroll-target ' +
+            'split-view-contents-first ' +
+            'split-view-sidebar ' +
+            'sidebar" ' +
+          'style="width: 200px;">' +
+            '<ol class="sidebar-tree" tabindex="0">' +
+              '<li class="sidebar-tree-item ' +
+                'profile-launcher-view-tree-item">' +
+                  '<img class="icon">' +
+                  '<div class="status"></div>' +
+                  '<div class="titles no-subtitle">' +
+                    '<span class="title">' +
+                      'Enable <input type="checkbox" ng-model="enable">' +
+                    '</span>' +
+                    '<span class="subtitle"></span>' +
+                  '</div>' +
+              '</li>' +
+              '<li ng-repeat="pane in panes" ' +
+                'ng-click="select(pane)" ' +
+                'class="sidebar-tree-item ' +
+                'profile-launcher-view-tree-item" ' +
+                'ng-class="{selected:pane.selected}">' +
 
-          '</ul>' +
+                  '<img class="icon">' +
+                  '<div class="status"></div>' +
+                  '<div class="titles no-subtitle">' +
+                    '<span class="title">{{pane.title}}</span>' +
+                    '<span class="subtitle"></span>' +
+                  '</div>' +
+
+              '</li>' +
+            '</ol>' +
         '</div>' +
-        '<div class="row-fluid bat-tabs-inside"></div>' +
+
+        '<div ' +
+          'class="split-view-contents ' +
+            'scroll-target ' +
+            'split-view-contents-second ' +
+            'outline-disclosure ' +
+            'bat-tabs-inside" ' +
+          'style="left: 200px;">' +
+        '</div>' +
+
         '<div ng-transclude></div>' +
+
       '</div>',
+
     replace: true,
     controller: function ($scope, appContext) {
       var panes = $scope.panes = [];
