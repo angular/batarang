@@ -163,6 +163,7 @@ var instument = function (window) {
   // Utils
   // =====
 
+  // this is silly
   var getWatchTree = function (id) {
     var traverse = function (sc) {
       var tree = {
@@ -189,9 +190,14 @@ var instument = function (window) {
 
 
   var getScopeTree = function (id) {
+
+    var names = api.niceNames();
+
     var traverse = function (sc) {
       var tree = {
         id: sc.$id,
+        name: names[sc.$id],
+        watchers: debug.watchers[sc.$id],
         children: []
       };
 
@@ -273,6 +279,50 @@ var instument = function (window) {
     }
   };
 
+  var summarizeObject = function (obj) {
+    var summary = {}, keys;
+    if (obj instanceof Array) {
+      keys = obj.map(function (e, i) { return i; });
+    } else if (typeof obj === 'object') {
+      keys = Object.keys(obj);
+    } else {
+      return '=' + obj.toString().substr(0, 10);
+    }
+
+    var id;
+
+    if (keys.some(function (key) {
+      var lowKey = key.toLowerCase();
+      if (lowKey.indexOf('name') !== -1 ||
+          lowKey.indexOf('id') !== -1) {
+        return id = key;
+      }
+    })) {
+      return '.' + id + '="' + obj[id].toString() + '"';
+    }
+
+    if (keys.length > 5) {
+      keys = keys.slice(0, 5);
+    }
+
+    keys.forEach(function (key) {
+      var val = obj[key];
+      if (val instanceof Array) {
+        summary[key] = '[ … ]';
+      } else if (typeof val === 'object') {
+        summary[key] = '{ … }';
+      } else if (typeof val === 'function') {
+        summary[key] = 'fn';
+      } else {
+        summary[key] = obj[key].toString()
+        if (summary[key].length > 10) {
+          summary[key] = summary[key].substr(0, 10) + '…';
+        }
+      }
+    });
+    return '=' + JSON.stringify(summary);
+  }
+
 
   // Public API
   // ==========
@@ -288,6 +338,50 @@ var instument = function (window) {
     },
 
     fireCustomEvent: fireCustomEvent,
+
+    niceNames: function () {
+      var ngScopeElts = document.getElementsByClassName('ng-scope');
+      ngScopeElts = Array.prototype.slice.call(ngScopeElts);
+      return ngScopeElts.
+        reduce(function (acc, elt) {
+          var $elt = angular.element(elt);
+          var scope = $elt.scope();
+
+          var name = {};
+
+          [
+            'ng-app',
+            'ng-controller',
+            'ng-repeat'
+          ].
+          forEach(function (attr) {
+            var val = $elt.attr(attr),
+              className = $elt[0].className;
+            if (val) {
+              name[attr] = val;
+              if (attr === 'ng-repeat') {
+                var lhs = /(.+) in/.exec(val);
+                lhs = lhs[1];
+                name.lhs = lhs + summarizeObject(scope[lhs]);
+              }
+            } else if (className.indexOf(attr) !== -1) {
+              val = (new RegExp(attr + ': ([a-zA-Z0-9]+);')).exec(className);
+              val = val[1];
+              name[attr] = val;
+            }
+          });
+
+          if (Object.keys(name).length === 0) {
+            name.tag = $elt[0].tagName.toLowerCase();
+            name.classes = $elt[0].className.
+              replace(/(\W*ng-scope\W*)/, ' ').
+              split(' ').
+              filter(function (i) { return i; });
+          }
+          acc[scope.$id] = name;
+          return acc;
+        }, {});
+    },
 
     getModel: function (id, path) {
 
