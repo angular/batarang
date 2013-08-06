@@ -114,6 +114,16 @@ angular.module('panelApp').factory('appContext', function (chromeExtension, $roo
           });
         }
       });
+    },
+
+    watchWatcherChange: function (cb) {
+      port.onMessage.addListener(function (msg) {
+        if (msg.action === 'watcherChange') {
+          $rootScope.$apply(function () {
+            cb(msg);
+          });
+        }
+      });
     }
 
   };

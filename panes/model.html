@@ -1,7 +1,6 @@
 <div bat-vertical-split ng-controller="ModelCtrl">
 
-  <div bat-vertical-left>
-    <h2>Scopes</h2>
+  <div bat-vertical-left class="source-code">
     <div ng-show="roots().length > 1">
       <label for="select-root">Root
         <select
@@ -9,158 +8,49 @@
           ng-model="selectedRoot"></select>
       </label>
     </div>
-    <pre>
-      <bat-scope-tree
-        val="scopeTree()"
-        inspect="inspect"
-        select="select"
-        selected-scope="selectedScope"
-        edit="edit"></bat-scope-tree>
-    </pre>
+    <bat-scope-tree
+      class=""
+      val="scopeTree()"
+      inspect="inspect"
+      select="select"
+      selected-scope-id="selectedScopeId"
+      edit="edit"></bat-scope-tree>
 
     <div class="span6">
       <button class="btn" ng-click="enableInspector()">Enable Inspector</button>
     </div>
 
-
-    <div class="source-code">
-      <ol class="elements-tree-outline">
-
-        <li>
-          <span class="highlight"><span class="webkit-html-doctype">&lt;!DOCTYPE html&gt;</span></span>
-        </li>
-        <li>
-          <span class="highlight"><span class="webkit-html-comment">&lt;!--[if lt IE 7]&gt; &lt;html class="no-js lt-ie9 lt-ie8 lt-ie7 ng-app: docsApp;" lang="en" ng-controller="DocsController"&gt; &lt;![endif]--&gt;</span></span>
-        </li>
-        <li>
-          <span class="highlight"><span class="webkit-html-comment">&lt;!--[if IE 7]&gt;    &lt;html class="no-js lt-ie9 lt-ie8 ng-app: docsApp;" lang="en" ng-controller="DocsController"&gt; &lt;![endif]--&gt;</span></span>
-        </li>
-        <li>
-          <span class="highlight"><span class="webkit-html-comment">&lt;!--[if IE 8]&gt;    &lt;html class="no-js lt-ie9 ng-app: docsApp;" lang="en" ng-controller="DocsController"&gt; &lt;![endif]--&gt;</span></span>
-        </li>
-        <li>
-          <span class="highlight"><span class="webkit-html-comment">&lt;!--[if gt IE 8]&gt;&lt;!--&gt;</span></span>
-        </li>
-        <li class="parent expanded">
-          <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">html</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">class</span>=​"<span class="webkit-html-attribute-value">no-js ng-app:​ docsApp;​ ng-scope</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">lang</span>=​"<span class="webkit-html-attribute-value">en</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">ng-controller</span>=​"<span class="webkit-html-attribute-value">DocsController</span>"</span>&gt;</span>​</span>
-        </li>
-        <ol class="children expanded">
-          <li>
-            <span class="highlight"><span class="webkit-html-comment">&lt;!--&lt;![endif]--&gt;</span></span>
-          </li>
-          <li class="parent">
-            <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">head</span>&gt;</span>​<span class="webkit-html-text-node bogus">…</span>​<span class="webkit-html-tag">&lt;<span>/head</span>&gt;</span>​</span>
-          </li>
-          <li class="parent expanded">
-            <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">body</span>&gt;</span>​</span>
-          </li>
-          <ol class="children expanded">
-            <li class="parent expanded">
-              <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">header</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">class</span>=​"<span class="webkit-html-attribute-value">header</span>"</span>&gt;</span>​</span>
-            </li>
-            <ol class="children expanded">
-              <li class="parent">
-                <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">div</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">class</span>=​"<span class="webkit-html-attribute-value">navbar navbar-fixed-top</span>"</span>&gt;</span>​<span class="webkit-html-text-node bogus">…</span>​<span class="webkit-html-tag">&lt;<span>/div</span>&gt;</span>​</span>
-              </li>
-              <li>
-                <span class="highlight"><span class="webkit-html-tag close">&lt;<span>/header</span>&gt;</span>​</span>
-              </li>
-            </ol>
-            <li class="parent expanded">
-              <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">div</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">role</span>=​"<span class="webkit-html-attribute-value">main</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">class</span>=​"<span class="webkit-html-attribute-value">container</span>"</span>&gt;</span>​</span>
-            </li>
-            <ol class="children expanded">
-              <li>
-                <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">div</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">class</span>=​"<span class="webkit-html-attribute-value">row clear-navbar</span>"</span>&gt;</span>​<span class="webkit-html-tag">&lt;<span>/div</span>&gt;</span>​</span>
-              </li>
-              <li class="parent selected">
-                <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">div</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">class</span>=​"<span class="webkit-html-attribute-value">row</span>"</span>&gt;</span>​<span class="webkit-html-text-node bogus">…</span>​<span class="webkit-html-tag">&lt;<span>/div</span>&gt;</span>​</span>
-              </li>
-              <ol class="children">
-                <li class="parent">
-                  <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">div</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">class</span>=​"<span class="webkit-html-attribute-value">span12</span>"</span>&gt;</span>​<span class="webkit-html-text-node bogus">…</span>​<span class="webkit-html-tag">&lt;<span>/div</span>&gt;</span>​</span>
-                </li>
-                <ol class="children">
-                  <li>
-<span class="highlight"><span class="webkit-html-comment">&lt;!--[if lt IE 7]&gt;
-&lt;p class="alert alert-error"&gt;Your browser is &lt;em&gt;ancient!&lt;/em&gt;
-&lt;a href="http://browsehappy.com/"&gt;Upgrade to a different browser&lt;/a&gt; or
-&lt;a href="http://www.google.com/chromeframe/?redirect=true"&gt;install Google Chrome Frame&lt;/a&gt; to
-experience this site.
-&lt;/p&gt;
-&lt;![endif]--&gt;</span></span>
-                  </li>
-                  <li>
-                    <span class="highlight"><span class="webkit-html-comment">&lt;!--[if lt IE 9]&gt;
-&lt;div class="alert"&gt;
-You are using an old version of Internet Explorer.
-For better and safer browsing experience please &lt;a href="http://www.microsoft.com/IE9"&gt;upgrade IE&lt;/a&gt;
-or install &lt;a href="http://google.com/chrome"&gt;Google Chrome browser&lt;/a&gt;.
-&lt;/div&gt;
-&lt;![endif]--&gt;</span></span>
-                  </li>
-                  <li>
-                    <span class="highlight"><span class="webkit-html-tag close">&lt;<span>/div</span>&gt;</span>​</span>
-                  </li>
-                </ol>
-                <li><span class="highlight"><span class="webkit-html-tag close">&lt;<span>/div</span>&gt;</span>​</span></li>
-              </ol>
-              <li class="parent">
-                <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">div</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">class</span>=​"<span class="webkit-html-attribute-value">row</span>"</span>&gt;</span>​<span class="webkit-html-text-node bogus">…</span>​<span class="webkit-html-tag">&lt;<span>/div</span>&gt;</span>​</span>
-              </li>
-              <li>
-                <span class="highlight"><span class="webkit-html-tag close">&lt;<span>/div</span>&gt;</span>​</span>
-              </li>
-            </ol>
-            <li>
-              <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">div</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">fader</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">ng-show</span>=​"<span class="webkit-html-attribute-value">subpage</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">style</span>=​"<span class="webkit-html-attribute-value">display:​ none;​</span>"</span>&gt;</span>​<span class="webkit-html-tag">&lt;<span>/div</span>&gt;</span>​</span>
-            </li>
-            <li class="parent">
-              <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">div</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">subpage</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">ng-show</span>=​"<span class="webkit-html-attribute-value">subpage</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">style</span>=​"<span class="webkit-html-attribute-value">display:​ none;​</span>"</span>&gt;</span>​<span class="webkit-html-text-node bogus">…</span>​<span class="webkit-html-tag">&lt;<span>/div</span>&gt;</span>​</span>
-            </li>
-            <li class="parent">
-              <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">footer</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">class</span>=​"<span class="webkit-html-attribute-value">footer</span>"</span>&gt;</span>​<span class="webkit-html-text-node bogus">…</span>​<span class="webkit-html-tag">&lt;<span>/footer</span>&gt;</span>​</span>
-            </li>
-            <li class="parent">
-              <span class="highlight"><span class="webkit-html-tag">&lt;<span class="webkit-html-tag-name">div</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">id</span>=​"<span class="webkit-html-attribute-value">__ngDebugElement</span>"</span> <span class="webkit-html-attribute"><span class="webkit-html-attribute-name">style</span>=​"<span class="webkit-html-attribute-value">display:​ none;​</span>"</span>&gt;</span>​<span class="webkit-html-text-node bogus">…</span>​<span class="webkit-html-tag">&lt;<span>/div</span>&gt;</span>​</span>
-            </li>
-            <li>
-              <span class="highlight"><span class="webkit-html-tag close">&lt;<span>/body</span>&gt;</span>​</span>
-            </li>
-          </ol>
-          <li><span class="highlight"><span class="webkit-html-tag close">&lt;<span>/html</span>&gt;</span>​</span></li>
-        </ol>
-      </ol>
-
-
-
-
-    </div>
   </div>
 
   <div bat-vertical-right>
     <div class="sidebar-pane-stack fill visible">
 
-      <!-- not sure about this -->
-      <div class="sidebar-pane-title">Computed Style
-        <div class="sidebar-pane-toolbar">
-          <label class="sidebar-pane-subtitle">
-            <input type="checkbox">Show inherited
-          </label>
-        </div>
-      </div>
+      <div class="sidebar-pane-title"
+          ng-class="{expanded: selectedScopeId && modelsExpanded}"
+          ng-click="modelsExpanded = !modelsExpanded">Models</div>
 
-      <div class="sidebar-pane-title">Models</div>
-
-      <div class="sidebar-pane visible">
+      <div class="sidebar-pane visible" ng-show="modelsExpanded">
         <div class="body">
           <div class="section expanded">
             <div ng-repeat="(key, val) in watching">
-              <h2>{{key}}</h2>
               <bat-json-tree
                 val="val"
                 scope-id="key"
                 expand="expand"></bat-json-tree>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-pane-title"
+          ng-class="{expanded: selectedScopeId && watchExpanded && watchers}"
+          ng-click="watchExpanded = !watchExpanded">Watchers</div>
+
+      <div class="sidebar-pane visible" ng-show="watchExpanded">
+        <div class="body">
+          <div class="section expanded">
+            <div class="watcher-list">
+              <li ng-repeat="watcher in watchers">{{watcher}}</li>
             </div>
           </div>
         </div>

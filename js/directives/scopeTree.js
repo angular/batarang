@@ -26,7 +26,7 @@ angular.module('panelApp').directive('batScopeTree', function ($compile) {
 
   var name = function (name) {
     if (!name) {
-      return '???';
+      return '$rootScope';
     }
     if (name['ng-repeat']) {
       return name.lhs;
@@ -52,10 +52,11 @@ angular.module('panelApp').directive('batScopeTree', function ($compile) {
 
   var template =
     '<ol class="children expanded">' +
-      '<span ng-click="select()" ng-class="{selected: selectedScope == val}">' +
-        '<span class="webkit-html-tag">{{c}}</span> ' +
-        '<span class="webkit-html-attribute">{{name(val.name)}}</span> ' +
-        '<span class="webkit-html-tag">{{xc}}</span>' +
+      '<div class="selection" ng-class="{selected: selectedScopeId == val.id}"></div>' +
+      '<span ng-click="select()" ng-class="{selected: selectedScopeId == val.id}">' +
+        '<span class="webkit-html-tag">&lt;</span>' +
+        '<span class="webkit-html-attribute">{{name(val.name)}}</span>' +
+        '<span class="webkit-html-tag">&gt;</span>' +
       '</span>' +
       '<div ng-repeat="(repeat, children) in grouped">' +
         '<span class="webkit-html-comment">&lt;!-- {{repeat}} --&gt;</span>' +
@@ -64,7 +65,7 @@ angular.module('panelApp').directive('batScopeTree', function ($compile) {
             'val="child" ' +
             'inspect="inspect" ' +
             'select="select" ' +
-            'selected-scope-id="selectedScope.id">' +
+            'selected-scope-id="selectedScopeId">' +
           '</bat-scope-tree>' +
       '</div>' +
       '<bat-scope-tree ' +
@@ -72,7 +73,7 @@ angular.module('panelApp').directive('batScopeTree', function ($compile) {
         'val="child" ' +
         'inspect="inspect" ' +
         'select="select" ' +
-        'selected-scope-id="selectedScope.id">' +
+        'selected-scope-id="selectedScopeId">' +
       '</bat-scope-tree>' +
     '</ol>';
 
@@ -91,8 +92,6 @@ angular.module('panelApp').directive('batScopeTree', function ($compile) {
       element.append(template);
 
       scope.name = name;
-      scope.c = '{{';
-      scope.xc = '}}';
 
       var childScope = scope.$new();
 
@@ -110,14 +109,14 @@ angular.module('panelApp').directive('batScopeTree', function ($compile) {
             var repOver = child.name['ng-repeat'];
             grouped[repOver] = grouped[repOver] || [];
             grouped[repOver].push(child);
-          }, {});
+          });
 
         childScope.ungrouped = newChildren.filter(notRepeatedPredicate);
       });
 
 
       childScope.select = scope.select;
-      //childScope.selectedScope = scope.selectedScope;
+      //childScope.selectedScopeId = scope.selectedScopeId;
       childScope.inspect = scope.inspect;
 
       $compile(element.contents())(childScope);

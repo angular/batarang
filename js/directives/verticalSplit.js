@@ -8,6 +8,8 @@ directive('batVerticalSplit', function ($document, defaultSplit) {
     'visible'
   ];
 
+  var body = angular.element($document[0].body);
+
   return {
     restrict: 'A',
     compile: function (element) {
@@ -16,6 +18,7 @@ directive('batVerticalSplit', function ($document, defaultSplit) {
       var children = element.children();
       var left = angular.element(children[0]);
       var right = angular.element(children[1]);
+
 
       return function (scope, element, attr) {
         var slider = angular.element('<div class="split-view-resizer" style="right: ' + defaultSplit + 'px; margin-right: -2.5px;"></div>');
@@ -31,14 +34,14 @@ directive('batVerticalSplit', function ($document, defaultSplit) {
 
         slider.bind('mousedown', function (ev) {
           drag(ev);
-          oldCursor = $document.css('cursor');
-          $document.css('cursor', 'ew-resize');
+          oldCursor = body.css('cursor');
+          body.css('cursor', 'ew-resize');
           $document.bind('mousemove', drag);
           $document.bind('mouseup', stopDrag);
         });
 
         var stopDrag = function () {
-          $document.css('cursor', oldCursor);
+          body.css('cursor', oldCursor);
           $document.unbind('mousemove', drag);
           $document.unbind('mouseup', stopDrag);
         };

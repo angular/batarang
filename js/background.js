@@ -18,7 +18,10 @@ chrome.extension.onConnect.addListener(function (port) {
   });
 
   chrome.extension.onMessage.addListener(function (msg) {
-    if (msg.action === 'modelChange' || msg.action === 'scopeChange') {
+    if (msg.action === 'modelChange' ||
+        msg.action === 'scopeChange' ||
+        msg.action === 'watcherChange') {
+
       port.postMessage(msg);
     }
   });

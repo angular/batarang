@@ -1,0 +1,26 @@
+/* reset */
+
+* {
+  box-sizing: border-box;
+}
+
+/* TODO: defaults for other platforms?? */
+body {
+  cursor: default;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  font-size: 12px;
+  margin: 0;
+  tab-size: 4;
+  -webkit-user-select: none;
+  color: rgb(48, 57, 66);
+  font-family: 'Lucida Grande', sans-serif;
+}
+
+img {
+  -webkit-user-drag: none;
+}

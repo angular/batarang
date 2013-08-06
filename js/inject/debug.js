@@ -3,7 +3,7 @@
 // but injects an 'instrumentation' script tag into the app context
 // confusing, right?
 
-var instument = function (window) {
+var instument = function instument (window) {
 
   // Helper to determine if the root 'ng' module has been loaded
   // window.angular may be available if the app is bootstrapped asynchronously, but 'ng' might
@@ -163,32 +163,6 @@ var instument = function (window) {
   // Utils
   // =====
 
-  // this is silly
-  var getWatchTree = function (id) {
-    var traverse = function (sc) {
-      var tree = {
-        id: sc.$id,
-        watchers: debug.watchers[sc.$id],
-        children: []
-      };
-
-      var child = sc.$$childHead;
-      if (child) {
-        do {
-          tree.children.push(traverse(child));
-        } while (child !== sc.$$childTail && (child = child.$$nextSibling));
-      }
-
-      return tree;
-    };
-
-    var root = debug.rootScopes[id];
-    var tree = traverse(root);
-
-    return tree;
-  };
-
-
   var getScopeTree = function (id) {
 
     var names = api.niceNames();
@@ -271,6 +245,16 @@ var instument = function (window) {
         id: id,
         scope: getScopeTree(id)
       });
+    }, 50),
+
+    watcherChange: throttle(function (id) {
+      if (debug.modelWatchers[id]) {
+        fireCustomEvent({
+          action: 'watcherChange',
+          id: id,
+          watchers: debug.watchers[id]
+        });
+      }
     }, 50),
 
     // might be worth limiting
@@ -447,6 +431,7 @@ var instument = function (window) {
       debug.modelWatchers[id] = debug.modelWatchers[id] || {};
       debug.modelWatchers[id][path || ''] = true;
       emit.modelChange(id);
+      emit.watcherChange(id);
     },
 
     // unwatches all children of the given path
@@ -898,6 +883,7 @@ var instument = function (window) {
           debug.watchers[thatScope.$id] = [];
         }
         debug.watchers[thatScope.$id].push(watchStr);
+        emit.watcherChange(thatScope.$id);
 
         // patch watchExpression
         // ---------------------

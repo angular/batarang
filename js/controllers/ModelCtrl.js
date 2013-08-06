@@ -1,5 +1,8 @@
 angular.module('panelApp').controller('ModelCtrl', function ModelCtrl($scope, appContext, appModel) {
 
+  $scope.modelsExpanded = true;
+  $scope.watchExpanded = true;
+
   $scope.roots = appModel.getRootScopes;
   $scope.selectedRoot = null;
   $scope.$watch('roots()', function (newVal, oldVal) {
@@ -21,7 +24,7 @@ angular.module('panelApp').controller('ModelCtrl', function ModelCtrl($scope, ap
     }
     return appModel.getScopeTree(select);
   };
-  $scope.selectedScope = null;
+  $scope.selectedScopeId = null;
 
   $scope.watching = {};
 
@@ -32,10 +35,18 @@ angular.module('panelApp').controller('ModelCtrl', function ModelCtrl($scope, ap
     });
   });
 
+  appContext.watchWatcherChange(function (msg) {
+    $scope.watchers = msg.watchers;
+  });
+
   $scope.select = function () {
-    appModel.unwatchModel($scope.selectedScope);
-    $scope.selectedScope = this.val.id;
-    appModel.watchModel($scope.selectedScope);
+    if ($scope.selectedScopeId === this.val.id) {
+      return;
+    }
+    appModel.unwatchModel($scope.selectedScopeId);
+    delete $scope.watching[$scope.selectedScopeId];
+    $scope.selectedScopeId = this.val.id;
+    appModel.watchModel($scope.selectedScopeId);
   };
 
   $scope.expand = function (id, path) {
