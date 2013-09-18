@@ -5,9 +5,7 @@ angular.module('panelApp').factory('appModel', function (chromeExtension, appCon
     _scopeCache = {},
     _rootScopeCache = [];
 
-
-  // clear cache on page refresh
-  appContext.watchRefresh(function () {
+  appContext.watchRefresh(function clearCaches () {
     _scopeCache = {};
     _scopeTreeCache = {};
     _rootScopeCache = [];

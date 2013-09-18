@@ -145,6 +145,9 @@ var instument = function instument (window) {
     // map of scope.$ids --> $scope objects
     scopes: {},
 
+    // whether or not to emit profile data
+    profiling: false,
+
     // map of $ids --> [] array of things being watched
     modelWatchers: {},
     // map of $id + watcher --> value
@@ -257,6 +260,26 @@ var instument = function instument (window) {
       }
     }, 50),
 
+    watchPerfChange: throttle(function (str) {
+      if (debug.profiling) {
+        fireCustomEvent({
+          action: 'watchPerfChange',
+          watcher: str,
+          value: debug.watchPerf[str]
+        });
+      }
+    }, 50),
+
+    applyPerfChange: throttle(function (str) {
+      if (debug.profiling) {
+        fireCustomEvent({
+          action: 'applyPerfChange',
+          watcher: str,
+          value: debug.applyPerf[str]
+        });
+      }
+    }, 50),
+
     // might be worth limiting
     watchPerf: function () {
       throw new Error('Implement me :c');
@@ -313,6 +336,10 @@ var instument = function instument (window) {
 
   var api = window.__ngDebug = {
 
+    profiling: function (setting) {
+      debug.profiling = setting;
+    },
+
     getDeps: function () {
       return debug.deps;
     },
@@ -340,18 +367,32 @@ var instument = function instument (window) {
           ].
           forEach(function (attr) {
             var val = $elt.attr(attr),
-              className = $elt[0].className;
+              className = $elt[0].className,
+              match,
+              lhs,
+              valueIdentifier,
+              keyIdentifier;
+
             if (val) {
               name[attr] = val;
               if (attr === 'ng-repeat') {
-                var lhs = /(.+) in/.exec(val);
-                lhs = lhs[1];
-                name.lhs = lhs + summarizeObject(scope[lhs]);
+                match = /(.+) in/.exec(val);
+                lhs = match[1];
+
+                match = lhs.match(/^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$/);
+                valueIdentifier = match[3] || match[1];
+                keyIdentifier = match[2];
+
+                if (keyIdentifier) {
+                  name.lhs = valueIdentifier + '["' + scope[keyIdentifier] + '"]' + summarizeObject(scope[valueIdentifier]);
+                } else {
+                  name.lhs = valueIdentifier + summarizeObject(scope[valueIdentifier]);
+                }
+
               }
             } else if (className.indexOf(attr) !== -1) {
-              val = (new RegExp(attr + ': ([a-zA-Z0-9]+);')).exec(className);
-              val = val[1];
-              name[attr] = val;
+              match = (new RegExp(attr + ': ([a-zA-Z0-9]+);')).exec(className);
+              name[attr] = match[1];
             }
           });
 
@@ -430,6 +471,9 @@ var instument = function instument (window) {
     watchModel: function (id, path) {
       debug.modelWatchers[id] = debug.modelWatchers[id] || {};
       debug.modelWatchers[id][path || ''] = true;
+      if (!path || path === '') {
+        debug.modelWatchersState = {};
+      }
       emit.modelChange(id);
       emit.watcherChange(id);
     },
@@ -895,6 +939,7 @@ var instument = function instument (window) {
             var end = performance.now();
             debug.watchPerf[watchStr].time += (end - start);
             debug.watchPerf[watchStr].calls += 1;
+            emit.watchPerfChange(watchStr);
             return ret;
           };
         } else {
@@ -904,6 +949,7 @@ var instument = function instument (window) {
             var end = performance.now();
             debug.watchPerf[watchStr].time += (end - start);
             debug.watchPerf[watchStr].calls += 1;
+            emit.watchPerfChange(watchStr);
             return ret;
           };
         }
@@ -927,6 +973,7 @@ var instument = function instument (window) {
             }
             debug.applyPerf[applyStr].time += (end - start);
             debug.applyPerf[applyStr].calls += 1;
+            emit.applyPerfChange(applyStr);
             return ret;
           };
         }

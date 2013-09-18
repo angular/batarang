@@ -31,12 +31,6 @@ angular.module('panelApp').factory('appContext', function (chromeExtension, $roo
       "}", args, cb);
     },
 
-    refresh: function (cb) {
-      chromeExtension.eval(function (window) {
-        window.document.location.reload();
-      }, cb);
-    },
-
     inspect: function (scopeId) {
       this.executeOnScope(scopeId, function (scope, elt) {
         inspect(elt);
@@ -49,9 +43,12 @@ angular.module('panelApp').factory('appContext', function (chromeExtension, $roo
     // takes a bool
     setDebug: function (setting) {
       if (setting) {
+        // prevent a refresh if debugging is already enabled
         chromeExtension.eval(function (window) {
-          window.document.cookie = '__ngDebug=true;';
-          window.document.location.reload();
+          if (document.cookie.indexOf('__ngDebug=true') === -1) {
+            window.document.cookie = '__ngDebug=true;';
+            window.document.location.reload();
+          }
         });
       } else {
         chromeExtension.eval(function (window) {
