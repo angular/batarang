@@ -1,6 +1,6 @@
 angular.module('panelApp').directive('batJsonTree', function($compile) {
   return {
-    restrict: 'E',
+    restrict: 'EA',
     terminal: true,
     scope: {
       val: '='
