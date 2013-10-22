@@ -7,16 +7,20 @@
   width: 400px;
 }
 .scope-branch {
-  margin-left: 30px;
-  background-color: rgba(0,0,0,0.06);
+  margin-left: 15px;
+  background-color: white;
+  border-left: 1px solid #eee;
+  border-top: 1px solid #eee;
 }
 body {
   margin: 10px;
 }
+
 .well-top {
   border-radius: 4px 4px 0 0;
   margin-bottom: 0;
 }
+
 .well-bottom {
   border-radius: 0 0 4px 4px;
   border-top: none;
@@ -37,10 +41,61 @@ body {
   margin: 0;
 }
 
+bat-scope-tree {
+  font-size: 10px;
+}
+
 bat-scope-tree .selected {
   font-weight: bold;
   text-decoration: underline;
   color: #333;
+}
+
+.models-pane {
+  position: relative;
+  background: white;
+}
+
+.models-pane.pinned {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+}
+
+.models-pane.pinned .json-tree {
+  overflow: auto;
+}
+
+.btn-bar {
+  float: right;
+  display: inline-block;
+  position: absolute;
+  right: 5px;
+  top: 5px;
+}
+
+.btn-trigger {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  margin-left: 4px;
+  background: white url() no-repeat center;
+  border: 1px solid #eee;
+  border-radius: 2px;
+  outline: none;
+}
+
+.models-pin-trigger {
+  background-image: url(../img/pin.png);
+}
+
+.inspector-trigger {
+  background-image: url(../img/inspector.png);
+}
+
+.models-pin-trigger.pinned {
+  background: #ffd url(../img/pinned.png) no-repeat center;
+  border-color: #aaa;
 }
 
 /*
@@ -63,7 +118,7 @@ bat-scope-tree .selected {
   position: absolute;
   z-index: 2;
   width: 1.2em;
-  height: 1.2em;  
+  height: 1.2em;
   top: -.3em;
   margin-left: -.6em;
   cursor: default;
@@ -76,16 +131,16 @@ bat-scope-tree .selected {
 
   font-size: 13px;
   line-height: normal;
-  
+
   border: 1px solid #ccc;
   border-bottom-color: #bbb;
-  
+
   -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
-  
+
   -webkit-transition: 0.1s linear background-image;
   transition: 0.1s linear background-image;
-  
+
   overflow: visible;
 }
 
