@@ -1,8 +1,29 @@
-angular.module('panelApp').controller('ModelCtrl', function ModelCtrl($scope, appContext, appModel) {
+angular.module('panelApp').controller('ModelCtrl', function ModelCtrl($scope, appContext, appModel, $document) {
 
   $scope.inspect = function () {
     appContext.inspect(this.val.id);
   };
+
+  var isFixed = false,
+      pane = $document.find('.models-pane'),
+      trigger = $document.find('.models-pin-trigger')
+      container = $document.find('.json-tree'),
+      $window = $(window);
+
+  $scope.togglePin = function() {
+    if (isFixed) {
+      trigger.removeClass('pinned');
+      pane.removeClass('pinned');
+      container.css({height: 'auto'});
+    } else {
+      trigger.addClass('pinned');
+      pane.addClass('pinned');
+      container.css({height: ($window.height() - 50) + 'px'});
+    }
+
+    isFixed = !isFixed;
+  };
+
   $scope.select = function () {
     $scope.selectedScope = this.val.id;
   };
@@ -26,7 +47,6 @@ angular.module('panelApp').controller('ModelCtrl', function ModelCtrl($scope, ap
   $scope.selectedScope = null;
 
   $scope.enableInspector = appModel.enableInspector;
-
 
   $scope.$on('poll', function () {
 
@@ -63,6 +83,5 @@ angular.module('panelApp').controller('ModelCtrl', function ModelCtrl($scope, ap
       });
     }
   });
-
 
 });
