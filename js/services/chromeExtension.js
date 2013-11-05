@@ -1,5 +1,7 @@
 // abstraction layer for Chrome Extension APIs
-angular.module('panelApp').value('chromeExtension', {
+angular.module('panelApp').
+
+value('chromeExtension', {
   sendRequest: function (requestName, cb) {
     chrome.extension.sendRequest({
       script: requestName,
@@ -8,8 +10,6 @@ angular.module('panelApp').value('chromeExtension', {
   },
 
   // evaluates in the context of a window
-  //written because I don't like the API for chrome.devtools.inspectedWindow.eval;
-  // passing strings instead of functions are gross.
   eval: function (fn, args, cb) {
     // with two args
     if (!cb && typeof args === 'function') {

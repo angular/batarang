@@ -1,50 +1,64 @@
-angular.module('panelApp').controller('ModelCtrl', function ModelCtrl($scope, appContext, appModel) {
+angular.module('panelApp').
 
-  $scope.modelsExpanded = true;
-  $scope.watchExpanded = true;
+controller('ModelCtrl', function ModelCtrl($scope, appContext, appModel) {
 
-  $scope.roots = appModel.getRootScopes;
-  $scope.selectedRoot = null;
-  $scope.$watch('roots()', function (newVal, oldVal) {
-    if (newVal.length > 0 && newVal.indexOf($scope.selectedRoot) === -1) {
-      $scope.selectedRoot = newVal[0];
+  $scope.rootScopeIds = appModel.getRootScopeIds();
+
+  $scope.$on('rootScopeChange', function () {
+    $scope.rootScopeIds = appModel.getRootScopeIds();
+  });
+
+  $scope.$on('refresh', reset);
+
+  function reset () {
+    $scope.modelsExpanded = true;
+    $scope.watchExpanded = true;
+    $scope.selectedRootScopeId = null;
+  }
+
+  reset();
+
+  $scope.$watch('rootScopeIds', function (newVal, oldVal) {
+    if ($scope.selectedRootScopeId == null) {
+      if ($scope.rootScopeIds.some(function (id) {
+        return $scope.selectedRootScopeId = id;
+      })) {
+        while ($scope.rootScopeIds.indexOf(undefined) !== -1) {
+          $scope.rootScopeIds.splice($scope.rootScopeIds.indexOf(undefined), 1);
+        }
+      }
     }
   });
-  
-  $scope.model = null;
 
-  $scope.scopeTree = function () {
-    var select = $scope.selectedRoot;
-    if (!select) {
-      var rs = $scope.roots();
-      if (rs.length === 0) {
-        return;
-      }
-      select = rs[0];
-    }
-    return appModel.getScopeTree(select);
-  };
+  $scope.$watch('selectedRootScopeId', function (newVal) {
+    $scope.scopeTree = newVal ? appModel.getScopeTree(newVal) : undefined;
+  });
+
   $scope.selectedScopeId = null;
 
   $scope.watching = {};
 
-  appContext.watchModelChange(function (msg) {
+  $scope.$on('modelChange', function (ev, msg) {
     $scope.watching[msg.id] = $scope.watching[msg.id] || {};
-    Object.keys(msg.changes).forEach(function (key) {
-      $scope.watching[msg.id][key] = msg.changes[key];
-    });
+
+    Object.keys(msg.changes).
+      forEach(function (prop) {
+        $scope.watching[msg.id][prop] = msg.changes[prop];
+      });
   });
 
-  appContext.watchWatcherChange(function (msg) {
+  $scope.$on('watcherChange', function (ev, msg) {
     $scope.watchers = msg.watchers;
   });
 
   $scope.select = function () {
-    if ($scope.selectedScopeId === this.val.id) {
+    if (this.val && $scope.selectedScopeId === this.val.id) {
       return;
     }
+
     appModel.unwatchModel($scope.selectedScopeId);
     delete $scope.watching[$scope.selectedScopeId];
+
     $scope.selectedScopeId = this.val.id;
     appModel.watchModel($scope.selectedScopeId);
   };

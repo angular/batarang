@@ -1,8 +1,6 @@
 // Service for running code in the context of the application being debugged
 angular.module('panelApp').factory('appContext', function (chromeExtension, $rootScope) {
 
-  var port = chrome.extension.connect();
-
   // Public API
   // ==========
   return {
@@ -58,6 +56,8 @@ angular.module('panelApp').factory('appContext', function (chromeExtension, $roo
       }
     },
 
+    getAppId: getAppId,
+
     getDebug: function (cb) {
       chromeExtension.eval(function (window) {
         return document.cookie.indexOf('__ngDebug=true') !== -1;
@@ -70,58 +70,13 @@ angular.module('panelApp').factory('appContext', function (chromeExtension, $roo
       chromeExtension.eval('function (window) {' +
         'window.__ngDebug.log = ' + setting.toString() + ';' +
       '}');
-    },
-
-    // Registering events
-    // ------------------
-
-    // TODO: depreciate this; only poll from now on?
-    // There are some cases where you need to gather data on a once-per-bootstrap basis, for
-    // instance getting the version of AngularJS
-
-    // TODO: move to chromeExtension?
-    watchRefresh: function (cb) {
-      port.postMessage({
-        action: 'register',
-        inspectedTabId: chrome.devtools.inspectedWindow.tabId
-      });
-      port.onMessage.addListener(function (msg) {
-        if (msg === 'refresh') {
-          cb();
-        }
-      });
-    },
-
-    // TODO: move to chromeExtension?
-    watchModelChange: function (cb) {
-      port.onMessage.addListener(function (msg) {
-        if (msg.action === 'modelChange') {
-          $rootScope.$apply(function () {
-            cb(msg);
-          });
-        }
-      });
-    },
-
-    watchScopeChange: function (cb) {
-      port.onMessage.addListener(function (msg) {
-        if (msg.action === 'scopeChange') {
-          $rootScope.$apply(function () {
-            cb(msg);
-          });
-        }
-      });
-    },
-
-    watchWatcherChange: function (cb) {
-      port.onMessage.addListener(function (msg) {
-        if (msg.action === 'watcherChange') {
-          $rootScope.$apply(function () {
-            cb(msg);
-          });
-        }
-      });
     }
-
   };
+
+  function getAppId (cb) {
+    chromeExtension.eval(function (window) {
+      return window.__ngDebug.getAppId();
+    }, cb);
+  }
+
 });

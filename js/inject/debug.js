@@ -111,6 +111,7 @@ var instument = function instument (window) {
   customEvent.initEvent('myCustomEvent', true, true);
 
   var fireCustomEvent = function  (data) {
+    data.appId = instrumentedAppId;
     eventProxyElement.innerText = JSON.stringify(data);
     eventProxyElement.dispatchEvent(customEvent);
   };
@@ -160,7 +161,7 @@ var instument = function instument (window) {
   };
 
   var popover = null;
-
+  var instrumentedAppId = window.location.host + '~' + Math.random();
 
 
   // Utils
@@ -249,6 +250,13 @@ var instument = function instument (window) {
         scope: getScopeTree(id)
       });
     }, 50),
+
+    scopeDeleted: function (id) {
+      fireCustomEvent({
+        action: 'scopeDeleted',
+        id: id
+      });
+    },
 
     watcherChange: throttle(function (id) {
       if (debug.modelWatchers[id]) {
@@ -346,6 +354,10 @@ var instument = function instument (window) {
 
     getRootScopeIds: function () {
       return Object.keys(debug.rootScopes);
+    },
+
+    getAppId: function () {
+      return instrumentedAppId;
     },
 
     fireCustomEvent: fireCustomEvent,
@@ -994,6 +1006,7 @@ var instument = function instument (window) {
             delete debug[prop][this.$id];
           }
         }, this);
+        emit.scopeDeleted(this.$id);
         return _destroy.apply(this, arguments);
       };
 

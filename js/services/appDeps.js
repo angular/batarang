@@ -1,10 +1,12 @@
 // Service for retrieving and caching application dependencies
-angular.module('panelApp').factory('appDeps', function (chromeExtension, appContext) {
+angular.module('panelApp').
+
+factory('appDeps', function (chromeExtension, $rootScope) {
 
   var _depsCache = [];
 
   // clear cache on page refresh
-  appContext.watchRefresh(function () {
+  $rootScope.$on('refresh', function () {
     _depsCache = [];
   });
 

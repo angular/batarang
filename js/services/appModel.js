@@ -1,26 +1,47 @@
 // Service for running code in the context of the application being debugged
-angular.module('panelApp').factory('appModel', function (chromeExtension, appContext) {
+angular.module('panelApp').
+
+factory('appModel', function ($rootScope, chromeExtension) {
 
   var _scopeTreeCache = {},
     _scopeCache = {},
-    _rootScopeCache = [];
+    _rootScopeIdCache = [];
 
-  appContext.watchRefresh(function clearCaches () {
-    _scopeCache = {};
-    _scopeTreeCache = {};
-    _rootScopeCache = [];
+  $rootScope.$on('referesh', function clearCaches () {
+    emptyObject(_scopeCache);
+    emptyObject(_scopeTreeCache);
+    emptyArray(_rootScopeIdCache);
   });
 
-  appContext.watchScopeChange(function (data) {
-    if (_rootScopeCache.indexOf(data.id) === -1) {
-      _rootScopeCache.push(data.id);
+  function emptyObject (obj) {
+    for (prop in obj) {
+      if (obj.hasOwnProperty(obj)) {
+        delete obj[prop];
+      }
+    }
+  }
+
+  function emptyArray (arr) {
+    arr.splice(0, arr.length);
+  }
+
+  $rootScope.$on('scopeChange', function (ev, data) {
+    if (_rootScopeIdCache.indexOf(data.id) === -1) {
+      _rootScopeIdCache.push(data.id);
+      $rootScope.$broadcast('rootScopeChange', _rootScopeIdCache);
     }
     _scopeTreeCache[data.id] = data.scope;
   });
 
+  $rootScope.$on('scopeDeleted', function (ev, data) {
+    _rootScopeIdCache.splice(_rootScopeIdCache.indexOf(data.id), 1);
+    $rootScope.$broadcast('rootScopeChange', _rootScopeIdCache);
+    delete _scopeTreeCache[data.id];
+  });
+
   return {
-    getRootScopes: function () {
-      return _rootScopeCache;
+    getRootScopeIds: function () {
+      return _rootScopeIdCache.slice();
     },
 
     getModel: function (id, path, callback) {

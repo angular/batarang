@@ -1,16 +1,15 @@
 <div bat-vertical-split ng-controller="ModelCtrl">
 
   <div bat-vertical-left class="source-code">
-    <div ng-show="roots().length > 1">
+    <div ng-show="rootScopeIds.length > 1">
       <label for="select-root">Root
         <select
-          ng-options="root.toString() for root in roots()"
-          ng-model="selectedRoot"></select>
+          ng-options="root for root in rootScopeIds"
+          ng-model="selectedRootScopeId"></select>
       </label>
     </div>
     <bat-scope-tree
-      class=""
-      val="scopeTree()"
+      val="scopeTree"
       inspect="inspect"
       select="select"
       selected-scope-id="selectedScopeId"

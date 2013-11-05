@@ -1,5 +1,7 @@
 // Service for retrieving and caching performance data
-angular.module('panelApp').factory('appPerf', function (chromeExtension, appContext) {
+angular.module('panelApp').
+
+factory('appPerf', function (chromeExtension, $rootScope) {
 
   var _histogramCache = [],
     _watchNameToPerf = {},
@@ -12,9 +14,7 @@ angular.module('panelApp').factory('appPerf', function (chromeExtension, appCont
   };
 
   // clear cache on page refresh
-  appContext.watchRefresh(function () {
-    clear();
-  });
+  $rootScope.$on('refresh', clear);
 
   var getHistogramData = function (callback) {
     chromeExtension.eval(function (window) {

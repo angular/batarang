@@ -1,11 +1,13 @@
 // Service for running code in the context of the application being debugged
-angular.module('panelApp').factory('appInfo', function (chromeExtension, appContext) {
+angular.module('panelApp').
+
+factory('appInfo', function (chromeExtension, $rootScope) {
 
   var _versionCache = null,
     _srcCache = null;
 
   // clear cache on page refresh
-  appContext.watchRefresh(function () {
+  $rootScope.$on('refresh', function () {
     _versionCache = null;
     _srcCache = null;
   });
