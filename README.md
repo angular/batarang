@@ -6,10 +6,12 @@ https://chrome.google.com/webstore/detail/ighdmehidhipcmcojjgiloacoafjmpfk
 
 ## Installing from Source
 
-1.  Clone the repository: `git clone git://github.com/angular/angularjs-batarang`
-2.  Navigate to `chrome://chrome/extensions/` and enable Developer Mode.
-3.  Choose "Load unpacked extension"
-4.  Open the directory you just cloned (should open with Chrome, otherwise try dragging/dropping the file into Chrome) and follow the prompts to install.
+1. Clone the repository: `git clone git://github.com/angular/angularjs-batarang`
+2. Install the bower dependencies: `bower install`
+3. Build the inject script: `node scripts/inline.js`
+4. Navigate to `chrome://chrome/extensions/` and enable Developer Mode.
+5. Choose "Load unpacked extension"
+6. In the dialog, open the directory you just cloned.
 
 ## Screencast
 

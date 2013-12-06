@@ -29,7 +29,7 @@ angular.module('panelApp').controller('PerfCtrl', function PerfCtrl($scope, appC
         $scope.histogram = histogram;
       });
     });
-    appModel.getRootScopes(function (rootScopes) {
+    appModel.getRootScopeIds(function (rootScopes) {
       $scope.$apply(function () {
         $scope.roots = rootScopes;
         if ($scope.roots.length === 0) {

@@ -36,6 +36,10 @@ chrome.extension.onConnect.addListener(function (port) {
         }
       }
 
+      if (!scopeCache[msg.appId]) {
+        scopeCache[msg.appId] = {};
+      }
+
       // immediately populate the scopes tree from the cache
       Object.keys(scopeCache[msg.appId]).forEach(function (scopeId) {
         port.postMessage({      // [background] --> [devtools]
