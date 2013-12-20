@@ -26,8 +26,8 @@ module.exports = function (func, wait) {
 
     var argsString = Array.prototype.slice.call(args).join(';');
 
-    var now = new Date();
-    var remaining = wait - (now - lastCalled[argsString]);
+    var now = Date.now();
+    var remaining = wait - (now - (lastCalled[argsString] || 0));
 
     if (remaining <= 0) {
       clearTimeout(timeoutId[argsString]);
@@ -37,7 +37,7 @@ module.exports = function (func, wait) {
     }
     else if (!timeoutId[argsString]) {
       timeoutId[argsString] = setTimeout(function () {
-        lastCalled[argsString] = new Date();
+        lastCalled[argsString] = Date.now();
         timeoutId[argsString] = null;
         func.apply(thisArg, args);
       }, remaining);
