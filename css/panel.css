@@ -43,6 +43,12 @@ bat-scope-tree .selected {
   color: #333;
 }
 
+bat-scope-tree dfn {
+  font-style: normal;
+  color: #52a3cc;
+  font-size: 0.9em;
+}
+
 /*
  * Slider widget style based on jquery-ui-bootstrap
  * http://addyosmani.github.com/jquery-ui-bootstrap

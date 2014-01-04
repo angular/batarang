@@ -1,4 +1,4 @@
-angular.module('panelApp').directive('batScopeTree', function ($compile) {
+angular.module('panelApp').directive('batScopeTree', function ($compile, renderScope) {
 
   // make toggle settings persist across $compile
   var modelState = {};
@@ -9,7 +9,7 @@ angular.module('panelApp').directive('batScopeTree', function ($compile) {
   var template =
     '<div class="scope-branch">' +
       '<a href ng-click="inspect()">&lt;</a> ' +
-      '<a href ng-click="select()" ng-class="{selected: selectedScope == val.id}">Scope ({{val.id}})</a>' +
+      '<a href ng-click="select()" ng-class="{selected: selectedScope == val.id}" ng-bind-html-unsafe="name"></a>' +
       '<div ng-repeat="child in val.children">' +
         '<bat-scope-tree ' +
           'val="child" ' +
@@ -35,7 +35,9 @@ angular.module('panelApp').directive('batScopeTree', function ($compile) {
       element.append(template);
 
       var childScope = scope.$new();
-
+      scope.$watch('val', function(newVal) {
+        childScope.name = renderScope(scope.val);
+      });
       childScope.select = scope.select;
       //childScope.selectedScope = scope.selectedScope;
       childScope.inspect = scope.inspect;

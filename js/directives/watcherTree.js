@@ -1,5 +1,5 @@
 // watchers tree
-angular.module('panelApp').directive('batWatcherTree', function($compile) {
+angular.module('panelApp').directive('batWatcherTree', function($compile, renderScope) {
 
   // make toggle settings persist across $compile
   var scopeState = {};
@@ -16,7 +16,7 @@ angular.module('panelApp').directive('batWatcherTree', function($compile) {
       // see: https://github.com/angular/angular.js/issues/898
       element.append(
         '<div class="scope-branch">' +
-          '<a href ng-click="inspect()">Scope ({{val.id}})</a> | ' +
+          '<a href ng-click="inspect()" ng-bind-html-unsafe="name"></a> | ' +
           '<a href ng-click="scopeState[val.id] = !scopeState[val.id]">toggle</a>' +
           '<div ng-hide="scopeState[val.id]">' +
             '<ul>' +
@@ -35,6 +35,9 @@ angular.module('panelApp').directive('batWatcherTree', function($compile) {
         '</div>');
 
       var childScope = scope.$new();
+      scope.$watch('val', function(newVal) {
+        childScope.name = renderScope(newVal);
+      });
       childScope.scopeState = scopeState;
 
       $compile(element.contents())(childScope);

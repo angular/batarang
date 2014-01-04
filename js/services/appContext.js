@@ -16,11 +16,13 @@ angular.module('panelApp').factory('appContext', function (chromeExtension) {
       args.scopeId = scopeId;
       args.fn = fn.toString();
 
+      // Angular 1.2 adds ng-isolate-scope without ng-scope
       chromeExtension.eval("function (window, args) {" +
-        "var elts = window.document.getElementsByClassName('ng-scope'), i;" +
+        "var doc = window.document, slice = Array.prototype.slice, scopes = doc.getElementsByClassName('ng-scope'), isoScopes = doc.getElementsByClassName('ng-isolate-scope'), " +
+        "elts = slice.call(scopes).concat(slice.call(isoScopes)), i;" +
         "for (i = 0; i < elts.length; i++) {" +
           "(function (elt) {" +
-            "var $scope = window.angular.element(elt).scope();" +
+            "var el = window.angular.element(elt), $scope = el.hasClass('ng-scope') ? el.scope() : el.isolateScope();" +
             "if ($scope.$id === args.scopeId) {" +
               "(" + args.fn + "($scope, elt, args));" +
             "}" +
