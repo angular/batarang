@@ -609,9 +609,9 @@ var inject = function () {
               } else if (val === null) {
                 toAppend = '<i>null</i>';
               } else if (val instanceof Array) {
-                toAppend = '[ ... ]';
+                toAppend = objectId(val);
               } else if (val instanceof Object) {
-                toAppend = '{ ... }';
+                toAppend = objectId(val);
               } else {
                 toAppend = val.toString();
               }
