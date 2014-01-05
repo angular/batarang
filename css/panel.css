@@ -10,6 +10,11 @@
   margin-left: 30px;
   background-color: rgba(0,0,0,0.06);
 }
+.ellipsis {
+    margin-left: 30px;
+    margin-bottom: 10px;
+    font-family: monospace;
+}
 body {
   margin: 10px;
 }

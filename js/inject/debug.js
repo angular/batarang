@@ -901,14 +901,18 @@ var inject = function () {
       ng.directive('ngRepeat', function() {
         return {
           priority: 1001,
-          link: function (scope, element, attr) {
-            var oldWatch = scope.$watch;
-            scope.$watch = function(expr, listener) {
-              expr.__name = attr.ngRepeat;
-              var remove = oldWatch.apply(scope, arguments);
-              scope.$watch = oldWatch;
-              return remove;
-            };
+          compile: function() {
+            return {
+              pre: function (scope, element, attr) {
+                var oldWatch = scope.$watch;
+                scope.$watch = function(expr, listener) {
+                  expr.__name = 'ngRepeat: ' + attr.ngRepeat;
+                  var remove = oldWatch.apply(scope, arguments);
+                  scope.$watch = oldWatch;
+                  return remove;
+                };
+              }
+            }
           }
         };
       });

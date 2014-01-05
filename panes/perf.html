@@ -24,7 +24,7 @@
     <div class="span6">
       <h3>Watch Expressions</h3>
 
-      <div class="well well-top" style="height: 400px; overflow-y: auto;">
+      <div class="well well-top" style="height: 400px; overflow-y: scroll;">
         <div ng-repeat="watch in histogram|sortByTime:min:max">
           <span style="font-family: monospace;">{{watch.name | first}} </span>
           <span> | {{watch.percent}}% | {{watch.time | precision}}ms</span>
@@ -39,7 +39,7 @@
 
       <div class="well well-bottom">
         <form class="form-inline">
-          <label>Show expressions that takes from {{min}}% to {{max}}%</label>
+          <label>Show expressions that take from {{min}}% to {{max}}%</label>
           <bat-slider minimum="min" maximum="max"></bat-slider>
         </form>
         <button class="btn btn-success" ng-click="exportData()"><i class="icon-download-alt icon-white"></i> Save Data as JSON</button>
