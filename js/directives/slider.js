@@ -19,6 +19,9 @@ angular.module('panelApp').directive('batSlider', function($compile) {
 
       $compile(element.contents())(scope.$new());
 
+      scope.$watch('minimum', updateSlider);
+      scope.$watch('maximum', updateSlider);
+
       dom.slider({
         range: true,
         values: [0, 100],
@@ -37,6 +40,10 @@ angular.module('panelApp').directive('batSlider', function($compile) {
           scope.$apply();
         }
       });
+
+      function updateSlider() {
+        dom.slider('values', [scope.minimum, scope.maximum]);
+      }
 
     }
   };

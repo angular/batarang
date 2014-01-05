@@ -323,6 +323,9 @@ var inject = function () {
         },
 
         getWatchTree: function (id) {
+          if (!debug.watchesDirty[id]) {
+            return;
+          }
           var traverse = function (sc) {
             var tree = {
               id: sc.$id,
@@ -342,7 +345,7 @@ var inject = function () {
 
           var root = debug.rootScopes[id];
           var tree = traverse(root);
-
+          debug.watchesDirty[id] = false;
           return tree;
         },
 
@@ -588,6 +591,7 @@ var inject = function () {
       var debug = {
         // map of scopes --> watcher function name strings
         watchers: {},
+        watchesDirty: {},
 
         // maps of watch/apply exp/fns to perf data
         watchPerf: {},
@@ -714,6 +718,8 @@ var inject = function () {
           var watchFnToHumanReadableString = function (fn) {
             if (fn.exp) {
               return fn.exp.trim();
+            } else if (fn.__name) {
+              return fn.__name.trim();
             } else if (fn.name) {
               return fn.name.trim();
             } else {
@@ -756,6 +762,7 @@ var inject = function () {
               debug.watchers[thatScope.$id] = [];
             }
             debug.watchers[thatScope.$id].push(watchStr);
+            debug.watchesDirty[thatScope.$root.$id] = true;
 
             // patch watchExpression
             // ---------------------
@@ -804,7 +811,11 @@ var inject = function () {
               };
             }
 
-            return _watch.apply(this, arguments);
+            var unpatchedCancelWatch = _watch.apply(this, arguments);
+            return function patchedCancelWatch() {
+              debug.watchesDirty[thatScope.$root.$id] = true;
+              return unpatchedCancelWatch.apply(this, arguments);
+            }
           };
 
 
@@ -834,6 +845,7 @@ var inject = function () {
             if (ret.$root) {
               debug.rootScopes[ret.$root.$id] = ret.$root;
               debug.scopeTreeDirty[ret.$root.$id] = true;
+              debug.watchesDirty[ret.$root.$id] = true;
             }
 
             // create empty watchers array for this scope
@@ -870,7 +882,7 @@ var inject = function () {
 
             // If the debugging option is enabled, log to console
             // --------------------------------------------------
-            if (debug.log) {
+            if (api.log) {
               console.log(applyFnToLogString(fn) + '\t\t' + (end - start).toPrecision(4) + 'ms');
             }
 
@@ -881,6 +893,31 @@ var inject = function () {
           return $delegate;
         });
       });
+
+      // catch builtin ngRepeat and consider first $watch call
+      // as called from ngRepeat
+      // TODO: it could be broken by another directive with priority 1001 which adds some watches...
+      ng.directive('ngRepeat', function() {
+        return {
+          priority: 1001,
+          compile: function() {
+            //Note: it is important to use pre-link function here - it is guaranteed that it will be executed before original ngRepeat
+            // starting from angular 1.1 post-link functions are called in reverse priorities order
+            return {
+              pre: function (scope, element, attr) {
+                var oldWatch = scope.$watch;
+                scope.$watch = function(expr, listener) {
+                  expr.__name = 'ngRepeat: ' + attr.ngRepeat;
+                  var remove = oldWatch.apply(scope, arguments);
+                  scope.$watch = oldWatch;
+                  return remove;
+                };
+              }
+            }
+          }
+        };
+      });
+
     };
 
     // Return a script element with the above code embedded in it
