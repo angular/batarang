@@ -719,6 +719,8 @@ var inject = function () {
           var watchFnToHumanReadableString = function (fn) {
             if (fn.exp) {
               return fn.exp.trim();
+            } else if (fn.__name) {
+              return fn.__name.trim();
             } else if (fn.name) {
               return fn.name.trim();
             } else {
@@ -892,6 +894,25 @@ var inject = function () {
           return $delegate;
         });
       });
+
+      // catch builtin ngRepeat and consider first $watch call
+      // as called from ngRepeat
+      // TODO: it could be broken by another directive with priority 1001 which adds some watches...
+      ng.directive('ngRepeat', function() {
+        return {
+          priority: 1001,
+          link: function (scope, element, attr) {
+            var oldWatch = scope.$watch;
+            scope.$watch = function(expr, listener) {
+              expr.__name = attr.ngRepeat;
+              var remove = oldWatch.apply(scope, arguments);
+              scope.$watch = oldWatch;
+              return remove;
+            };
+          }
+        };
+      });
+
     };
 
     // Return a script element with the above code embedded in it
