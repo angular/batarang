@@ -902,6 +902,8 @@ var inject = function () {
         return {
           priority: 1001,
           compile: function() {
+            //Note: it is important to use pre-link function here - it is guaranteed that it will be executed before original ngRepeat
+            // starting from angular 1.1 post-link functions are called in reverse priorities order
             return {
               pre: function (scope, element, attr) {
                 var oldWatch = scope.$watch;
