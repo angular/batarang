@@ -330,7 +330,6 @@ var inject = function () {
             var tree = {
               id: sc.$id,
               watchers: debug.watchers[sc.$id],
-              watchersMap: {},
               children: []
             };
 
