@@ -1021,7 +1021,6 @@ var inject = function () {
         var tempDirective = $compileProvider.directive;
 
         $compileProvider.directive = function (name, directiveFactory) {
-          console.log(name, directiveFactory);
           if (angular.isString(name)) {
             debug.directiveNames.push(name);
           }
