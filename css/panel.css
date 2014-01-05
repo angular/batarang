@@ -104,3 +104,7 @@ bat-scope-tree .selected {
   background-image: -webkit-linear-gradient(top, #049cdb, #0064cd);
   /*background-image: linear-gradient(top, #049cdb, #0064cd);*/
 }
+
+[ng-cloak] {
+    display: none;
+}

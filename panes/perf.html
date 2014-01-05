@@ -9,6 +9,7 @@
 
   <div class="row-fluid">
     <div class="span6">
+      <span class="label label-info pull-right " ng-show="queueLength > 0"><i class="icon icon-repeat icon-white"></i>Building...</span>
       <h3>Watch Tree</h3>
       <div class="well well-top" style="height: 400px; overflow-y: auto;">
         <bat-watcher-tree val="tree" inspect="inspect"></bat-watcher-tree>
@@ -27,6 +28,8 @@
         <div ng-repeat="watch in histogram|sortByTime:min:max">
           <span style="font-family: monospace;">{{watch.name | first}} </span>
           <span> | {{watch.percent}}% | {{watch.time | precision}}ms</span>
+          <a class="pull-right" href ng-click="setMin(watch.percent)" ng-show="min < watch.percent && !$last">Hide below</a>
+          <a class="pull-right" href ng-click="setMin(0)" ng-show="min >= watch.percent && $last">Show all</a>
           <div class="progress">
             <div ng-style="{width: (watch.percent) + '%'}" class= "bar">
             </div>
@@ -36,7 +39,7 @@
 
       <div class="well well-bottom">
         <form class="form-inline">
-          <label>Filter expressions</label>
+          <label>Show expressions that takes from {{min}}% to {{max}}%</label>
           <bat-slider minimum="min" maximum="max"></bat-slider>
         </form>
         <button class="btn btn-success" ng-click="exportData()"><i class="icon-download-alt icon-white"></i> Save Data as JSON</button>

@@ -323,10 +323,14 @@ var inject = function () {
         },
 
         getWatchTree: function (id) {
+          if (!debug.watchesDirty[id]) {
+            return;
+          }
           var traverse = function (sc) {
             var tree = {
               id: sc.$id,
               watchers: debug.watchers[sc.$id],
+              watchersMap: {},
               children: []
             };
 
@@ -342,7 +346,7 @@ var inject = function () {
 
           var root = debug.rootScopes[id];
           var tree = traverse(root);
-
+          debug.watchesDirty[id] = false;
           return tree;
         },
 
@@ -588,6 +592,7 @@ var inject = function () {
       var debug = {
         // map of scopes --> watcher function name strings
         watchers: {},
+        watchesDirty: {},
 
         // maps of watch/apply exp/fns to perf data
         watchPerf: {},
@@ -756,6 +761,7 @@ var inject = function () {
               debug.watchers[thatScope.$id] = [];
             }
             debug.watchers[thatScope.$id].push(watchStr);
+            debug.watchesDirty[thatScope.$root.$id] = true;
 
             // patch watchExpression
             // ---------------------
@@ -804,7 +810,11 @@ var inject = function () {
               };
             }
 
-            return _watch.apply(this, arguments);
+            var unpatchedCancelWatch = _watch.apply(this, arguments);
+            return function patchedCancelWatch() {
+              debug.watchesDirty[thatScope.$root.$id] = true;
+              return unpatchedCancelWatch.apply(this, arguments);
+            }
           };
 
 
@@ -834,6 +844,7 @@ var inject = function () {
             if (ret.$root) {
               debug.rootScopes[ret.$root.$id] = ret.$root;
               debug.scopeTreeDirty[ret.$root.$id] = true;
+              debug.watchesDirty[ret.$root.$id] = true;
             }
 
             // create empty watchers array for this scope
@@ -870,7 +881,7 @@ var inject = function () {
 
             // If the debugging option is enabled, log to console
             // --------------------------------------------------
-            if (debug.log) {
+            if (api.log) {
               console.log(applyFnToLogString(fn) + '\t\t' + (end - start).toPrecision(4) + 'ms');
             }
 

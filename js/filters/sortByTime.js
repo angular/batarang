@@ -12,9 +12,10 @@ angular.module('panelApp').filter('sortByTime', function () {
       return copy;
     }
 
-    var start = Math.floor(input.length * min/100);
-    var end = Math.ceil(input.length * max/100) - start;
-
-    return copy.splice(start, end);
+    // Previous implementation was very strange. I think it is more obvious to work this way:
+    //   to show only those watchers with percentages >= min and <= max.
+    return copy.filter(function(data) {
+      return data.percent >= min && data.percent <= max;
+    });
   };
 });
