@@ -22,6 +22,10 @@ function ngTool() {
     });
   }
 
+  function toString(obj) {
+    return JSON.stringify(obj).replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  }
+
   var __ngTool = {};
 
   // Renders provided object (or array) to the string which briefily describes the object:
@@ -45,7 +49,7 @@ function ngTool() {
       return "{ " + idExpr + rest + " }";
     }
     else {
-      return JSON.stringify(obj);
+      return toString(obj);
     }
   };
 

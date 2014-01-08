@@ -1058,9 +1058,6 @@ var inject = function () {
           if (angular.isArray(df)) {
             df[df.length - 1] = patchDirectiveFunction(name, df[df.length - 1])
           }
-          else if (angular.isObject(df)) {
-            df.$get = patchDirectiveFunction(name, df.$get)
-          }
           else if (angular.isFunction(df)) {
             return patchDirectiveFunction(name, df);
           }

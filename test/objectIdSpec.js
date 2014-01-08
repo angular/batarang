@@ -58,4 +58,8 @@ describe('objectId function', function() {
     expect(objectId({item: 3, $$hashKey: 30})).toEqual("{ item: 3 }");
   });
 
+  it('should convert HTML characters to entities', function() {
+    expect(objectId({name: "<b>hello</b>"})).toEqual('{ name: "&lt;b&gt;hello&lt;/b&gt;" }')
+  });
+
 });
