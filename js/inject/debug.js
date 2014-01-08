@@ -267,6 +267,10 @@ var inject = function () {
       var getScopeSourceDirective = function (el) {
         var directive = debug.directives['E-' + el.tagName.toLowerCase()];
         if (directive && directive.newScope) return directive;
+        if (el.hasAttribute('__directive')) {
+          directive = debug.directives['E-' + el.getAttribute('__directive')];
+          if (directive && directive.newScope) return directive;
+        }
         for (var i = 0; i < el.attributes.length; i++) {
           directive = debug.directives['A-' + el.attributes[i].name.toLowerCase()];
           if (directive && directive.newScope) return directive;
@@ -366,7 +370,7 @@ var inject = function () {
         }
 
         debug.scopeNames = {};
-        ["[ng-controller]", ".ng-scope", ".ng-isolate-scope", "[ng-repeat]", "[ng-include]", "ng-include"].forEach(function (selector) {
+        ["[ng-controller]", ".ng-scope", ".ng-isolate-scope", "[ng-repeat]", "[ng-include]", "ng-include", "[__directive]"].forEach(function (selector) {
           angular.forEach(document.querySelectorAll(selector), saveScopeName);
         });
       };
@@ -1020,29 +1024,63 @@ var inject = function () {
       ng.config(function patchCompileProvider ($compileProvider) {
         var tempDirective = $compileProvider.directive;
 
+        function patchDirectiveFunction(name, func) {
+          var oldFunc = func;
+
+          //this is to mark elements which replaced directive tag
+          function patchCompileOrLink (argNr, dirName, originalFunc) {
+            return function() {
+              angular.element(arguments[argNr]).attr('__directive', dirName);
+              if (originalFunc) {
+                return originalFunc.apply(this, arguments);
+              }
+            }
+          }
+
+          return function() {
+            var def = oldFunc.apply(this, arguments);
+            var dirName = def.name || name;
+            angular.forEach((def.restrict || 'A').split(''), function(restrictType) {
+              debug.directives[restrictType + '-' + snakeCase(dirName)] = {name: dirName, newScope: !!def.scope};
+            });
+            if (def.replace === true) {
+              if (def.compile) {
+                def.compile = patchCompileOrLink(0, dirName, def.compile);
+              }
+              else {
+                def.link = patchCompileOrLink(1, dirName, def.link);
+              }
+            }
+            return def;
+          }
+        }
+        function patchDirectiveFactory(name, df) {
+          if (angular.isArray(df)) {
+            df[df.length - 1] = patchDirectiveFunction(name, df[df.length - 1])
+          }
+          else if (angular.isObject(df)) {
+            df.$get = patchDirectiveFunction(name, df.$get)
+          }
+          else if (angular.isFunction(df)) {
+            return patchDirectiveFunction(name, df);
+          }
+          return df;
+        }
+
         $compileProvider.directive = function (name, directiveFactory) {
           if (angular.isString(name)) {
             debug.directiveNames.push(name);
+            return tempDirective.call(this, name, patchDirectiveFactory(name, directiveFactory));
           }
           else {
+            var patched = {};
             angular.forEach(name, function (directiveFactory, name) {
               debug.directiveNames.push(name);
+              patched[name] = patchDirectiveFactory(name, directiveFactory);
             });
+            return tempDirective.call(this, patched);
           }
-          return tempDirective.apply(this, arguments);
         };
-      });
-
-      ng.run(function readDirectiveOptions ($injector) {
-        angular.forEach(debug.directiveNames, function(name) {
-          var directives = $injector.get(name + 'Directive');
-          angular.forEach(directives, function(def) {
-            angular.forEach((def.restrict || 'A').split(''), function(restrictType) {
-              debug.directives[restrictType + '-' + snakeCase(name)] = {name: name, newScope: !!def.scope};
-              //TODO: patch directive to add something to element which will refer to the directive name if 'replace' flag is true
-            });
-          });
-        });
       });
     };
 
