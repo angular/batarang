@@ -250,6 +250,131 @@ var inject = function () {
         debug.scopeDirty[scope.$id] = false;
       };
 
+
+      //converts camelCase to snake-case
+      var snakeCase = function (inCamelCase, delimiter) {
+        return inCamelCase.split(/(?=[A-Z])/).map(function (p) {
+          return p.toLowerCase()
+        }).join(delimiter || "-");
+      };
+
+      //see objectId.js
+      var objectId = ngTool().objectId;
+
+      // gets name of user-defined directive which introduced new scope for the DOM element
+      // for now works with Attribute and Element directives only
+      // does not work if 'replace' flag for directive is true
+      var getScopeSourceDirective = function (el) {
+        var directive = debug.directives['E-' + el.tagName.toLowerCase()];
+        if (directive && directive.newScope) return directive;
+        if (el.hasAttribute('__directive')) {
+          directive = debug.directives['E-' + el.getAttribute('__directive')];
+          if (directive && directive.newScope) return directive;
+        }
+        for (var i = 0; i < el.attributes.length; i++) {
+          directive = debug.directives['A-' + el.attributes[i].name.toLowerCase()];
+          if (directive && directive.newScope) return directive;
+        }
+        return undefined;
+      };
+
+
+      // Tries to give human-readable name to each scope using the following:
+      // - controller name
+      // - user-defined directive name
+      // - ngRepeat iterated item object
+      // - ngInclude source
+      // - __name attribute of the scope (may be used for debug)
+      var collectScopeNames = function () {
+
+        function getScope(jq) {
+          //for angular 1.2 we need to check isolateScope as well
+          return (jq.hasClass('ng-isolate-scope') && jq.isolateScope) ? jq.isolateScope() : jq.scope();
+        }
+
+        function controllerName (obj, el) {
+          if (!el.hasAttribute('ng-controller')) {
+            return;
+          }
+          obj.controller = el.getAttribute("ng-controller");
+        }
+
+        function directiveName (obj, el) {
+          var directive = getScopeSourceDirective(el);
+          if (!directive) {
+            return;
+          }
+          obj.directive = directive.name;
+        }
+
+        function ngRepeat (obj, el, scope) {
+          if (!el.hasAttribute('ng-repeat')) {
+            return;
+          }
+          var expr = el.getAttribute('ng-repeat');
+          //TODO: for object it is probably better to read value, not key
+          var itemExpr = expr.split('in')[0].split(",")[0].replace(/^\(/, '').trim();
+          var item = scope.$eval(itemExpr);
+          if (item) {
+            obj.ngRepeat = {
+                index: scope.$index,
+                itemExpr: itemExpr,
+                itemId: objectId(item)
+            }
+          }
+        }
+
+        function ngInclude (obj, el, scope) {
+          if (el.hasAttribute('ng-include')) {
+            obj.ngInclude = scope.$eval(el.getAttribute('ng-include'));
+          }
+          if (el.tagName == "NG-INCLUDE") {
+            obj.ngInclude = scope.$eval(el.getAttribute('src'));
+          }
+        }
+
+        //for directives like ng-include the scope for corresponding dom element is actually the parent scope,
+        // so we need to get scope of first child (if it does not have its own isolated scope)
+        function correctScope (el, scope) {
+          if (el.hasAttribute('ng-include') || el.tagName == 'NG-INCLUDE') {
+            var $el = angular.element(el), firstChild = $el.children()[0];
+            if (firstChild) {
+              var childScope = getScope(angular.element(firstChild));
+              if (childScope.$parent != scope) {
+                //there is one more scope inside
+                childScope = childScope.$parent;
+              }
+              return childScope;
+            }
+          }
+          return scope;
+        }
+
+        function parseNode (el, scope) {
+          var res = {};
+          controllerName(res, el);
+          directiveName(res, el);
+          ngRepeat(res, el, scope);
+          ngInclude(res, el, scope);
+          return Object.keys(res).length == 0 ? undefined : res;
+        }
+
+        function saveScopeName (el) {
+          var $el = angular.element(el);
+          var scope = getScope($el);
+          var realScope = correctScope(el, scope);
+          if (angular.isDefined(debug.scopeNames[realScope.$id])) {
+            return;
+          }
+          debug.scopeNames[realScope.$id] = parseNode(el, scope);
+        }
+
+        debug.scopeNames = {};
+        ["[ng-controller]", ".ng-scope", ".ng-isolate-scope", "[ng-repeat]", "[ng-include]", "ng-include", "[__directive]"].forEach(function (selector) {
+          angular.forEach(document.querySelectorAll(selector), saveScopeName);
+        });
+      };
+
       var popover = null;
 
       // Public API
@@ -281,9 +406,11 @@ var inject = function () {
           if (debug.scopeTreeDirty[id] === false) {
             return;
           }
+          collectScopeNames();
           var traverse = function (sc) {
             var tree = {
               id: sc.$id,
+              name: sc.__name || debug.scopeNames[sc.$id],
               children: []
             };
 
@@ -323,9 +450,12 @@ var inject = function () {
         },
 
         getWatchTree: function (id) {
+          //TODO: here we may cache the scope names and do not collect them on each call
+          collectScopeNames();
           var traverse = function (sc) {
             var tree = {
               id: sc.$id,
+              name: sc.__name || debug.scopeNames[sc.$id],
               watchers: debug.watchers[sc.$id],
               children: []
             };
@@ -483,9 +613,9 @@ var inject = function () {
               } else if (val === null) {
                 toAppend = '<i>null</i>';
               } else if (val instanceof Array) {
-                toAppend = '[ ... ]';
+                toAppend = objectId(val);
               } else if (val instanceof Object) {
-                toAppend = '{ ... }';
+                toAppend = objectId(val);
               } else {
                 toAppend = val.toString();
               }
@@ -595,6 +725,8 @@ var inject = function () {
 
         // map of scope.$ids --> $scope objects
         scopes: {},
+        // map of scope.$ids --> $scope human readable names (as string or as object with several 'type': 'name' strings)
+        scopeNames: {},
         // map of scope.$ids --> model objects
         models: {},
         // map of $ids --> bools
@@ -604,7 +736,13 @@ var inject = function () {
         rootScopes: {},
         scopeTreeDirty: {},
 
-        deps: []
+        deps: [],
+
+        // map of directive names in form '<restrict>-snake-case' --> {name: <camelCase>, newScope: <true/false>}
+        // for directives with multiple restricts there will be several records
+        directives: {},
+        //list of directive names registered by user
+        directiveNames: []
       };
 
 
@@ -881,11 +1019,71 @@ var inject = function () {
           return $delegate;
         });
       });
+
+      // Here we collect user-defined directives
+      ng.config(function patchCompileProvider ($compileProvider) {
+        var tempDirective = $compileProvider.directive;
+
+        function patchDirectiveFunction(name, func) {
+          var oldFunc = func;
+
+          //this is to mark elements which replaced directive tag
+          function patchCompileOrLink (argNr, dirName, originalFunc) {
+            return function() {
+              angular.element(arguments[argNr]).attr('__directive', dirName);
+              if (originalFunc) {
+                return originalFunc.apply(this, arguments);
+              }
+            }
+          }
+
+          return function() {
+            var def = oldFunc.apply(this, arguments);
+            var dirName = def.name || name;
+            angular.forEach((def.restrict || 'A').split(''), function(restrictType) {
+              debug.directives[restrictType + '-' + snakeCase(dirName)] = {name: dirName, newScope: !!def.scope};
+            });
+            if (def.replace === true) {
+              if (def.compile) {
+                def.compile = patchCompileOrLink(0, dirName, def.compile);
+              }
+              else {
+                def.link = patchCompileOrLink(1, dirName, def.link);
+              }
+            }
+            return def;
+          }
+        }
+        function patchDirectiveFactory(name, df) {
+          if (angular.isArray(df)) {
+            df[df.length - 1] = patchDirectiveFunction(name, df[df.length - 1])
+          }
+          else if (angular.isFunction(df)) {
+            return patchDirectiveFunction(name, df);
+          }
+          return df;
+        }
+
+        $compileProvider.directive = function (name, directiveFactory) {
+          if (angular.isString(name)) {
+            debug.directiveNames.push(name);
+            return tempDirective.call(this, name, patchDirectiveFactory(name, directiveFactory));
+          }
+          else {
+            var patched = {};
+            angular.forEach(name, function (directiveFactory, name) {
+              debug.directiveNames.push(name);
+              patched[name] = patchDirectiveFactory(name, directiveFactory);
+            });
+            return tempDirective.call(this, patched);
+          }
+        };
+      });
     };
 
     // Return a script element with the above code embedded in it
     var script = window.document.createElement('script');
-    script.innerHTML = '(' + fn.toString() + '(window))';
+    script.innerHTML = ngTool.toString() + ';\n' + '(' + fn.toString() + '(window))';
 
     return script;
   }()));
