@@ -1,0 +1,9 @@
+{
+    "preferences": [],
+    "name": "angular-batarang",
+    "version": "0.4.3",
+    "fullName": "AngularJS Batarang",
+    "id": "angular-batarang",
+    "description": "AngularJS Batarang... Returns on Firefox DevTools. Tool for debugging Angular applications.",
+    "permissions": {"private-browsing": true}
+}

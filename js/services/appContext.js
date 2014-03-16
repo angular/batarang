@@ -82,19 +82,7 @@ angular.module('panelApp').factory('appContext', function (chromeExtension) {
 
     // TODO: move to chromeExtension?
     watchRefresh: function (cb) {
-      var port = chrome.extension.connect();
-      port.postMessage({
-        action: 'register',
-        inspectedTabId: chrome.devtools.inspectedWindow.tabId
-      });
-      port.onMessage.addListener(function(msg) {
-        if (msg === 'refresh') {
-          cb();
-        }
-      });
-      port.onDisconnect.addListener(function (a) {
-        console.log(a);
-      });
+      return chromeExtension.watchTargetTab(cb);
     }
 
   };
