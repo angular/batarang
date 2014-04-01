@@ -22,7 +22,7 @@ var instument = function instument (window) {
 
   if (!ngLoaded()) {
     // TODO: var name
-    var areWeThereYet = function (ev) {
+    function areWeThereYet (ev) {
       if (ev.srcElement.tagName === 'SCRIPT') {
         var oldOnload = ev.srcElement.onload;
         ev.srcElement.onload = function () {
@@ -35,7 +35,7 @@ var instument = function instument (window) {
           }
         };
       }
-    };
+    }
     document.addEventListener('DOMNodeInserted', areWeThereYet);
     return;
   }
@@ -51,6 +51,7 @@ var instument = function instument (window) {
 
   var throttle        = require('./lib/throttle.js');
   var summarizeObject = require('./lib/summarizeObject.js');
+  var niceNames       = require('./lib/niceNames.js');
 
   // helper to extract dependencies from function arguments
   // not all versions of AngularJS expose annotate
@@ -122,8 +123,7 @@ var instument = function instument (window) {
     deps: []
   };
 
-  var popover = null;
-  var instrumentedAppId = window.location.host + '~' + Math.random();
+  var instrumentedAppId = window.location.host + '~' + Date.now() + '~' Math.random();
 
 
   // Utils
@@ -131,7 +131,7 @@ var instument = function instument (window) {
 
   var getScopeTree = function (id) {
 
-    var names = api.niceNames();
+    var names = niceNames();
 
     var traverse = function (sc) {
       var tree = {
@@ -278,10 +278,9 @@ var instument = function instument (window) {
       return instrumentedAppId;
     },
 
-    fireCustomEvent: fireCustomEvent,
-
-    niceNames: require('./lib/niceNames.js'),
-    getModel: require('./lib/summarizeModel.js'),
+    fireCustomEvent : fireCustomEvent,
+    niceNames       : niceNames,
+    getModel        : summarizeObject,
 
     setSomeModel: function (id, path, value) {
       debug.scope[id].$apply(path + '=' + JSON.stringify(value));
@@ -314,9 +313,7 @@ var instument = function instument (window) {
           delete debug.modelWatchers[id][key];
         }
       });
-    },
-
-    enable: require('./lib/popover.js')
+    }
   };
 
   var recordDependencies = function (providerName, dependencies) {

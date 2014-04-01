@@ -1,7 +1,11 @@
 describe('inject', function () {
 
   // inject/debug bootstraps asynchronously
-  beforeEach(function () {});
+  beforeEach(function () {
+    waitsFor(function () {
+      return window.__ngDebug;
+    }, 'app to bootstrap', 100)
+  });
 
   it('should expose a __ngDebug object to window', function () {
     expect(window.__ngDebug).not.toBeUndefined();
