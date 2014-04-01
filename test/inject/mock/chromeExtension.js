@@ -5,5 +5,7 @@ if (typeof chrome === 'undefined') {
 }
 
 chrome.extension = {
-  sendMessage: dump
+  sendMessage: function (message) {
+    console.log(message)
+  }
 };
