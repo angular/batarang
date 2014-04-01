@@ -101,10 +101,14 @@ module.exports = function(grunt) {
     }, grunt.task.current.async());
   });
 
+  grunt.registerTask('inline', '...', require('./scripts/inline'));
+
   grunt.loadNpmTasks('grunt-release');
   grunt.loadNpmTasks('grunt-zip');
   grunt.loadNpmTasks('grunt-conventional-changelog');
 
-  grunt.registerTask('default', ['bump', 'markdown', 'changelog', 'release', 'zip']);
+  grunt.registerTask('release', ['bump', 'markdown', 'changelog', 'release', 'zip']);
+  grunt.registerTask('build', ['markdown', 'inline']);
+  grunt.registerTask('default', ['build']);
 
 };
