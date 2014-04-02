@@ -123,7 +123,7 @@ var instument = function instument (window) {
     deps: []
   };
 
-  var instrumentedAppId = window.location.host + '~' + Date.now() + '~' Math.random();
+  var instrumentedAppId = window.location.host + '~' + Date.now() + '~' + Math.random();
 
 
   // Utils

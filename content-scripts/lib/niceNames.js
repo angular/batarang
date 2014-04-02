@@ -21,19 +21,17 @@ var interestingAttributes = {
     // body...
   },
   'ng-repeat': function (value) {
-      match = /(.+) in/.exec(val);
-      lhs = match[1];
+    match = /(.+) in/.exec(val);
+    lhs = match[1];
 
-      match = lhs.match(/^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$/);
-      valueIdentifier = match[3] || match[1];
-      keyIdentifier = match[2];
+    match = lhs.match(/^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$/);
+    valueIdentifier = match[3] || match[1];
+    keyIdentifier = match[2];
 
-      if (keyIdentifier) {
-        name.lhs = valueIdentifier + '["' + scope[keyIdentifier] + '"]' + summarizeObject(scope[valueIdentifier]);
-      } else {
-        name.lhs = valueIdentifier + summarizeObject(scope[valueIdentifier]);
-      }
-
+    if (keyIdentifier) {
+      name.lhs = valueIdentifier + '["' + scope[keyIdentifier] + '"]' + summarizeObject(scope[valueIdentifier]);
+    } else {
+      name.lhs = valueIdentifier + summarizeObject(scope[valueIdentifier]);
     }
   }
 }
