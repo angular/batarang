@@ -3,7 +3,7 @@
 
 var throttle = require('./throttle');
 
-// TOOD: solve this like a real engineer
+// TODO: solve this like a real engineer
 // cuz jasmine doesn't patch Date.now
 var temporalPatchification = (function () {
   var dateConst = Date.now();
