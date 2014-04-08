@@ -38,11 +38,11 @@ module.exports = function(grunt) {
     zip: {
       release: {
         src: [
-          'css/*.css',
-          'img/**',
-          'js/**',
-          'panes/*.html',
-          'panel.html',
+          'devtools-panel/css/*.css',
+          'devtools-panel/img/**',
+          'devtools-panel/js/**',
+          'devtools-panel/panes/*.html',
+          'devtools-panel/panel.html',
           'LICENSE',
           'manifest.json',
           'background.html',
