@@ -10,7 +10,11 @@
     "grunt-zip": "~0.7.0",
     "semver": "~1.1.4",
     "rewire": "~2.0.0",
-    "karma-phantomjs-launcher": "^0.1.3"
+    "karma-phantomjs-launcher": "^0.1.3",
+    "karma-coverage": "^0.2.1",
+    "karma": "^0.12.3",
+    "karma-jasmine": "^0.1.5",
+    "karma-chrome-launcher": "^0.1.3"
   },
   "scripts": {
     "test": "echo 'write them'"
