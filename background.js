@@ -2,6 +2,7 @@
 // scopes need to be cached here so that if the devtools connects,
 // the list of scopes can be immediately populated
 // TODO: clear this on refresh ?
+// appId --> { scopeName --> (key, value...) }
 var scopeCache = {};
 
 var scopeCacheEmpty = function () {
