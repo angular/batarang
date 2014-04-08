@@ -2,3 +2,4 @@ batarang-release-*.zip
 *.build.js
 .idea
 node_modules
+coverage/
