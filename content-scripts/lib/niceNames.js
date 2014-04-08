@@ -3,10 +3,11 @@ module.exports = function niceNames () {
   var ngScopeElts = document.getElementsByClassName('ng-scope');
   ngScopeElts = Array.prototype.slice.call(ngScopeElts);
   return ngScopeElts.
+    map(angular.element).
     reduce(accumulateElements, {});
 
   function accumulateElements (acc, elt) {
-    acc[scope.$id] = nameElement(elt);
+    acc[elt.scope().$id] = nameElement(elt);
     return acc;
   }
 
@@ -21,32 +22,29 @@ var interestingAttributes = {
     // body...
   },
   'ng-repeat': function (value) {
-    match = /(.+) in/.exec(val);
-    lhs = match[1];
+    var match = /(.+) in/.exec(val);
+    var lhs = match[1];
 
     match = lhs.match(/^(?:([\$\w]+)|\(([\$\w]+)\s*,\s*([\$\w]+)\))$/);
-    valueIdentifier = match[3] || match[1];
-    keyIdentifier = match[2];
+    var valueIdentifier = match[3] || match[1];
+    var keyIdentifier = match[2];
 
-    if (keyIdentifier) {
-      name.lhs = valueIdentifier + '["' + scope[keyIdentifier] + '"]' + summarizeObject(scope[valueIdentifier]);
-    } else {
-      name.lhs = valueIdentifier + summarizeObject(scope[valueIdentifier]);
-    }
+    name.lhs = valueIdentifier +
+                (keyIdentifier ? '["' + scope[keyIdentifier] + '"]' : '') +
+                summarizeObject(scope[valueIdentifier]);
   }
-}
+};
 
 
 function nameElement (element) {
-  var $elt = angular.element(elt),
-      scope = $elt.scope(),
+  var scope = element.scope(),
       name = {};
 
   Object.keys(interestingAttributes).forEach(function (attributeName) {
 
   })
 
-  return Object.keys(name).length > 0 ? name : boringName($elt);
+  return Object.keys(name).length > 0 ? name : boringName(element);
 }
 
 function boringName ($elt) {
