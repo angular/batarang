@@ -1,5 +1,10 @@
-// Similar to browserify, but inlines the scripts instead.
-// This is a really dumb naive approach that only supports `module.exports =`
+/**
+ * This file takes all of the files in 'content-scripts/' and concats
+ * then into one file. This so that only one file will need to be
+ * injected into the content of a page.
+ *
+ * You will need to run 'grunt inline' to build the new 'inject.build.js'
+ */
 
 var fs = require('fs');
 var r = new RegExp("( *)(.*?)require\\('(.+?)'\\)", 'g');
