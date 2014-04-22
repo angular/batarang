@@ -352,7 +352,7 @@ var inject = function () {
           }
           var angular = window.angular;
           popover = angular.element(
-            '<div style="position: fixed; left: 50px; top: 50px; z-index: 9999; background-color: #f1f1f1; box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;">' +
+            '<div class="batarang" style="position: fixed; left: 50px; top: 50px; z-index: 9999; background-color: #f1f1f1; box-shadow: 0 15px 10px -10px rgba(0, 0, 0, 0.5), 0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;">' +
               '<div style="position: relative" style="min-width: 300px; min-height: 100px;">' +
                 '<div style="min-width: 100px; min-height: 50px; padding: 5px;"><pre>{ Please select a scope }</pre></div>' +
                 '<button style="position: absolute; top: -15px; left: -15px; cursor: move;">⇱</button>' +
