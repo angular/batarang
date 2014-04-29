@@ -3,6 +3,7 @@
 // but injects an 'instrumentation' script tag into the app context
 // confusing, right?
 
+
 var instument = function instument (window) {
   // Helper to determine if the root 'ng' module has been loaded
   // window.angular may be available if the app is bootstrapped asynchronously, but 'ng' might

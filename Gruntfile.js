@@ -4,17 +4,28 @@ var markdown = require('marked'),
 
 module.exports = function(grunt) {
 
+  // Load grunt tasks automatically
+  require('load-grunt-tasks')(grunt);
+
+  // Configurable paths
+  var config = {
+    app: 'app',
+    dist: 'dist',
+    manifest: grunt.file.readJSON('app/manifest.json')
+  };
+
   grunt.initConfig({
-    pkg: grunt.file.readJSON('manifest.json'),
+    config: config,
+    pkg: grunt.file.readJSON('app/manifest.json'),
     changelog: {
       options: {
         dest: 'CHANGELOG.md',
-        versionFile: 'manifest.json'
+        versionFile: 'app/manifest.json'
       }
     },
     bump: {
       options: {
-        file: 'manifest.json'
+        file: 'app/manifest.json'
       }
     },
     markdown: {
@@ -29,26 +40,73 @@ module.exports = function(grunt) {
         tagName: 'v<%= version %>',
         bump: false, // we have out own bump
         npm: false,
-        file: 'manifest.json'
+        file: 'app/manifest.json'
       }
     },
     stage: {
-      files: ['CHANGELOG.md', 'pane/help.html']
+      files: ['CHANGELOG.md', 'panes/help.html']
     },
     zip: {
       release: {
         src: [
-          'devtools-panel/css/*.css',
-          'devtools-panel/img/**',
-          'devtools-panel/js/**',
-          'devtools-panel/panes/*.html',
-          'devtools-panel/panel.html',
+          'app/devtools-panel/css/*.css',
+          'app/devtools-panel/img/**',
+          'app/devtools-panel/js/**',
+          'app/devtools-panel/panes/*.html',
+          'app/devtools-panel/panel.html',
           'LICENSE',
-          'manifest.json',
-          'background.html',
-          'devtoolsBackground.html'
+          'app/manifest.json',
+          'app/background/**',
+          '!app/background/chromereload.js',
+          'app/content-scripts/inject.build.js',
+          'app/bower_components/angular/angular.js',
+          'app/bower_components/angular-mocks/angular-mocks.js',
+          'app/bower_components/jquery/jquery.js',,
+          'app/bower_components/d3/d3.min.js'
         ],
         dest: 'batarang-release-' + Date.now() + '.zip'
+      }
+    },
+    watch: {
+      inline: {
+        options: {
+          livereload: true
+        },
+        files: ['scripts/inline.js','app/content-scripts/**/*.js', '!app/content-scripts/inject.build.js'],
+        tasks: ['inline']
+      },
+      scripts: {
+        options: {
+          livereload: true
+        },
+        files: ['app/devtools-panel/**/*.*','app/content-scripts/inject.build.js','app/background/**','app/content-scripts/**'],
+        tasks: []
+      }
+    },
+    // Grunt server and debug server setting
+    connect: {
+      options: {
+        port: 9000,
+        livereload: 35729,
+        // change this to '0.0.0.0' to access the server from outside
+        hostname: 'localhost'
+      },
+      chrome: {
+        options: {
+          open: false,
+          base: [
+            '<%= config.app %>'
+          ]
+        }
+      },
+      test: {
+        options: {
+          open: false,
+          base: [
+            'test',
+            '<%= config.app %>'
+          ]
+        }
       }
     }
   });
@@ -103,12 +161,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('inline', '...', require('./scripts/inline'));
 
-  grunt.loadNpmTasks('grunt-release');
-  grunt.loadNpmTasks('grunt-zip');
-  grunt.loadNpmTasks('grunt-conventional-changelog');
-
   grunt.registerTask('release', ['bump', 'markdown', 'changelog', 'release', 'zip']);
   grunt.registerTask('build', ['markdown', 'inline']);
   grunt.registerTask('default', ['build']);
+
+  grunt.registerTask('debug', ['connect:chrome', 'watch'])
 
 };

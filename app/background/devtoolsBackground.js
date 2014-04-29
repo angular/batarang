@@ -7,6 +7,8 @@
  *
  */
 
+console.log('Test')
+
 var panels = chrome.devtools.panels;
 
 // The function below is executed in the context of the inspected page.

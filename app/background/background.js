@@ -1,4 +1,4 @@
-
+console.log("LOADING BATARANG BACKGROUND.JS");
 // scopes need to be cached here so that if the devtools connects,
 // the list of scopes can be immediately populated
 // TODO: clear this on refresh ?

@@ -9,9 +9,9 @@ module.exports = function (config) {
 
     files: [
       'test/inject/mock/*.js',
-      'content-scripts/inject.build.js',
-      'bower_components/angular/angular.js',
-      'bower_components/angular-mocks/angular-mocks.js',
+      'app/content-scripts/inject.build.js',
+      'app/bower_components/angular/angular.js',
+      'app/bower_components/angular-mocks/angular-mocks.js',
       'test/inject/*.js'
     ],
 
