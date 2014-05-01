@@ -1,9 +1,12 @@
+const { Class } = require("sdk/core/heritage");
 const self = require("sdk/self");
-const Promise = require("sdk/core/promise");
+var Promise = require("sdk/core/promise");
 
 const Tab = require("sdk/tabs/tab-firefox").Tab;
 
 const { registerInspectorSidebar } = require("register-sidebar-addons");
+
+const { Cu } = require("chrome");
 
 registerInspectorSidebar({
   id: "angular-batarang",
@@ -50,8 +53,9 @@ exports.devtoolTabDefinition = {
 
   build: function(iframeWindow, toolbox) {
     // init devtool tab
-    AngularBatarang.initialize(iframeWindow, toolbox);
-    return Promise.resolve(AngularBatarang);
+    let panelInstance = new AngularBatarang(iframeWindow,
+                                            toolbox);
+    return Promise.resolve(panelInstance);
   }
 };
 
@@ -67,7 +71,7 @@ var angularPageMod = pageMod.PageMod({
   }
 });
 
-let AngularBatarang = {
+let AngularBatarang = Class({
   initialize: function(frame, toolbox) {
     this.outerFrame = frame;
     this.innerFrame = frame.document.querySelector("iframe");
@@ -101,9 +105,22 @@ let AngularBatarang = {
                            evt.data.data.code,
                            self.data.url("panel.html")).
           then( (result) => {
+            try {
+              if (typeof result == "string") {
+                result = JSON.parse(result);
+              } else {
+                if (result && result.type == "undefined") {
+                  result = null;
+                }
+              }
+            } catch(e) {
+              console.log("ERROR PARSING", result, e);
+              result = null;
+            }
+
             this.innerFrame.contentWindow.postMessage({
               id: evt.data.id,
-              reply: JSON.parse(result)
+              reply: result
             }, "*");
           })
       }).then(null, (err) => console.log("FAILED1", err.toString()) );
@@ -112,7 +129,7 @@ let AngularBatarang = {
       console.log("UNKNOWN REQUEST", evt.data.requestName);
     }
   }
-};
+});
 
 function evaluateJavascript(webconsoleClient, javascriptCode, javascriptURL) {
   let deferred = Promise.defer();

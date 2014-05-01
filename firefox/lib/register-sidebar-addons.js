@@ -23,7 +23,7 @@ XPCOMUtils.defineLazyModuleGetter(this, "EnvironmentClient",
 XPCOMUtils.defineLazyModuleGetter(this, "ObjectClient",
    "resource://gre/modules/devtools/dbg-client.jsm");
 
-const Promise = require("sdk/core/promise");
+var Promise = require("sdk/core/promise");
 
 const addonSidebarsDefs = new Map();
 
