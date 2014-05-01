@@ -4,40 +4,66 @@ var Promise = require("sdk/core/promise");
 
 const Tab = require("sdk/tabs/tab-firefox").Tab;
 
-const { registerInspectorSidebar } = require("register-sidebar-addons");
+const {
+  registerInspectorSidebar,
+  unregisterInspectorSidebar
+} = require("register-sidebar-addons");
 
 const { Cu } = require("chrome");
 
-registerInspectorSidebar({
-  id: "angular-batarang",
-  label: "AngularJS",
-  evaluatedJavascriptFun: function getAngularPanelContents() {
-    if (window.angular && $0) {
-      //TODO: can we move this scope export into updateElementProperties
-      var scope = window.angular.element($0).scope();
-      // Export $scope to the console
-      window.$scope = scope;
-      return (function (scope) {
-        var panelContents = {
-          __private__: {}
-        };
+let { get: getPref } = require("sdk/preferences/service")
 
-        for (prop in scope) {
-          if (scope.hasOwnProperty(prop)) {
-            if (prop.substr(0, 2) === '$$') {
-              panelContents.__private__[prop] = scope[prop];
-            } else {
-              panelContents[prop] = scope[prop];
-            }
-          }
-        }
-        return panelContents;
-      }(scope));
-    } else {
-      return {};
-    }
+let prefs = require("sdk/preferences/event-target").PrefsTarget({
+});
+
+prefs.on("devtools.angular-batarang.enabled", function (name) {
+  let enabled = getPref(name);
+  console.log("DEVTOOLS ANGULAR TOGGLED", enabled);
+
+  if (enabled) {
+    activateSidebar();
+  } else {
+    deactivateSidebar();
   }
 });
+
+function deactivateSidebar() {
+  unregisterInspectorSidebar("angular-batarang");
+}
+
+function activateSidebar() {
+  registerInspectorSidebar({
+    id: "angular-batarang",
+    label: "AngularJS",
+    evaluatedJavascriptFun: function getAngularPanelContents() {
+      if (window.angular && $0) {
+        // TODO: can we move this scope export into
+        // updateElementProperties
+        var scope = window.angular.element($0).scope();
+        // Export $scope to the console
+        window.$scope = scope;
+        return (function (scope) {
+          var panelContents = {
+            __private__: {}
+          };
+
+          for (prop in scope) {
+            if (scope.hasOwnProperty(prop)) {
+              if (prop.substr(0, 2) === '$$') {
+                panelContents.__private__[prop] = scope[prop];
+              } else {
+                panelContents[prop] = scope[prop];
+              }
+            }
+          }
+          return panelContents;
+        }(scope));
+      } else {
+        return {};
+      }
+    }
+  });
+}
 
 exports.devtoolTabDefinition = {
   id: "angular-batarang",

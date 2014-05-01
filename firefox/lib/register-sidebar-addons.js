@@ -27,6 +27,26 @@ var Promise = require("sdk/core/promise");
 
 const addonSidebarsDefs = new Map();
 
+exports.unregisterInspectorSidebar = function (sidebarId) {
+  addonSidebarsDefs.delete(sidebarId);
+
+  for (let toolbox of gDevTools._toolboxes.values()) {
+    let inspector = toolbox.getPanel("inspector");
+    if (inspector) {
+      let tab = inspector.sidebar.getTab(sidebarId);
+
+      if (inspector.sidebar.getCurrentTabID() === sidebarId) {
+        inspector.sidebar.select(inspector.sidebar._tabs.keys().next().value);
+      }
+
+      let tab_header = inspector.sidebar._tabs.get(sidebarId);
+      let tab_panel = inspector.sidebar.getTab(sidebarId);
+      tab_header.parentNode.removeChild(tab_header);
+      tab_panel.parentNode.removeChild(tab_panel);
+    }
+  }
+};
+
 exports.registerInspectorSidebar = function(sidebarDefinition) {
   addonSidebarsDefs.set(sidebarDefinition.id, sidebarDefinition);
 };
@@ -110,15 +130,16 @@ function buildInspectorSidebar(panel, { id, label, evaluatedJavascriptFun }) {
       }, false);
 
       function onNewNode() {
-        webconsoleClient.evaluateJS("(" + evaluatedJavascriptFun.toString() + ")();",
-                                    (res) => {
-                                      // refresh variables view
-                                      console.log("evaluateJS result", res);
-                                      let options = { objectActor: res.result };
-                                      let view = variablesView;
-                                      view.empty();
-                                      view.controller.setSingleVariable(options).expanded;
-                                    });
+        webconsoleClient.evaluateJS(
+          "(" + evaluatedJavascriptFun.toString() + ")();",
+          (res) => {
+            // refresh variables view
+            console.log("evaluateJS result", res);
+            let options = { objectActor: res.result };
+            let view = variablesView;
+            view.empty();
+            view.controller.setSingleVariable(options).expanded;
+          });
       }
     });
 
@@ -127,6 +148,7 @@ function buildInspectorSidebar(panel, { id, label, evaluatedJavascriptFun }) {
   return panel;
 }
 
+// NOTE: needed to support firefox XX
 function patchVariablesViewController(controller) {
   if (controller.setSingleVariable) {
     return;
