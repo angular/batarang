@@ -1,5 +1,6 @@
 // abstraction layer for Chrome Extension APIs
 angular.module('panelApp').value('chromeExtension', {
+  browserType: 'chrome',
   sendRequest: function (requestName, cb) {
     chrome.extension.sendRequest({
       script: requestName,
@@ -23,5 +24,21 @@ angular.module('panelApp').value('chromeExtension', {
       '(window, ' +
       JSON.stringify(args) +
       '));', cb);
+  },
+
+  watchTargetTab: function (cb) {
+    var port = chrome.extension.connect();
+    port.postMessage({
+      action: 'register',
+      inspectedTabId: chrome.devtools.inspectedWindow.tabId
+    });
+    port.onMessage.addListener(function(msg) {
+      if (msg === 'refresh') {
+        cb();
+      }
+    });
+    port.onDisconnect.addListener(function (a) {
+      console.log(a);
+    });
   }
 });

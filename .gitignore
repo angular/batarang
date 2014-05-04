@@ -1,1 +1,5 @@
 batarang-release-*.zip
+
+node_modules/
+dist/
+tmp/

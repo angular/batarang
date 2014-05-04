@@ -9,22 +9,26 @@ angular.module('panelApp').factory('filesystem', function(chromeExtension) {
   return {
     exportJSON: function (name, data) {
       //TODO: file size/limits? 1024*1024
-       window.webkitRequestFileSystem(window.TEMPORARY, 1024*1024, function (fs) {
-        fs.root.getFile(name + '.json', {create: true}, function (fileEntry) {
-          fileEntry.createWriter(function(fileWriter) {
+      if (window.webkitRequestFileSystem) {
+        window.webkitRequestFileSystem(window.TEMPORARY, 1024*1024, function (fs) {
+          fs.root.getFile(name + '.json', {create: true}, function (fileEntry) {
+            fileEntry.createWriter(function(fileWriter) {
 
-            var blob = new Blob([ JSON.stringify(data) ], { type: 'text/plain' });
+              var blob = new Blob([ JSON.stringify(data) ], { type: 'text/plain' });
 
-            fileWriter.onwriteend = function () {
-              // navigate to file, will download
-              //location.href = fileEntry.toURL();
-              window.open(fileEntry.toURL());
-            };
+              fileWriter.onwriteend = function () {
+                // navigate to file, will download
+                //location.href = fileEntry.toURL();
+                window.open(fileEntry.toURL());
+              };
 
-            fileWriter.write(blob);
+              fileWriter.write(blob);
+            }, function() {});
           }, function() {});
         }, function() {});
-      }, function() {});
+      } else {
+        window.open("data:application/json;base64," + btoa(JSON.stringify(data)));
+      }
     }
   };
 });

@@ -1,13 +1,17 @@
 {
   "name": "angularjs-batarang",
   "devDependencies": {
-    "grunt": "~0.4.1",
+    "grunt": "~0.4.4",
     "grunt-contrib-jshint": "~0.1.1",
     "grunt-conventional-changelog": "~0.1.2",
     "grunt-karma": "~0.4.3",
     "grunt-release": "https://github.com/btford/grunt-release/archive/feat-tag-name.tar.gz",
     "marked": "~0.2.8",
-    "grunt-zip": "~0.7.0",
-    "semver": "~1.1.4"
+    "grunt-zip": "~0.13.0",
+    "semver": "~1.1.4",
+    "grunt-contrib-copy": "~0.5.0",
+    "grunt-mozilla-addon-sdk": "~0.3.2",
+    "grunt-preprocess": "~4.0.0",
+    "grunt-contrib-clean": "~0.5.0"
   }
 }

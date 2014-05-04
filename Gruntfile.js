@@ -35,14 +35,72 @@ module.exports = function(grunt) {
     stage: {
       files: ['CHANGELOG.md', 'pane/help.html']
     },
+    preprocess: {
+      firefox: {
+        src: 'panel.html',
+        dest: 'dist/firefox/data/panel.html',
+        options: {
+          context: {
+            FIREFOX: true
+          }
+        }
+      },
+      chrome: {
+        src: 'panel.html',
+        dest: 'dist/chrome/panel.html',
+        options: {
+          context: {
+            CHROME: true
+          }
+        }
+      }
+    },
+    copy: {
+      dist: {
+        files: [
+          {
+            expand: true,
+            cwd: 'firefox',
+            src: [ '**/*' ],
+            dest: "dist/firefox/"
+          },
+          { expand: true,
+            src: [
+              'css/*.css',
+              'img/**',
+              'js/**',
+              'panes/*.html',
+              'LICENSE',
+              'manifest.json',
+              'background.html',
+              'devtoolsBackground.html'
+            ],
+            dest: "dist/firefox/data/"
+          },
+          { expand: true,
+            src: [
+              'css/*.css',
+              'img/**',
+              'js/**',
+              'panes/*.html',
+              'LICENSE',
+              'manifest.json',
+              'background.html',
+              'devtoolsBackground.html'
+            ],
+            dest: "dist/chrome"
+          }
+        ]
+      }
+    },
     zip: {
       release: {
+        cwd: 'dist/chrome/',
         src: [
           'css/*.css',
           'img/**',
           'js/**',
           'panes/*.html',
-          'panel.html',
           'LICENSE',
           'manifest.json',
           'background.html',
@@ -50,7 +108,31 @@ module.exports = function(grunt) {
         ],
         dest: 'batarang-release-' + Date.now() + '.zip'
       }
-    }
+    },
+    "mozilla-addon-sdk": {
+      "1_14": {
+        options: { revision: "1.14" }
+      }
+    },
+    "mozilla-cfx": {
+      run: {
+        options: {
+          "mozilla-addon-sdk": "1_14",
+          extension_dir: "dist/firefox",
+          command: "run"
+        }
+      }
+    },
+    "mozilla-cfx-xpi": {
+      "1_15": {
+        options: {
+          "mozilla-addon-sdk": "1_14",
+          extension_dir: "dist/firefox",
+          dist_dir: "tmp/xpi"
+        }
+      }
+    },
+    clean: ['dist']
   });
 
   grunt.registerTask('bump', 'bump manifest version', function (type) {
@@ -104,7 +186,17 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-release');
   grunt.loadNpmTasks('grunt-zip');
   grunt.loadNpmTasks('grunt-conventional-changelog');
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-preprocess');
+  grunt.loadNpmTasks('grunt-mozilla-addon-sdk');
 
-  grunt.registerTask('default', ['bump', 'markdown', 'changelog', 'release', 'zip']);
-
+  grunt.registerTask('default', ['bump', 'markdown', 'changelog', 'release',
+                                 'copy', 'preprocess:chrome', 'zip']);
+  grunt.registerTask('build_xpi', ['mozilla-addon-sdk',
+                                   'copy', 'preprocess:firefox',
+                                   'mozilla-cfx-xpi']);
+  grunt.registerTask('run_xpi', ['mozilla-addon-sdk',
+                                 'copy', 'preprocess:firefox',
+                                 'mozilla-cfx:run']);
 };

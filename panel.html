@@ -34,7 +34,15 @@
   <script src="js/services/appModel.js"></script>
   <script src="js/services/appPerf.js"></script>
   <script src="js/services/appWatch.js"></script>
+
+  <!-- @ifdef CHROME -->
   <script src="js/services/chromeExtension.js"></script>
+  <!-- @endif -->
+
+  <!-- @ifdef FIREFOX -->
+  <script src="js/services/firefoxExtension.js"></script>
+  <!-- @endif -->
+
   <script src="js/services/filesystem.js"></script>
 
   <script src="js/controllers/DepsCtrl.js"></script>
