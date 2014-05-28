@@ -6,15 +6,15 @@ angular.module('panelApp').factory('appHighlight', function (appCss) {
   var styles = {
     scopes: {
       selector: '.ng-scope',
-      style: 'border: 1px solid red'
+      style: 'outline: 1px solid red'
     },
     bindings: {
       selector: '.ng-binding',
-      style: 'border: 1px solid blue'
+      style: 'outline: 1px solid blue'
     },
     app: {
       selector: '[ng-app]',
-      style: 'border: 1px solid green'
+      style: 'outline: 1px solid green'
     }
   };
 
