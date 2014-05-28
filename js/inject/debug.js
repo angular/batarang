@@ -359,7 +359,7 @@ var inject = function () {
                 '<button style="position: absolute; top: -15px; left: 10px;">+</button>' +
                 '<button style="position: absolute; top: -15px; right: -15px;">x</button>' +
                 '<style>' +
-                  '.ng-scope.bat-selected { border: 1px solid red; } ' +
+                  '.ng-scope.bat-selected { outline: 1px solid red; } ' +
                   '.bat-indent { margin-left: 20px; }' +
                 '</style>' +
               '</div>' +
