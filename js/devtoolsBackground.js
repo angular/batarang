@@ -5,20 +5,31 @@ var panels = chrome.devtools.panels;
 var getPanelContents = function () {
   if (window.angular && $0) {
     //TODO: can we move this scope export into updateElementProperties
-    var scope = window.angular.element($0).scope();
+    var scope = window.angular.element($0).scope(),
+        dataBinding = window.angular.element($0).data('$binding');
+
     // Export $scope to the console
     window.$scope = scope;
     return (function (scope) {
       var panelContents = {
-        __private__: {}
+        scope: {
+          __private__: {}
+        },
+        bindings: []
       };
+
+      if (dataBinding) {
+        panelContents.bindings = angular.isArray(dataBinding)
+                               ? dataBinding.map(function(b) { return b.exp; })
+                               : [dataBinding.exp || dataBinding];
+      }
 
       for (prop in scope) {
         if (scope.hasOwnProperty(prop)) {
           if (prop.substr(0, 2) === '$$') {
-            panelContents.__private__[prop] = scope[prop];
+            panelContents.scope.__private__[prop] = scope[prop];
           } else {
-            panelContents[prop] = scope[prop];
+            panelContents.scope[prop] = scope[prop];
           }
         }
       }
