@@ -15,5 +15,8 @@
       "run_at": "document_start"
     }
   ],
+  "web_accessible_resources": [
+    "hint.bundle.js"
+  ],
   "minimum_chrome_version": "21.0.1180.57"
 }

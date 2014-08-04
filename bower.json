@@ -3,7 +3,8 @@
   "version": "0.5.0",
   "dependencies": {
     "angular": "~1.2.20",
-    "d3": "~3.2.6"
+    "d3": "~3.2.6",
+    "angular-loader": "~1.2.20"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.20"
