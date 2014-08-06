@@ -1,0 +1,72 @@
+<!doctype html>
+<html ng-csp ng-app="ngHintUI">
+  <head>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+
+    <script src="HintCtrl.js"></script>
+
+    <!--<script src="hint.js"></script>-->
+
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="app.css">
+
+  </head>
+  <body>
+    <div ng-controller="HintCtrl" >
+      <div class="row" style="padding:10px">
+        <div class="col-md-12">
+          <ul class="nav nav-tabs">
+            <li ng-class="{active: module === modName}" ng-repeat="(modName, value) in messageData" ng-click="setModule(modName)">
+              <a data-toggle="tab">
+                {{modName}}
+              </a>
+            </li>
+          </ul>
+          <div class="row" style="padding: 5px 0px">
+            <div class="col-md-2">
+              <ul class="nav nav-pills nav-stacked">
+                <li ng-class="{active: type === label}" ng-repeat="label in labels" ng-click="setType(label)">
+                  <a class="offsetTab">
+                    {{dashesToSpace(label)}}
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="col-md-10">
+              <div class="input-group">
+                <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span></div>
+                <input class="form-control" type="text" placeholder="Search Messages" ng-model="search">
+              </div>
+              <table class="table table-striped table-hover" ng-show="messageData[module][type].length">
+                <thead>
+                  <tr>
+                    <th>No.</th>
+                    <th ng-show="module === 'All' && type === 'All-Messages' ">Module</th>
+                    <th>Message</th>
+                    <th ng-show="type === 'All-Messages'">Type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr ng-repeat="message in messageData[module][type]| filter:search"
+                      ng-class="{danger: type === 'All-Messages' && message.type === 'Error-Messages',
+                                 warning: type === 'All-Messages' && message.type === 'Warning-Messages',
+                                 info: type === 'All-Messages' && message.type === 'Suggestion-Messages',}">
+                    <td>{{$index+1}}</td>
+                    <td ng-show="module === 'All' && type === 'All-Messages'">Hint {{message.module}}</td>
+                    <td>{{message.message || message}}</td>
+                    <td ng-show="type === 'All-Messages'">{{message.type.substring(0,message.type.indexOf('-'))}}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div>
+                <h3 ng-bind="isEmpty"></h3>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
