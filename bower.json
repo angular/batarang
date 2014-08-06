@@ -4,7 +4,10 @@
   "dependencies": {
     "angular": "~1.2.20",
     "d3": "~3.2.6",
-    "angular-loader": "~1.2.20"
+    "angular-loader": "~1.2.20",
+    "angular-bootstrap": "~0.11.0",
+    "jquery": "~2.1.1",
+    "bootstrap": "~3.2.0"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.20"

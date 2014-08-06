@@ -4,7 +4,8 @@
   "description": "chrome extension for inspecting angular apps",
   "main": "index.js",
   "dependencies": {
-    "angular-hint": "^0.0.0"
+    "angular-hint": "^0.0.0",
+    "browserify": "^5.9.1"
   },
   "devDependencies": {},
   "scripts": {

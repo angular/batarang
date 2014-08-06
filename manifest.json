@@ -2,21 +2,21 @@
   "name": "AngularJS Batarang",
   "version": "0.5.0",
   "description": "Extends the Developer Tools, adding tools for debugging and profiling AngularJS applications.",
-  "devtools_page": "background/devtoolsBackground.html",
+  "devtools_page": "devtoolsBackground.html",
   "manifest_version": 2,
   "permissions": [
     "tabs",
     "<all_urls>"
   ],
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["inject.js"],
-      "run_at": "document_start"
-    }
-  ],
+  // "content_scripts": [
+  //   {
+  //     "matches": ["<all_urls>"],
+  //     "js": ["inject.js"],
+  //     "run_at": "document_start"
+  //   }
+  // ],
   "web_accessible_resources": [
-    "hint.bundle.js"
+   // "hint.bundle.js"
   ],
   "minimum_chrome_version": "21.0.1180.57"
 }
