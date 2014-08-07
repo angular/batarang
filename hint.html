@@ -27,7 +27,7 @@
               <ul class="nav nav-pills nav-stacked">
                 <li ng-class="{active: type === label}" ng-repeat="label in labels" ng-click="setType(label)">
                   <a class="offsetTab">
-                    {{dashesToSpace(label)}}
+                    {{label}}
                   </a>
                 </li>
               </ul>
@@ -54,7 +54,7 @@
                     <td>{{$index+1}}</td>
                     <td ng-show="module === 'All' && type === 'All-Messages'">Hint {{message.module}}</td>
                     <td>{{message.message || message}}</td>
-                    <td ng-show="type === 'All-Messages'">{{message.type.substring(0,message.type.indexOf('-'))}}</td>
+                    <td ng-show="type === 'All-Messages'">{{message.type.substring(message.type.indexOf(' '))}}</td>
                   </tr>
                 </tbody>
               </table>
