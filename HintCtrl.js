@@ -6,6 +6,18 @@ angular.module('ngHintUI')
       $scope.module, $scope.type, $scope.isEmpty = '';
 
       //message data will be an array sent from hint log to batarang to here
+
+      // connect to background page
+      var port = chrome.extension.connect();
+      port.onMessage.addListener(function(msg) {
+        $scope.$apply(function () {
+          $scope.messageData.Directives['Error-Messages'].push(msg + ' ' + Math.random());
+        });
+      });
+      port.onDisconnect.addListener(function (a) {
+        console.log(a);
+      });
+
       $scope.messageData = {
         'Modules': {
           'Error-Messages': ['qwer$scope is a message', 'So issdfs $scope', 'Dont forget asdfsbout me too'],

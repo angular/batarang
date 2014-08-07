@@ -1,4 +1,29 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+
+require('./bower_components/angular-loader/angular-loader.js');
+require('angular-hint');
+
+// afterThisGetsDefined(window, 'angular', function () {
+//   afterThisGetsDefined(angular, 'module', function () {
+//     require('angular-hint');
+//   });
+// });
+
+// function afterThisGetsDefined(obj, prop, fn) {
+//   Object.defineProperty(obj, prop, {
+//     set: function (val) {
+//       Object.defineProperty(obj, prop, {
+//         configurable: true,
+//         writable: true
+//       });
+//       obj[prop] = val;
+//       fn();
+//     },
+//     configurable: true
+//   });
+// }
+
+},{"./bower_components/angular-loader/angular-loader.js":2,"angular-hint":3}],2:[function(require,module,exports){
 /**
  * @license AngularJS v1.2.21
  * (c) 2010-2014 Google, Inc. http://angularjs.org
@@ -414,21 +439,7 @@ setupModuleLoader(window);
 angular.Module;
 
 
-},{}],2:[function(require,module,exports){
-
-require('./bower_components/angular-loader/angular-loader.js');
-require('angular-hint');
-var eventProxyElement = document.getElementById('__ngDebugElement');
-
-var customEvent = document.createEvent('Event');
-customEvent.initEvent('myCustomEvent', true, true);
-
-angular.hint.onMessage = function (data) {
-  eventProxyElement.innerText = data;
-  eventProxyElement.dispatchEvent(customEvent);
-};
-
-},{"./bower_components/angular-loader/angular-loader.js":1,"angular-hint":3}],3:[function(require,module,exports){
+},{}],3:[function(require,module,exports){
 //Create pipe for all hint messages from different modules
 angular.hint = require('angular-hint-log');
 
@@ -444,8 +455,6 @@ require('angular-hint-modules');
 // The default ng-hint behavior loads all modules
 var allModules = ['ngHintControllers', 'ngHintDirectives', 'ngHintDom', 'ngHintEvents',
   'ngHintInterpolation', 'ngHintModules'];
-
-var SEVERITY_WARNING = 2;
 
 // Determine whether this run is by protractor.
 // If protractor is running, the bootstrap will already be deferred.
@@ -491,8 +500,8 @@ function loadModules() {
   } else if (document.querySelector('[ng-hint]')) {
     modules = allModules;
   } else {
-    angular.hint.logMessage('General', 'ngHint is included on the page, but is not active because'+
-      ' there is no `ng-hint` attribute present', SEVERITY_WARNING);
+    angular.hint.logMessage('##General## ngHint is included on the page, but is not active because'+
+      ' there is no `ng-hint` attribute present');
   }
   return modules;
 }
@@ -509,7 +518,7 @@ function hintModulesFromElement (elt) {
 
   return selectedModules.map(hintModuleName).filter(function (name) {
     return (allModules.indexOf(name) > -1) ||
-      angular.hint.logMessage('General', 'Module ' + name + ' could not be found', SEVERITY_WARNING);
+      angular.hint.logMessage('##General## Module ' + name + ' could not be found');
   });
 }
 
@@ -526,37 +535,21 @@ function flush() {
   for(var i = 0, ii = groups.length; i < ii; i++) {
     console.groupCollapsed? console.groupCollapsed('Angular Hint: ' + groups[i]) :
       console.log('Angular Hint: ' + groups[i]);
-      if(log[groups[i]]['Error Messages']) {
-        logGroup(log[groups[i]]['Error Messages'], 'Error Messages');
-      }
-      if(log[groups[i]]['Warning Messages']) {
-        logGroup(log[groups[i]]['Warning Messages'], 'Warning Messages');
-      }
-      if(log[groups[i]]['Suggestion Messages']) {
-        logGroup(log[groups[i]]['Suggestion Messages'], 'Suggestion Messages');
-      }
+    var messages = Object.keys(log[groups[i]]);
+    for(var j = 0, jj = messages.length; j < jj; j++) {
+      console.log(messages[j]);
+    }
     console.groupEnd && console.groupEnd();
   }
 }
-setInterval(flush, 2);
+setInterval(flush, 5);
 
-function logGroup(group, type) {
-  console.group? console.group(type + ':') : console.log(type + ':');
-  for(var i = 0, ii = group.length; i < ii; i++) {
-    console.log(group[i]);
-  }
-  console.group && console.groupEnd();
-}
-
-},{"angular-hint-controllers":4,"angular-hint-directives":5,"angular-hint-dom":40,"angular-hint-events":42,"angular-hint-interpolation":51,"angular-hint-log":60,"angular-hint-modules":61}],4:[function(require,module,exports){
+},{"angular-hint-controllers":4,"angular-hint-directives":5,"angular-hint-dom":35,"angular-hint-events":37,"angular-hint-interpolation":48,"angular-hint-log":59,"angular-hint-modules":60}],4:[function(require,module,exports){
 'use strict';
 
-var nameToControllerMatch = {},
-  controllers = {},
-  hintLog = angular.hint = require('angular-hint-log'),
-  MODULE_NAME = 'Controllers',
-  SEVERITY_ERROR = 1,
-  SEVERITY_WARNING = 2;
+var nameToControllerMatch = {};
+var controllers = {};
+var hintLog = angular.hint = require('angular-hint-log');
 
 /**
 * Decorates $controller with a patching function to
@@ -568,32 +561,19 @@ angular.module('ngHintControllers', []).
         return function(ctrl, locals) {
           //If the controller name is passed, find the controller than matches it
           if(typeof ctrl === 'string') {
-            if(nameToControllerMatch[ctrl]) {
-              ctrl = nameToControllerMatch[ctrl];
-            } else {
-              //If the controller function cannot be found, check for it on the window
-              checkUppercaseName(ctrl);
-              checkControllerInName(ctrl);
-              ctrl = window[ctrl] || ctrl;
-              if(typeof ctrl === 'string') {
-                throw new Error('The controller function for ' + ctrl + ' could not be found.' +
-                  ' Is the function registered under that name?');
-              }
-            }
+            ctrl = nameToControllerMatch[ctrl];
           }
           locals = locals || {};
           //If the controller is not in the list of already registered controllers
           //and it is not connected to the local scope, it must be instantiated on the window
-          if(!controllers[ctrl] && (!locals.$scope || !locals.$scope[ctrl]) &&
-              ctrl.toString().indexOf('@name ngModel.NgModelController#$render') === -1 &&
-              ctrl.toString().indexOf('@name form.FormController') === -1) {
+          if(!controllers[ctrl] && (!locals.$scope || !locals.$scope[ctrl])) {
             if(angular.version.minor <= 2) {
-              hintLog.logMessage(MODULE_NAME, 'It is against Angular best practices to ' +
+              hintLog.logMessage('##Controllers## It is against Angular best practices to ' +
                 'instantiate a controller on the window. This behavior is deprecated in Angular' +
-                ' 1.3.0', SEVERITY_WARNING);
+                ' 1.3.0');
             } else {
-              hintLog.logMessage(MODULE_NAME, 'Global instantiation of controllers was deprecated' +
-                ' in Angular 1.3.0. Define the controller on a module.', SEVERITY_ERROR);
+              hintLog.logMessage('##Controllers## Global instantiation of controllers was deprecated in Angular' +
+              ' 1.3.0. Define the controller on a module.');
             }
           }
           var ctrlInstance = $delegate.apply(this, [ctrl, locals]);
@@ -605,42 +585,36 @@ angular.module('ngHintControllers', []).
 /**
 * Save details of the controllers as they are instantiated
 * for use in decoration.
-* Hint about the best practices for naming controllers.
 */
 var originalModule = angular.module;
-
-function checkUppercaseName(controllerName) {
-  var firstLetter = controllerName.charAt(0);
-  if(firstLetter !== firstLetter.toUpperCase() && firstLetter === firstLetter.toLowerCase()) {
-    hintLog.logMessage(MODULE_NAME, 'The best practice is to name controllers with an' +
-      ' uppercase first letter. Check the name of \'' + controllerName + '\'.', SEVERITY_WARNING);
-  }
-}
-
-function checkControllerInName(controllerName) {
-  var splitName = controllerName.split('Controller');
-  if(splitName.length === 1 || splitName[splitName.length - 1] !== '') {
-    hintLog.logMessage(MODULE_NAME, 'The best practice is to name controllers ending with ' +
-      '\'Controller\'. Check the name of \'' + controllerName + '\'.', SEVERITY_WARNING);
-  }
-}
-
 angular.module = function() {
-  var module = originalModule.apply(this, arguments),
-    originalController = module.controller;
+  var module = originalModule.apply(this, arguments);
+  var originalController = module.controller;
   module.controller = function(controllerName, controllerConstructor) {
     nameToControllerMatch[controllerName] = controllerConstructor;
+    var firstLetter = controllerName.charAt(0);
+
+    if(firstLetter !== firstLetter.toUpperCase() && firstLetter === firstLetter.toLowerCase()) {
+      hintLog.logMessage('##Controllers## The best practice is to name controllers with an' +
+        ' uppercase first letter. Check the name of \'' + controllerName + '\'.');
+    }
+
+    var splitName = controllerName.split('Controller');
+    if(splitName.length === 1 || splitName[splitName.length - 1] !== '') {
+      hintLog.logMessage('##Controllers## The best practice is to name controllers ending with ' +
+        '\'Controller\'. Check the name of \'' + controllerName + '\'');
+    }
+
     controllers[controllerConstructor] = controllerConstructor;
-    checkUppercaseName(controllerName);
-    checkControllerInName(controllerName);
     return originalController.apply(this, arguments);
   };
   return module;
 };
 
-},{"angular-hint-log":60}],5:[function(require,module,exports){
+},{"angular-hint-log":59}],5:[function(require,module,exports){
 'use strict';
 
+var hintLog = angular.hint = require('angular-hint-log');
 var ddLibData = require('./lib/ddLib-data');
 
 var RESTRICT_REGEXP = /restrict\s*:\s*['"](.+?)['"]/;
@@ -668,6 +642,31 @@ angular.module('ngHintDirectives', ['ngLocale'])
     }]);
   }]);
 
+
+angular.module('ngLocale').config(function($provide) {
+  var originalProvider = $provide.provider;
+  $provide.provider = function(token, provider) {
+    provider = originalProvider.apply($provide, arguments);
+    if (token === '$compile') {
+      var originalProviderDirective = provider.directive;
+      provider.directive = function(dirsObj) {
+        for(var prop in dirsObj){
+          var propDashed = dasherize(prop);
+          if(isNaN(+propDashed) &&
+              !defaultDirectives[propDashed] &&
+              !htmlDirectives[propDashed]) {
+            var matchRestrict = dirsObj[prop].toString().match(RESTRICT_REGEXP);
+            ddLibData.directiveTypes['angular-default-directives']
+                .directives[propDashed] = (matchRestrict && matchRestrict[1]) || 'ACME';
+          }
+        }
+        return originalProviderDirective.apply(this, arguments);
+      };
+    }
+    return provider;
+  };
+});
+
 var originalAngularModule = angular.module;
 angular.module = function() {
   var module = originalAngularModule.apply(this, arguments);
@@ -692,7 +691,7 @@ angular.module = function() {
   return module;
 };
 
-},{"./lib/checkPrelimErrors":18,"./lib/ddLib-data":19,"./lib/getKeysAndValues":26,"./lib/search":34,"dasherize":36}],6:[function(require,module,exports){
+},{"./lib/checkPrelimErrors":15,"./lib/ddLib-data":16,"./lib/getKeysAndValues":23,"./lib/search":31,"angular-hint-log":33,"dasherize":34}],6:[function(require,module,exports){
 /**
  *@param s: first string to compare
  *@param t: second string to compare
@@ -759,128 +758,78 @@ module.exports = function(attribute, options) {
   return {exsists: anyTrue, wrongUse: wrongUse, typeError: typeError};
 };
 
-},{"./ddLib-data":19}],8:[function(require,module,exports){
-var ddLibData = require('./ddLib-data'),
-  SEVERITY_ERROR = 1;
-
-module.exports = function(info, id, type) {
-  var message = ddLibData.directiveTypes[info.directiveType].message + type + ' element' + id + '. ';
-  var error = (info.error.charAt(0) === '*') ? info.error.substring(1): info.error;
-  message += 'Found deprecated directive "' + error + '". Use an alternative solution.';
-  return [message, SEVERITY_ERROR];
-};
-
-},{"./ddLib-data":19}],9:[function(require,module,exports){
-var SEVERITY_ERROR = 1;
-
+},{"./ddLib-data":16}],8:[function(require,module,exports){
 module.exports = function(info, id, type) {
   var s = info.missing.length === 1 ? ' ' : 's ';
-  var waswere = info.missing.length === 1 ? 'is ' : 'are ';
+  var waswere = info.missing.length === 1 ? 'was ' : 'were ';
   var missing = '';
   info.missing.forEach(function(str){
-    missing += '"' + str + '",';
+    missing += '"'+str+'",';
   });
-  missing = '[' + missing.substring(0,missing.length-1) + '] ';
-  var message = 'Attribute' + s + missing + waswere + 'missing in ' + type + ' element' + id + '.';
-  return [message, SEVERITY_ERROR];
+  missing = '['+missing.substring(0,missing.length-1)+'] ';
+  var message = 'Attribute'+s+missing+waswere+'found to be missing in '+type+ ' element'+id+'.';
+  return message;
 };
 
-},{}],10:[function(require,module,exports){
-var isMutExclusiveDir = require('./isMutExclusiveDir'),
-  SEVERITY_ERROR = 1;
+},{}],9:[function(require,module,exports){
+var isMutExclusiveDir = require('./isMutExclusiveDir');
 
 module.exports = function(info, id, type) {
   var pair = isMutExclusiveDir(info.error);
   var message = 'Angular attributes "'+info.error+'" and "'+pair+'" in '+type+ ' element'+id+
     ' should not be attributes together on the same HTML element';
-  return [message, SEVERITY_ERROR];
+  return message;
 };
 
-},{"./isMutExclusiveDir":31}],11:[function(require,module,exports){
-var hintLog = require('angular-hint-log'),
-  MODULE_NAME = 'Directives',
-  SEVERITY_SUGGESTION = 3;
+},{"./isMutExclusiveDir":28}],10:[function(require,module,exports){
+var hintLog = require('angular-hint-log');
 
 module.exports = function(directiveName) {
   var message = 'Directive "'+directiveName+'" should have proper namespace try adding a prefix'+
     ' and/or using camelcase.';
   var domElement = '<'+directiveName+'> </'+directiveName+'>';
-  hintLog.logMessage(MODULE_NAME, message, SEVERITY_SUGGESTION);
+  hintLog.logMessage('##Directives## ' + message);
 };
 
-},{"angular-hint-log":60}],12:[function(require,module,exports){
-var SEVERITY_SUGGESTION = 3;
-
+},{"angular-hint-log":33}],11:[function(require,module,exports){
 module.exports = function(info, id, type) {
-  var ngDir = 'ng-' + info.error.substring(2),
-    message = 'Use Angular version of "' + info.error + '" in ' + type + ' element' + id +
-      '. Try: "' + ngDir + '"';
-  return [message, SEVERITY_SUGGESTION];
+  var ngDir = 'ng-'+info.error.substring(2);
+  var message = 'Use Angular version of "'+info.error+'" in '+type+' element'+id+'. Try: "'+ngDir+'"';
+  return message;
 };
 
-},{}],13:[function(require,module,exports){
-var SEVERITY_ERROR = 1;
-module.exports = function(info, id, type) {
-  var message = 'ngRepeat in '+type+' element'+id+' was used incorrectly. '+info.suggestion;
-  return [message, SEVERITY_ERROR];
-};
-
-},{}],14:[function(require,module,exports){
-var ddLibData = require('./ddLib-data'),
-  SEVERITY_ERROR = 1;
+},{}],12:[function(require,module,exports){
+var ddLibData = require('./ddLib-data');
 
 module.exports = function(info, id, type) {
-  var message = ddLibData.directiveTypes[info.directiveType].message + type + ' element' + id + '. ';
+  var message = ddLibData.directiveTypes[info.directiveType].message+type+' element'+id+'. ';
   var error = (info.error.charAt(0) === '*') ? info.error.substring(1): info.error;
-  message += 'Found incorrect attribute "' + error + '" try "' + info.match + '".';
-  return [message, SEVERITY_ERROR];
+  message +='Found incorrect attribute "'+error+'" try "'+info.match+'".';
+  return message;
 };
 
-},{"./ddLib-data":19}],15:[function(require,module,exports){
-var hintLog = angular.hint = require('angular-hint-log'),
-  MODULE_NAME = 'Directives',
-  SEVERITY_ERROR = 1;
+},{"./ddLib-data":16}],13:[function(require,module,exports){
+var hintLog = require('angular-hint-log');
 
 module.exports = function(directiveName) {
   var message = 'The use of "replace" in directive factories is deprecated,'+
-    ' and it was found in "' + directiveName + '".';
-  var domElement = '<' + directiveName + '> </' + directiveName + '>';
-  hintLog.logMessage(MODULE_NAME, message, SEVERITY_ERROR);
+    ' and it was found in "'+directiveName+'".';
+  var domElement = '<'+directiveName+'> </'+directiveName+'>';
+  hintLog.logMessage('##Directives## ' + message);
 };
 
-},{"angular-hint-log":60}],16:[function(require,module,exports){
-var ddLibData = require('./ddLib-data'),
-  SEVERITY_ERROR = 1;
+},{"angular-hint-log":33}],14:[function(require,module,exports){
+var ddLibData = require('./ddLib-data');
 
 module.exports = function(info, id, type) {
-  var message = ddLibData.directiveTypes[info.directiveType].message + type + ' element' +
-    id + '. ',
-    error = (info.error.charAt(0) === '*') ? info.error.substring(1): info.error,
-    aecmType = (info.wrongUse.indexOf('attribute') > -1)? 'Element' : 'Attribute';
-  message += aecmType + ' name "' + error + '" is reserved for ' + info.wrongUse + ' names only.';
-  return [message, SEVERITY_ERROR];
+  var message = ddLibData.directiveTypes[info.directiveType].message+type+' element'+id+'. ';
+  var error = (info.error.charAt(0) === '*') ? info.error.substring(1): info.error;
+  var aecmType = (info.wrongUse.indexOf('attribute') > -1)? 'Element' : 'Attribute';
+  message += aecmType+' name "'+error+'" is reserved for '+info.wrongUse+' names only.';
+  return message;
 };
 
-},{"./ddLib-data":19}],17:[function(require,module,exports){
-
-module.exports = function(attrVal){
-      var suggestion,
-          error = false;;
-      var trackMatch = attrVal.match(/track\s+by\s+\S*/);
-      var filterMatch = attrVal.match(/filter\s*:\s*\w+(?:\.\w+)*/);
-      var breakIndex = attrVal.indexOf('|') > -1 ? attrVal.indexOf('|') : Infinity;
-      if(!trackMatch && filterMatch && breakIndex === Infinity) {
-        return 'Try: " | '+filterMatch[0]+'"';
-      }
-      if(trackMatch && filterMatch) {
-        var trackInd = attrVal.indexOf(trackMatch[0]);
-        var filterInd = attrVal.indexOf(filterMatch[0]);
-        if(!(breakIndex < filterInd && filterInd < trackInd)) {
-          return 'Try: " | '+filterMatch[0]+' '+trackMatch[0]+'"';
-        }
-      }
-}
-},{}],18:[function(require,module,exports){
+},{"./ddLib-data":16}],15:[function(require,module,exports){
 var hasNameSpace = require('./hasNameSpace');
 var buildNameSpace = require('./buildNameSpace');
 var hasReplaceOption = require('./hasReplaceOption');
@@ -895,7 +844,7 @@ module.exports = function(dirName, dirFacStr) {
   }
 };
 
-},{"./buildNameSpace":11,"./buildReplaceOption":15,"./hasNameSpace":29,"./hasReplaceOption":30}],19:[function(require,module,exports){
+},{"./buildNameSpace":10,"./buildReplaceOption":13,"./hasNameSpace":26,"./hasReplaceOption":27}],16:[function(require,module,exports){
 module.exports = {
   directiveTypes : {
     'html-directives': {
@@ -1040,8 +989,6 @@ module.exports = {
         'ng-pristine': 'A',
         'ng-readonly': 'A',
         'ng-repeat': 'A',
-        'ng-repeat-start': 'A',
-        'ng-repeat-end': 'A',
         'ng-required': 'A',
         'ng-selected': 'A',
         'ng-show': 'A',
@@ -1066,17 +1013,11 @@ module.exports = {
       directives: {
 
       }
-    },
-    'angular-deprecated-directives': {
-      message: 'There was an AngularJS error in ',
-      directives: {
-        'ng-bind-html-unsafe': 'deprecated'
-      }
     }
   }
 };
 
-},{}],20:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var areSimilarEnough = require('./areSimilarEnough');
 var levenshteinDistance = require('./levenshtein');
 
@@ -1108,7 +1049,7 @@ module.exports = function(directiveTypeData, attribute) {
   return {min_levDist: min_levDist, match: closestMatch};
 };
 
-},{"./areSimilarEnough":6,"./levenshtein":32}],21:[function(require,module,exports){
+},{"./areSimilarEnough":6,"./levenshtein":29}],18:[function(require,module,exports){
 
 var getFailedAttributesOfElement = require('./getFailedAttributesOfElement');
 
@@ -1117,7 +1058,7 @@ module.exports = function(scopeElements, options) {
       .filter(function(x) {return x;});
 };
 
-},{"./getFailedAttributesOfElement":25}],22:[function(require,module,exports){
+},{"./getFailedAttributesOfElement":22}],19:[function(require,module,exports){
 var ddLibData = require('./ddLib-data');
 
 module.exports = function(dirName, attributes) {
@@ -1134,18 +1075,15 @@ module.exports = function(dirName, attributes) {
   return missing;
 };
 
-},{"./ddLib-data":19}],23:[function(require,module,exports){
-var hintLog = angular.hint = require('angular-hint-log'),
-  MODULE_NAME = 'Directives';
+},{"./ddLib-data":16}],20:[function(require,module,exports){
+var hintLog = require('angular-hint-log');
 
 var build = {
-  deprecated: require('./buildDeprecated'),
-  missingrequired: require('./buildMissingRequired'),
-  mutuallyexclusive: require('./buildMutuallyExclusive'),
-  ngevent: require('./buildNgEvent'),
-  ngrepeatformat: require('./buildNgRepeatFormat'),
+  wronguse: require('./buildWrongUse'),
   nonexsisting: require('./buildNonExsisting'),
-  wronguse: require('./buildWrongUse')
+  missingrequired: require('./buildMissingRequired'),
+  ngevent: require('./buildNgEvent'),
+  mutuallyexclusive: require('./buildMutuallyExclusive')
 };
 
 /**
@@ -1157,22 +1095,21 @@ var build = {
 module.exports = function(failedElements) {
   failedElements.forEach(function(obj) {
     obj.data.forEach(function(info) {
-      var id = (obj.domElement.id) ? ' with id: #' + obj.domElement.id : '',
-        type = obj.domElement.nodeName,
-        messageAndSeverity = build[info.typeError](info, id, type);
-      hintLog.logMessage(MODULE_NAME, messageAndSeverity[0], messageAndSeverity[1]);
+      var id = (obj.domElement.id) ? ' with id: #' + obj.domElement.id : '';
+      var type = obj.domElement.nodeName;
+      var message = build[info.typeError](info, id, type);
+      hintLog.logMessage('##Directives## ' + message);
     });
   });
 };
 
-},{"./buildDeprecated":8,"./buildMissingRequired":9,"./buildMutuallyExclusive":10,"./buildNgEvent":12,"./buildNgRepeatFormat":13,"./buildNonExsisting":14,"./buildWrongUse":16,"angular-hint-log":60}],24:[function(require,module,exports){
+},{"./buildMissingRequired":8,"./buildMutuallyExclusive":9,"./buildNgEvent":11,"./buildNonExsisting":12,"./buildWrongUse":14,"angular-hint-log":33}],21:[function(require,module,exports){
 var normalizeAttribute = require('./normalizeAttribute');
 var ddLibData = require('./ddLib-data');
 var isMutExclusiveDir = require('./isMutExclusiveDir');
 var hasMutExclusivePair = require('./hasMutExclusivePair');
 var attributeExsistsInTypes = require('./attributeExsistsInTypes');
 var getSuggestions = require('./getSuggestions');
-var checkNgRepeatFormat = require('./checkNgRepeatFormat');
 
 /**
  *@param attributes: [] of attributes from element (includes tag name of element, e.g. DIV, P, etc.)
@@ -1184,18 +1121,7 @@ module.exports = function(attributes, options) {
   var failedAttrs = [], mutExPairFound = false;
   for (var i = 0; i < attributes.length; i++) {
     var attr = normalizeAttribute(attributes[i].nodeName);
-    var dirVal = ddLibData.directiveTypes['html-directives'].directives[attr] ||
-      ddLibData.directiveTypes['angular-deprecated-directives'].directives[attr] || '';
-
-    if(dirVal === 'deprecated') {
-      failedAttrs.push({
-        error: attr,
-        directiveType: 'angular-deprecated-directives',
-        typeError: 'deprecated'
-      });
-    }
-
-    //if attr is a event attr. Html event directives are prefixed with ! in ddLibData
+    var dirVal = ddLibData.directiveTypes['html-directives'].directives[attr] || '';
     if (dirVal.indexOf('!') > -1) {
       failedAttrs.push({
         error: attr,
@@ -1213,21 +1139,7 @@ module.exports = function(attributes, options) {
       mutExPairFound = true;
       continue;
     }
-    var attrVal = attributes[i].value || '';
-    if(attr === 'ng-repeat') {
-      var result = checkNgRepeatFormat(attrVal);
-      if(result) {
-        failedAttrs.push({
-          error: attr,
-          suggestion: result,
-          directiveType: 'angular-default-directives',
-          typeError: 'ngrepeatformat'
-        });
-      }
-    }
-
     var result = attributeExsistsInTypes(attr,options);
-
     var suggestion = result.typeError === 'nonexsisting' ?
         getSuggestions(attr, options) : {match: ''};
 
@@ -1243,7 +1155,8 @@ module.exports = function(attributes, options) {
   }
   return failedAttrs;
 };
-},{"./attributeExsistsInTypes":7,"./checkNgRepeatFormat":17,"./ddLib-data":19,"./getSuggestions":27,"./hasMutExclusivePair":28,"./isMutExclusiveDir":31,"./normalizeAttribute":33}],25:[function(require,module,exports){
+
+},{"./attributeExsistsInTypes":7,"./ddLib-data":16,"./getSuggestions":24,"./hasMutExclusivePair":25,"./isMutExclusiveDir":28,"./normalizeAttribute":30}],22:[function(require,module,exports){
 var getFailedAttributes = require('./getFailedAttributes');
 var findMissingAttrs = require('./findMissingAttrs');
 
@@ -1283,7 +1196,7 @@ module.exports = function(options, element) {
   }
 };
 
-},{"./findMissingAttrs":22,"./getFailedAttributes":24}],26:[function(require,module,exports){
+},{"./findMissingAttrs":19,"./getFailedAttributes":21}],23:[function(require,module,exports){
 module.exports = function(str) {
   var customDirectives = [], pairs = [];
   var matchScope = str.replace(/\n/g,'').match(/scope\s*:\s*{\s*[^}]*['"]\s*}/);
@@ -1300,7 +1213,7 @@ module.exports = function(str) {
   return customDirectives;
 };
 
-},{}],27:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 var ddLibData = require('./ddLib-data');
 var findClosestMatchIn = require('./findClosestMatchIn');
 
@@ -1334,7 +1247,7 @@ module.exports = function(attribute, options) {
   };
 };
 
-},{"./ddLib-data":19,"./findClosestMatchIn":20}],28:[function(require,module,exports){
+},{"./ddLib-data":16,"./findClosestMatchIn":17}],25:[function(require,module,exports){
 var isMutExclusiveDir = require('./isMutExclusiveDir');
 
 module.exports = function(attr, attributes) {
@@ -1345,24 +1258,17 @@ module.exports = function(attr, attributes) {
   });
 };
 
-},{"./isMutExclusiveDir":31}],29:[function(require,module,exports){
-var dasherize = require('dasherize');
-var validate = require('validate-element-name');
-
+},{"./isMutExclusiveDir":28}],26:[function(require,module,exports){
 module.exports = function(str) {
-  var dashStr = dasherize(str);
-  var validated = !validate(dashStr).message ? true : false;
-  //Check for message definition because validate-element-name returns true for things starting
-  //with ng-, polymer-, and data- but message is defined for those and errors.
-  return validated && str.toLowerCase() !== str;
+  return str.toLowerCase() !== str;
 };
 
-},{"dasherize":36,"validate-element-name":37}],30:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 module.exports = function(facStr) {
   return facStr.match(/replace\s*:/);
 };
 
-},{}],31:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = function (dirName) {
   var exclusiveDirHash = {
     'ng-show' : 'ng-hide',
@@ -1373,7 +1279,7 @@ module.exports = function (dirName) {
   return exclusiveDirHash[dirName];
 };
 
-},{}],32:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 /**
  *@param s: first string to compare for Levenshtein Distance.
  *@param t: second string to compare for Levenshtein Distance.
@@ -1419,7 +1325,7 @@ module.exports = function(s, t) {
   return d[n][m];
 };
 
-},{}],33:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 /**
  *@param attribute: attribute name before normalization as string
  * e.g. 'data-ng-click', 'width', 'x:ng:src', etc.
@@ -1430,7 +1336,7 @@ module.exports = function(attribute) {
   return attribute.replace(/^(?:data|x)[-_:]/,'').replace(/[:_]/g,'-');
 };
 
-},{}],34:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 
 var formatResults = require('./formatResults');
 var findFailedElements = require('./findFailedElements');
@@ -1438,8 +1344,7 @@ var setCustomDirectives = require('./setCustomDirectives');
 var defaultTypes = [
   'html-directives',
   'angular-default-directives',
-  'angular-custom-directives',
-  'angular-deprecated-directives'
+  'angular-custom-directives'
 ];
 
 
@@ -1465,7 +1370,7 @@ module.exports = function(scopeElements, customDirectives, options) {
   formatResults(failedElements);
 };
 
-},{"./findFailedElements":21,"./formatResults":23,"./setCustomDirectives":35}],35:[function(require,module,exports){
+},{"./findFailedElements":18,"./formatResults":20,"./setCustomDirectives":32}],32:[function(require,module,exports){
 var ddLibData = require('../lib/ddLib-data');
 
 module.exports = function(customDirectives) {
@@ -1476,7 +1381,36 @@ module.exports = function(customDirectives) {
   });
 };
 
-},{"../lib/ddLib-data":19}],36:[function(require,module,exports){
+},{"../lib/ddLib-data":16}],33:[function(require,module,exports){
+var queuedMessages = {};
+function logMessage(message) {
+  var nameAndValue = message.split(/##/);
+  if(nameAndValue[0] !== '') {
+    if(queuedMessages['No Name']) {
+      queuedMessages['No Name'][message] = message;
+    }  else {
+      queuedMessages['No Name'] = {};
+      queuedMessages['No Name'][message] = message;
+    }
+  } else if(queuedMessages[nameAndValue[1]]) {
+    queuedMessages[nameAndValue[1]][nameAndValue[2]] = nameAndValue[2];
+  } else {
+    queuedMessages[nameAndValue[1]] = {};
+    queuedMessages[nameAndValue[1]][nameAndValue[2]] = nameAndValue[2];
+  }
+  module.exports.onMessage(message);
+};
+
+function flush() {
+  var flushMessages = queuedMessages;
+  queuedMessages = {};
+  return flushMessages;
+};
+
+module.exports.onMessage = function(message) {};
+module.exports.logMessage = logMessage;
+module.exports.flush = flush;
+},{}],34:[function(require,module,exports){
 'use strict';
 
 var isArray = Array.isArray || function (obj) {
@@ -1553,127 +1487,7 @@ module.exports = function (obj) {
   return walk(obj);
 };
 
-},{}],37:[function(require,module,exports){
-'use strict';
-var ncname = require('ncname');
-
-var reservedNames = [
-	'annotation-xml',
-	'color-profile',
-	'font-face',
-	'font-face-src',
-	'font-face-uri',
-	'font-face-format',
-	'font-face-name',
-	'missing-glyph'
-];
-
-function hasError(name) {
-	if (!name) {
-		return 'Missing element name.';
-	}
-
-	if (/[A-Z]/.test(name)) {
-		return 'Custom element names must not contain uppercase ASCII characters.';
-	}
-
-	if (name.indexOf('-') === -1) {
-		return 'Custom element names must contain a hyphen. Example: unicorn-cake';
-	}
-
-	if (/^\d/i.test(name)) {
-		return 'Custom element names must not start with a digit.';
-	}
-
-	if (/^-/i.test(name)) {
-		return 'Custom element names must not start with a hyphen.';
-	}
-
-	// http://www.w3.org/TR/custom-elements/#concepts
-	if (!ncname.test(name)) {
-		return 'Invalid element name.';
-	}
-
-	if (reservedNames.indexOf(name) !== -1) {
-		return 'The supplied element name is reserved and can\'t be used.\nSee: http://www.w3.org/TR/custom-elements/#concepts';
-	}
-};
-
-function hasWarning(name) {
-	if (/^polymer-/i.test(name)) {
-		return 'Custom element names should not start with `polymer-`.\nSee: http://webcomponents.github.io/articles/how-should-i-name-my-element';
-	}
-
-	if (/^x-/i.test(name)) {
-		return 'Custom element names should not start with `x-`.\nSee: http://webcomponents.github.io/articles/how-should-i-name-my-element/';
-	}
-
-	if (/^ng-/i.test(name)) {
-		return 'Custom element names should not start with `ng-`.\nSee: http://docs.angularjs.org/guide/directive#creating-directives';
-	}
-
-	if (/^xml/i.test(name)) {
-		return 'Custom element names should not start with `xml`.';
-	}
-
-	if (/^[^a-z]/i.test(name)) {
-		return 'This element name is only valid in XHTML, not in HTML. First character should be in the range a-z.';
-	}
-
-	if (/[^a-z0-9]$/i.test(name)) {
-		return 'Custom element names should not end with a non-alpha character.';
-	}
-
-	if (/[\.]/.test(name)) {
-		return 'Custom element names should not contain a dot character as it would need to be escaped in a CSS selector.';
-	}
-
-	if (/[^\x20-\x7E]/.test(name)) {
-		return 'Custom element names should not contain non-ASCII characters.';
-	}
-
-	if (/--/.test(name)) {
-		return 'Custom element names should not contain consecutive hyphens.';
-	}
-
-	if (/[^a-z0-9]{2}/i.test(name)) {
-		return 'Custom element names should not contain consecutive non-alpha characters.';
-	}
-}
-
-module.exports = function (name) {
-	var errMsg = hasError(name);
-
-	return {
-		isValid: !errMsg,
-		message: errMsg || hasWarning(name)
-	};
-};
-
-},{"ncname":38}],38:[function(require,module,exports){
-'use strict';
-var xmlChars = require('xml-char-classes');
-
-function getRange(re) {
-	return re.source.slice(1, -1);
-}
-
-// http://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-NCName
-module.exports = new RegExp('^[' + getRange(xmlChars.letter) + '_][' + getRange(xmlChars.letter) + getRange(xmlChars.digit) + '\\.\\-_' + getRange(xmlChars.combiningChar) + getRange(xmlChars.extender) + ']*$');
-
-},{"xml-char-classes":39}],39:[function(require,module,exports){
-exports.baseChar = /[A-Za-z\xC0-\xD6\xD8-\xF6\xF8-\u0131\u0134-\u013E\u0141-\u0148\u014A-\u017E\u0180-\u01C3\u01CD-\u01F0\u01F4\u01F5\u01FA-\u0217\u0250-\u02A8\u02BB-\u02C1\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03CE\u03D0-\u03D6\u03DA\u03DC\u03DE\u03E0\u03E2-\u03F3\u0401-\u040C\u040E-\u044F\u0451-\u045C\u045E-\u0481\u0490-\u04C4\u04C7\u04C8\u04CB\u04CC\u04D0-\u04EB\u04EE-\u04F5\u04F8\u04F9\u0531-\u0556\u0559\u0561-\u0586\u05D0-\u05EA\u05F0-\u05F2\u0621-\u063A\u0641-\u064A\u0671-\u06B7\u06BA-\u06BE\u06C0-\u06CE\u06D0-\u06D3\u06D5\u06E5\u06E6\u0905-\u0939\u093D\u0958-\u0961\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8B\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AE0\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B36-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB5\u0BB7-\u0BB9\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CDE\u0CE0\u0CE1\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D28\u0D2A-\u0D39\u0D60\u0D61\u0E01-\u0E2E\u0E30\u0E32\u0E33\u0E40-\u0E45\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD\u0EAE\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0F40-\u0F47\u0F49-\u0F69\u10A0-\u10C5\u10D0-\u10F6\u1100\u1102\u1103\u1105-\u1107\u1109\u110B\u110C\u110E-\u1112\u113C\u113E\u1140\u114C\u114E\u1150\u1154\u1155\u1159\u115F-\u1161\u1163\u1165\u1167\u1169\u116D\u116E\u1172\u1173\u1175\u119E\u11A8\u11AB\u11AE\u11AF\u11B7\u11B8\u11BA\u11BC-\u11C2\u11EB\u11F0\u11F9\u1E00-\u1E9B\u1EA0-\u1EF9\u1F00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2126\u212A\u212B\u212E\u2180-\u2182\u3041-\u3094\u30A1-\u30FA\u3105-\u312C\uAC00-\uD7A3]/;
-
-exports.ideographic = /[\u3007\u3021-\u3029\u4E00-\u9FA5]/;
-
-exports.letter = /[A-Za-z\xC0-\xD6\xD8-\xF6\xF8-\u0131\u0134-\u013E\u0141-\u0148\u014A-\u017E\u0180-\u01C3\u01CD-\u01F0\u01F4\u01F5\u01FA-\u0217\u0250-\u02A8\u02BB-\u02C1\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03CE\u03D0-\u03D6\u03DA\u03DC\u03DE\u03E0\u03E2-\u03F3\u0401-\u040C\u040E-\u044F\u0451-\u045C\u045E-\u0481\u0490-\u04C4\u04C7\u04C8\u04CB\u04CC\u04D0-\u04EB\u04EE-\u04F5\u04F8\u04F9\u0531-\u0556\u0559\u0561-\u0586\u05D0-\u05EA\u05F0-\u05F2\u0621-\u063A\u0641-\u064A\u0671-\u06B7\u06BA-\u06BE\u06C0-\u06CE\u06D0-\u06D3\u06D5\u06E5\u06E6\u0905-\u0939\u093D\u0958-\u0961\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8B\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AE0\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B36-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB5\u0BB7-\u0BB9\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CDE\u0CE0\u0CE1\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D28\u0D2A-\u0D39\u0D60\u0D61\u0E01-\u0E2E\u0E30\u0E32\u0E33\u0E40-\u0E45\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD\u0EAE\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0F40-\u0F47\u0F49-\u0F69\u10A0-\u10C5\u10D0-\u10F6\u1100\u1102\u1103\u1105-\u1107\u1109\u110B\u110C\u110E-\u1112\u113C\u113E\u1140\u114C\u114E\u1150\u1154\u1155\u1159\u115F-\u1161\u1163\u1165\u1167\u1169\u116D\u116E\u1172\u1173\u1175\u119E\u11A8\u11AB\u11AE\u11AF\u11B7\u11B8\u11BA\u11BC-\u11C2\u11EB\u11F0\u11F9\u1E00-\u1E9B\u1EA0-\u1EF9\u1F00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2126\u212A\u212B\u212E\u2180-\u2182\u3007\u3021-\u3029\u3041-\u3094\u30A1-\u30FA\u3105-\u312C\u4E00-\u9FA5\uAC00-\uD7A3]/;
-
-exports.combiningChar = /[\u0300-\u0345\u0360\u0361\u0483-\u0486\u0591-\u05A1\u05A3-\u05B9\u05BB-\u05BD\u05BF\u05C1\u05C2\u05C4\u064B-\u0652\u0670\u06D6-\u06E4\u06E7\u06E8\u06EA-\u06ED\u0901-\u0903\u093C\u093E-\u094D\u0951-\u0954\u0962\u0963\u0981-\u0983\u09BC\u09BE-\u09C4\u09C7\u09C8\u09CB-\u09CD\u09D7\u09E2\u09E3\u0A02\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A70\u0A71\u0A81-\u0A83\u0ABC\u0ABE-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0B01-\u0B03\u0B3C\u0B3E-\u0B43\u0B47\u0B48\u0B4B-\u0B4D\u0B56\u0B57\u0B82\u0B83\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD7\u0C01-\u0C03\u0C3E-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C82\u0C83\u0CBE-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0D02\u0D03\u0D3E-\u0D43\u0D46-\u0D48\u0D4A-\u0D4D\u0D57\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0EB1\u0EB4-\u0EB9\u0EBB\u0EBC\u0EC8-\u0ECD\u0F18\u0F19\u0F35\u0F37\u0F39\u0F3E\u0F3F\u0F71-\u0F84\u0F86-\u0F8B\u0F90-\u0F95\u0F97\u0F99-\u0FAD\u0FB1-\u0FB7\u0FB9\u20D0-\u20DC\u20E1\u302A-\u302F\u3099\u309A]/;
-
-exports.digit = /[0-9\u0660-\u0669\u06F0-\u06F9\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0BE7-\u0BEF\u0C66-\u0C6F\u0CE6-\u0CEF\u0D66-\u0D6F\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F29]/;
-
-exports.extender = /[\xB7\u02D0\u02D1\u0387\u0640\u0E46\u0EC6\u3005\u3031-\u3035\u309D\u309E\u30FC-\u30FE]/;
-},{}],40:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1683,9 +1497,7 @@ var domInterceptor = require('dom-interceptor');
 domInterceptor.enableLineNumbers(3);
 var hintLog = angular.hint = require('angular-hint-log');
 var INTERCEPTOR_FUNCTION = function(message) {
-  var moduleName = 'DOM',
-    severityWarning = 2;
-  hintLog.logMessage(moduleName, message, severityWarning);
+  hintLog.logMessage(message);
 };
 
 /**
@@ -1698,25 +1510,11 @@ angular.module('ngHintDom', []).
     $provide.decorator('$controller', function($delegate, $injector) {
 
       var patchedServices = {};
-      var patchedDependencies = {};
 
       return function(ctrl, locals) {
 
-        //If this controller is the NgModelController created by Angular
-        //There is no need to detect its manipulation of the DOM
-        if(ctrl.toString().indexOf('@name ngModel.NgModelController#$render') > -1 ||
-            ctrl.toString().indexOf('@name form.FormController') > -1) {
-          return $delegate.apply(this, [ctrl, locals]);
-        }
-
-        //If the controller method is given only the controller's name,
-        //find the matching controller method from the controller list
         if(typeof ctrl === 'string') {
-          ctrl = nameToConstructorMappings[ctrl] || window[ctrl] || ctrl;
-          if(typeof ctrl === 'string') {
-            throw new Error('The controller function for ' + ctrl + ' could not be found.' +
-              ' Is the function registered under that name?');
-          }
+          ctrl = nameToConstructorMappings[ctrl];
         }
 
         var dependencies = $injector.annotate(ctrl);
@@ -1726,10 +1524,9 @@ angular.module('ngHintDom', []).
         dependencies.forEach(function (dep) {
           if (typeof dep === 'string' && !locals[dep]) {
             locals[dep] = patchedServices[dep] ||
-              (patchedServices[dep] = patchService($injector.get(dep)));
+              (patchedServices[dep] = patchService($injector.get('$timeout')));
           }
         });
-
 
         function disallowedContext(fn) {
           return function () {
@@ -1754,12 +1551,8 @@ angular.module('ngHintDom', []).
         function patchService (obj) {
           if (typeof obj === 'function') {
             return patchArguments(obj);
-          } else if (obj !== null && typeof obj === 'object') {
+          } else if (typeof obj === 'object') {
             return Object.keys(obj).reduce(function (obj, prop) {
-              if(patchedDependencies[obj[prop]]) {
-                return obj[prop], obj;
-              }
-              patchedDependencies[obj[prop]] = obj[prop];
               return obj[prop] = patchService(obj[prop]), obj;
             }, obj);
           }
@@ -1808,7 +1601,7 @@ angular.module = function() {
   return module;
 };
 
-},{"angular-hint-log":60,"dom-interceptor":41}],41:[function(require,module,exports){
+},{"angular-hint-log":59,"dom-interceptor":36}],36:[function(require,module,exports){
 'use strict';
 
 /**
@@ -2001,39 +1794,35 @@ module.exports.unpatchOnePrototype = unpatchOnePrototype;
 module.exports.enableLineNumbers = enableLineNumbers;
 
 
-},{}],42:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 'use strict';
 
-/**
-* Load necessary functions from /lib into variables.
-*/
-var ngEventDirectives = require('./lib/getEventDirectives')(),
-  getEventAttribute = require('./lib/getEventAttribute'),
-  getFunctionNames = require('./lib/getFunctionNames'),
-  formatResults = require('./lib/formatResults');
+var hintLog = angular.hint = require('angular-hint-log');
+var ngEventDirectives = require('./lib/getEventDirectives')();
 
-/**
-* Decorate $provide in order to examine ng-event directives
-* and hint about their effective use.
-*/
-angular.module('ngHintEvents', [])
-  .config(['$provide', function($provide) {
+var getEventAttribute = require('./lib/getEventAttribute');
+var getFunctionNames = require('./lib/getFunctionNames');
+var formatResults = require('./lib/formatResults');
+
+angular.module('ngHintEvents',[])
+  .config(['$provide',function($provide) {
 
     for(var directive in ngEventDirectives) {
-      var dirName = ngEventDirectives[directive] + 'Directive';
+
+      var dirName = ngEventDirectives[directive]+'Directive';
 
       $provide.decorator(dirName, ['$delegate', '$timeout', '$parse',
         function($delegate, $timeout, $parse) {
-          $delegate[0].compile = function(element, attrs) {
-            var eventAttrName = getEventAttribute(attrs.$attr),
-              fn = $parse(attrs[eventAttrName]),
-              messages = [];
 
+          var original = $delegate[0].compile, falseBinds = [], messages = [];
+
+          $delegate[0].compile = function(element, attrs, transclude) {
+            var eventAttrName = getEventAttribute(attrs.$attr);
+            var fn = $parse(attrs[eventAttrName]);
+            var messages = [];
             return function ngEventHandler(scope, element, attrs) {
               for(var attr in attrs.$attr) {
                 var boundFuncs = getFunctionNames(attrs[attr]);
-
-                //For the event functions that are bound, find if they exist on the scope
                 boundFuncs.forEach(function(boundFn) {
                   if(ngEventDirectives[attr] && !(boundFn in scope)) {
                     messages.push({
@@ -2045,63 +1834,64 @@ angular.module('ngHintEvents', [])
                   }
                 });
               }
-
               element.on(eventAttrName.substring(2).toLowerCase(), function(event) {
                 scope.$apply(function() {
-                  fn(scope, {$event: event});
+                  fn(scope, {$event:event});
                 });
               });
-
-              //Hint about any mistakes found
               formatResults(messages);
             };
           };
           return $delegate;
-        }
-      ]);
+      }]);
     }
   }]);
-},{"./lib/formatResults":44,"./lib/getEventAttribute":45,"./lib/getEventDirectives":46,"./lib/getFunctionNames":47}],43:[function(require,module,exports){
-'use strict';
-
-var getValidProps = require('./getValidProps'),
-  suggest = require('suggest-it');
+},{"./lib/formatResults":40,"./lib/getEventAttribute":41,"./lib/getEventDirectives":42,"./lib/getFunctionNames":43,"angular-hint-log":47}],38:[function(require,module,exports){
+var getValidProps = require('./getValidProps');
+var getSuggestion = require('./getSuggestion');
 
 module.exports = function addSuggestions(messages) {
   messages.forEach(function(messageObj) {
-    var dictionary = getValidProps(messageObj.scope),
-      suggestion = suggest(dictionary)(messageObj.boundFunc);
+    var props = getValidProps(messageObj.scope);
+    var suggestion = getSuggestion(messageObj.boundFunc, props);
     messageObj['match'] = suggestion;
   });
   return messages;
 };
 
-},{"./getValidProps":48,"suggest-it":50}],44:[function(require,module,exports){
-'use strict';
+},{"./getSuggestion":44,"./getValidProps":45}],39:[function(require,module,exports){
+module.exports = function areSimilarEnough(s,t) {
+  var strMap = {}, similarities = 0, STRICTNESS = .66;
+  if(Math.abs(s.length-t.length) > 3) {
+    return false;
+  }
+  s.split('').forEach(function(x){strMap[x] = x;});
+  for (var i = t.length - 1; i >= 0; i--) {
+    similarities = strMap[t.charAt(i)] ? similarities + 1 : similarities;
+  }
+  return similarities >= t.length * STRICTNESS;
+};
 
-var hintLog = angular.hint = require('angular-hint-log'),
-  addSuggestions = require('./addSuggestions'),
-  MODULE_NAME = 'Events',
-  SEVERITY_ERROR = 1;
+},{}],40:[function(require,module,exports){
+var hintLog = require('angular-hint-log');
+var addSuggestions = require('./addSuggestions');
 
 module.exports = function formatResults(messages) {
   messages = addSuggestions(messages);
   if(messages.length) {
     messages.forEach(function(obj) {
-      var id = (obj.element[0].id) ? ' with id: #' + obj.element[0].id : '',
-        type = obj.element[0].nodeName,
-        suggestion = obj.match ? ' (Try "' + obj.match + '").': '.',
-        message = 'Variable "' + obj.boundFunc + '" called on ' + type + ' element' + id +
-          ' does not exist in that scope' + suggestion + ' Event directive found on "' +
-          obj.element[0].outerHTML + '".';
-      hintLog.logMessage(MODULE_NAME, message, SEVERITY_ERROR);
+      var id = (obj.element[0].id) ? ' with id: #'+obj.element[0].id : '';
+      var type = obj.element[0].nodeName;
+      var suggestion = obj.match ? ' (Try "'+obj.match+'")': '';
+      var message = 'Variable "'+obj.boundFunc+'" called on '+type+' element'+id+' does not '+
+      'exist in that scope.'+suggestion+' Event directive found on ' + obj.element[0] + ' in ' +
+      obj.scope + ' scope.';
+      hintLog.logMessage('##Events## ' + message);
     });
   }
 };
 
-},{"./addSuggestions":43,"angular-hint-log":60}],45:[function(require,module,exports){
-'use strict';
-
+},{"./addSuggestions":38,"angular-hint-log":47}],41:[function(require,module,exports){
 var ngEventDirectives = require('./getEventDirectives')();
 
 module.exports = function getEventAttribute(attrs) {
@@ -2112,24 +1902,20 @@ module.exports = function getEventAttribute(attrs) {
   }
 };
 
-},{"./getEventDirectives":46}],46:[function(require,module,exports){
-'use strict';
-
+},{"./getEventDirectives":42}],42:[function(require,module,exports){
 module.exports = function getEventDirectives() {
   var list = 'click dblclick mousedown mouseup mouseover mouseout mousemove mouseenter mouseleave keydown keyup keypress submit focus blur copy cut paste'.split(' ');
   var eventDirHash = {};
-  list.map(function(x) {
+  list.map(function(x){
     var name = 'ng'+x.charAt(0).toUpperCase()+x.substring(1);
-    eventDirHash[name] = name;
+    eventDirHash[name]=name;
   });
   return eventDirHash;
 };
 
-},{}],47:[function(require,module,exports){
-'use strict';
-
+},{}],43:[function(require,module,exports){
 module.exports = function getFunctionNames(str) {
-  var results = str.replace(/\s+/g,'').split(/[\+\-\/\|\<\>\^=&!%~]/g).map(function(x) {
+  var results = str.replace(/\s+/g,'').split(/[\+\-\/\|\<\>\^=&!%~]/g).map(function(x){
     if(isNaN(+x)) {
       if(x.match(/\w+\(.*\)$/)){
         return x.substring(0,x.indexOf('('));
@@ -2140,66 +1926,73 @@ module.exports = function getFunctionNames(str) {
   return results;
 };
 
-},{}],48:[function(require,module,exports){
-'use strict';
+},{}],44:[function(require,module,exports){
+var areSimilarEnough = require('./areSimilarEnough');
+var levenshteinDistance = require('./levenshtein');
 
+module.exports = function getSuggestion(original, props) {
+  var min_levDist = Infinity, closestMatch = '';
+  for(var i in props) {
+    var prop = props[i];
+    if(areSimilarEnough(original, prop)) {
+      var currentlevDist = levenshteinDistance(original, prop);
+      var closestMatch = (currentlevDist < min_levDist)? prop : closestMatch;
+      var min_levDist = (currentlevDist < min_levDist)? currentlevDist : min_levDist;
+    }
+  }
+  return closestMatch;
+};
+
+},{"./areSimilarEnough":39,"./levenshtein":46}],45:[function(require,module,exports){
 module.exports = function getValidProps(obj) {
   var props = [];
   for(var prop in obj) {
-    if (prop.charAt(0) !== '$' && typeof obj[prop] === 'function') {
+    if (prop.charAt(0) != '$' && typeof obj[prop] == 'function') {
       props.push(prop);
     }
   }
   return props;
 };
 
-},{}],49:[function(require,module,exports){
-module.exports = distance;
-
-function distance(a, b) {
-  var table = [];
-  if (a.length === 0 || b.length === 0) return Math.max(a.length, b.length);
-  for (var ii = 0, ilen = a.length + 1; ii !== ilen; ++ii) {
-    table[ii] = [];
-    for (var jj = 0, jlen = b.length + 1; jj !== jlen; ++jj) {
-      if (ii === 0 || jj === 0) table[ii][jj] = Math.max(ii, jj);
-      else {
-        var diagPenalty = Number(a[ii-1] !== b[jj-1]);
-        var diag = table[ii - 1][jj - 1] + diagPenalty;
-        var top = table[ii - 1][jj] + 1;
-        var left = table[ii][jj - 1] + 1;
-        table[ii][jj] = Math.min(left, top, diag);
-      }
+},{}],46:[function(require,module,exports){
+module.exports = function levenshteinDistance(s, t) {
+    if(typeof s !== 'string' || typeof t !== 'string') {
+      throw new Error('Function must be passed two strings, given: '+typeof s+' and '+typeof t+'.');
     }
-  }
-  return table[a.length][b.length];
-}
+    var d = [];
+    var n = s.length;
+    var m = t.length;
 
+    if (n == 0) return m;
+    if (m == 0) return n;
 
-},{}],50:[function(require,module,exports){
-module.exports = suggestDictionary;
+    for (var i = n; i >= 0; i--) d[i] = [];
+    for (var i = n; i >= 0; i--) d[i][0] = i;
+    for (var j = m; j >= 0; j--) d[0][j] = j;
+    for (var i = 1; i <= n; i++) {
+        var s_i = s.charAt(i - 1);
 
-var distance = require('./levenstein_distance');
+        for (var j = 1; j <= m; j++) {
+            if (i == j && d[i][j] > 4) return n;
+            var t_j = t.charAt(j - 1);
+            var cost = (s_i == t_j) ? 0 : 1;
+            var mi = d[i - 1][j] + 1;
+            var b = d[i][j - 1] + 1;
+            var c = d[i - 1][j - 1] + cost;
+            if (b < mi) mi = b;
+            if (c < mi) mi = c;
+            d[i][j] = mi;
+            if (i > 1 && j > 1 && s_i == t.charAt(j - 2) && s.charAt(i - 2) == t_j) {
+                d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
+            }
+        }
+    }
+    return d[n][m];
+};
 
-function suggestDictionary(dict, opts) {
-  opts = opts || {};
-  var threshold = opts.threshold || 0.5;
-  return function suggest(word) {
-    var length = word.length;
-    return dict.reduce(function (result, dictEntry) {
-      var score = distance(dictEntry, word);
-      if (result.score > score && score / length < threshold) {
-        result.score = score;
-        result.word = dictEntry;
-      }
-      return result;
-    }, { score: Infinity }).word;
-  };
-}
-
-suggestDictionary.distance = distance;
-
-},{"./levenstein_distance":49}],51:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
+module.exports=require(33)
+},{}],48:[function(require,module,exports){
 'use strict';
 
 var getAllParts = require('./lib/getAllParts');
@@ -2207,19 +2000,20 @@ var buildMessage = require('./lib/buildMessage');
 
 angular.module('ngHintInterpolation', [])
   .config(['$provide', function($provide) {
-    $provide.decorator('$interpolate', ['$delegate', function($delegate) {
+    var ngHintInterpMessages = [];
+    $provide.decorator('$interpolate', ['$delegate', '$timeout', function($delegate, $timeout) {
       var interpolateWrapper = function() {
         var interpolationFn = $delegate.apply(this, arguments);
         if(interpolationFn) {
-          var parts = getAllParts(arguments[0], $delegate.startSymbol(), $delegate.endSymbol());
-          var temp = interpolationFnWrap(interpolationFn, arguments, parts);
+          var parts = getAllParts(arguments[0],$delegate.startSymbol(),$delegate.endSymbol());
+          var temp = interpolationFnWrap(interpolationFn,arguments, parts);
           return temp;
         }
       };
       var interpolationFnWrap = function(interpolationFn, interpolationArgs, allParts) {
         return function(){
           var result = interpolationFn.apply(this, arguments);
-          buildMessage(allParts, interpolationArgs[0].trim(), arguments[0]);
+          buildMessage(allParts, interpolationArgs[0].trim(), arguments[0], $timeout);
           return result;
         };
       };
@@ -2228,42 +2022,50 @@ angular.module('ngHintInterpolation', [])
     }]);
   }]);
 
-},{"./lib/buildMessage":52,"./lib/getAllParts":54}],52:[function(require,module,exports){
-var partsEvaluate = require('./partsEvaluate'),
-  hintLog = angular.hint = require('angular-hint-log'),
-  MODULE_NAME = 'Interpolation',
-  SEVERITY_ERROR = 1;
+},{"./lib/buildMessage":50,"./lib/getAllParts":52}],49:[function(require,module,exports){
+module.exports = function(s,t) {
+  var strMap = {}, similarities = 0, STRICTNESS = 0.66;
+  if(Math.abs(s.length-t.length) > 3) {
+    return false;
+  }
+  s.split('').forEach(function(x){strMap[x] = x;});
+  for (var i = t.length - 1; i >= 0; i--) {
+    similarities = strMap[t.charAt(i)] ? similarities + 1 : similarities;
+  }
+  return similarities >= t.length * STRICTNESS;
+};
 
-module.exports = function(allParts, originalInterpolation, scope) {
-  var res = partsEvaluate(allParts, originalInterpolation, scope);
-  if(res[1]) {
-    var suggestion = (res[0]) ? ' Try: "' + res[0] + '"' : '',
-      part = res[1];
-      message = '"' + part + '" was found to be undefined in "' + originalInterpolation + '".' +
-        suggestion;
-    hintLog.logMessage(MODULE_NAME, message, SEVERITY_ERROR);
+},{}],50:[function(require,module,exports){
+var hintLog = angular.hint = require('angular-hint-log');
+
+var partsEvaluate = require('./partsEvaluate');
+
+module.exports = function(allParts, originalInterpolation, scope, $timeout) {
+  var message = partsEvaluate(allParts, originalInterpolation, scope);
+  if(message) {
+    hintLog.logMessage('##Interpolation## ' + message);
   }
 };
 
-},{"./partsEvaluate":57,"angular-hint-log":60}],53:[function(require,module,exports){
+},{"./partsEvaluate":57,"angular-hint-log":58}],51:[function(require,module,exports){
 module.exports = function(parts, concatLength) {
   var total = '';
   for(var i = 0; i <= concatLength; i++) {
-    var period = (i === 0) ? '' : '.';
-    total += period + parts[i].trim();
+    var period = (i===0) ? '' : '.';
+    total+=period+parts[i].trim();
   }
   return total;
 };
 
-},{}],54:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 var getInterpolation = require('./getInterpolation');
 var getOperands = require('./getOperands');
 var concatParts = require('./concatParts');
 
 module.exports = function(text, startSym, endSym) {
   if(text.indexOf(startSym) < 0 || text.indexOf(endSym) < 0) {
-    throw new Error('Missing start or end symbol in interpolation. Start symbol: "' + startSym +
-      '" End symbol: "' + endSym + '"');
+    throw new Error('Missing start or end symbol in interpolation. Start symbol: "'+startSym+
+      '" End symbol: "'+endSym+'"');
   }
   var comboParts = [];
   var interpolation = getInterpolation(text, startSym, endSym);
@@ -2280,71 +2082,122 @@ module.exports = function(text, startSym, endSym) {
   return comboParts;
 };
 
-},{"./concatParts":53,"./getInterpolation":55,"./getOperands":56}],55:[function(require,module,exports){
+},{"./concatParts":51,"./getInterpolation":53,"./getOperands":54}],53:[function(require,module,exports){
 module.exports = function(text, startSym, endSym) {
-  var startInd = text.indexOf(startSym) + startSym.length,
-    endInd = text.indexOf(endSym);
+  var startInd = text.indexOf(startSym) + startSym.length;
+  var endInd = text.indexOf(endSym);
   return text.substring(startInd, endInd);
 };
 
-},{}],56:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 module.exports = function(str) {
   return str.split(/[\+\-\/\|<\>\^=&!%~]/g);
 };
 
+},{}],55:[function(require,module,exports){
+var areSimilarEnough = require('./areSimilarEnough');
+var levenshtein = require('./levenshtein');
+
+module.exports = function (part, scope) {
+  var min_levDist = Infinity, closestMatch = '';
+  for(var i in scope) {
+    if(areSimilarEnough(part, i)) {
+      var currentlevDist = levenshtein(part, i);
+      closestMatch = (currentlevDist < min_levDist)? i : closestMatch;
+      min_levDist = (currentlevDist < min_levDist)? currentlevDist : min_levDist;
+    }
+  }
+  return closestMatch;
+};
+
+},{"./areSimilarEnough":49,"./levenshtein":56}],56:[function(require,module,exports){
+module.exports = function(s, t) {
+  if(typeof s !== 'string' || typeof t !== 'string') {
+    throw new Error('Function must be passed two strings, given: '+typeof s+' and '+typeof t+'.');
+  }
+  var d = [];
+  var n = s.length;
+  var m = t.length;
+
+  if (n === 0) {return m;}
+  if (m === 0) {return n;}
+
+  for (var ii = n; ii >= 0; ii--) { d[ii] = []; }
+  for (var ii = n; ii >= 0; ii--) { d[ii][0] = ii; }
+  for (var jj = m; jj >= 0; jj--) { d[0][jj] = jj; }
+  for (var i = 1; i <= n; i++) {
+    var s_i = s.charAt(i - 1);
+
+    for (var j = 1; j <= m; j++) {
+      if (i == j && d[i][j] > 4) return n;
+      var t_j = t.charAt(j - 1);
+      var cost = (s_i == t_j) ? 0 : 1;
+      var mi = d[i - 1][j] + 1;
+      var b = d[i][j - 1] + 1;
+      var c = d[i - 1][j - 1] + cost;
+      if (b < mi) mi = b;
+      if (c < mi) mi = c;
+      d[i][j] = mi;
+      if (i > 1 && j > 1 && s_i == t.charAt(j - 2) && s.charAt(i - 2) == t_j) {
+          d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
+      }
+    }
+  }
+  return d[n][m];
+};
+
 },{}],57:[function(require,module,exports){
-var suggest = require('suggest-it');
+var getSuggestion = require('./getSuggestion');
 
 module.exports = function(allParts, originalInterpolation, scope) {
-  var suggestion, partToSend, found = false;
-
+  var message, found = false;
   allParts.forEach(function(part) {
     if(!scope.$eval(part) && !found){
       found = true;
-      var perInd = part.lastIndexOf('.'),
-        tempScope = (perInd > -1) ? scope.$eval(part.substring(0, perInd)) : scope,
-        tempPart = part.substring(part.lastIndexOf('.') + 1),
-        dictionary = Object.keys(tempScope);
-      suggestion = suggest(dictionary)(tempPart);
-      partToSend = part;
+      var perInd = part.lastIndexOf('.');
+      var tempScope = (perInd > -1) ? scope.$eval(part.substring(0, perInd)) : scope;
+      var tempPart = part.substring(part.lastIndexOf('.') + 1);
+      var suggestion = getSuggestion(tempPart, tempScope);
+      suggestion = (suggestion) ? ' Try: "'+suggestion+'"' : '';
+      message = '"'+part+'" was found to be undefined in "'+originalInterpolation+'".'+ suggestion;
     }
   });
-
-  return [suggestion, partToSend];
+  return message;
 };
 
-},{"suggest-it":59}],58:[function(require,module,exports){
-module.exports=require(49)
+},{"./getSuggestion":55}],58:[function(require,module,exports){
+module.exports=require(33)
 },{}],59:[function(require,module,exports){
-module.exports=require(50)
-},{"./levenstein_distance":58}],60:[function(require,module,exports){
 /**
 * HintLog creates a queue of messages logged by ngHint modules. This object
 * has a key for each ngHint module that corresponds to the messages
 * from that module.
 */
-var queuedMessages = {},
-  MESSAGE_TYPES = ['Error Messages', 'Warning Messages', 'Suggestion Messages'];
+var queuedMessages = {};
 
 /**
 * Add a message to the HintLog message queue. Messages are organized into categories
-* according to their module name and severity.
+* according to their module name which is included in the message with ##ModuleName##.
+* If a ##ModuleName## is not included, the message is added to a `General` category
+* in the queue.
 **/
-function logMessage(moduleName, message, severity) {
-  //If no severity was provided, categorize the message under `Suggestion Messages`
-  severity = severity || 3;
-  var messageType = MESSAGE_TYPES[severity-1];
-  //If no ModuleName was found, categorize the message under `General`
-  moduleName = moduleName || 'General';
-
-  //If the category does not exist, initialize a new object
-  queuedMessages[moduleName] = queuedMessages[moduleName] || {};
-  queuedMessages[moduleName][messageType] = queuedMessages[moduleName][messageType] || [];
-
-  if(queuedMessages[moduleName][messageType].indexOf(message) < 0) {
-    queuedMessages[moduleName][messageType].push(message);
+function logMessage(message) {
+  //HintLog messages are delimited by `##ModuleName## Module Message`
+  //Split the message into the name and message value
+  var nameThenValue = message.split(/##/);
+  //If no ##ModuleName## was found, categorize the message under `General`
+  if(nameThenValue[0] !== '') {
+    //If the category does not exist, initialize a new object
+    queuedMessages.General = queuedMessages.General || {};
+    queuedMessages.General[message] = message;
+  } else {
+    //Strip leading spaces in message caused by splitting out ##ModuleName##
+    nameThenValue[2] = nameThenValue[2].charAt(0) === ' ' ? nameThenValue[2].substring(1)
+      : nameThenValue[2];
+    //If the category does not exist, initialize a new object
+    queuedMessages[nameThenValue[1]] = queuedMessages[nameThenValue[1]] || {};
+    queuedMessages[nameThenValue[1]][nameThenValue[2]] = nameThenValue[2];
   }
-
   module.exports.onMessage(message);
 }
 
@@ -2360,34 +2213,29 @@ function flush() {
 module.exports.onMessage = function(message) {};
 module.exports.logMessage = logMessage;
 module.exports.flush = flush;
-
-},{}],61:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 'use strict';
 
-var storeDependencies = require('./lib/storeDependencies'),
-  getModule = require('./lib/getModule'),
-  start = require('./lib/start'),
-  storeNgAppAndView = require('./lib/storeNgAppAndView'),
-  storeUsedModules = require('./lib/storeUsedModules'),
-  hasNameSpace = require('./lib/hasNameSpace'),
-  modData = require('./lib/moduleData');
+var hintLog = angular.hint = require('angular-hint-log');
+var storeDependencies = require('./lib/storeDependencies');
+var getModule = require('./lib/getModule');
+var start = require('./lib/start');
+var storeNgAppAndView = require('./lib/storeNgAppAndView');
+var storeUsedModules = require('./lib/storeUsedModules');
+var modData = require('./lib/moduleData');
 
-var doc = Array.prototype.slice.call(document.getElementsByTagName('*')),
-  originalAngularModule = angular.module,
-  modules = {};
+var doc = Array.prototype.slice.call(document.getElementsByTagName('*'));
+var originalAngularModule = angular.module;
+var modules = {};
 
 storeNgAppAndView(doc);
 
 angular.module = function() {
-  var requiresOriginal = arguments[1],
-    module = originalAngularModule.apply(this, arguments),
-    name = module.name;
-  module.requiresOriginal = requiresOriginal;
+  var module = originalAngularModule.apply(this,arguments);
+  var name = module.name;
   modules[name] = module;
-  hasNameSpace(module.name);
   var modToCheck = getModule(module.name, true);
-
-  if(modToCheck && modToCheck.requiresOriginal !== module.requiresOriginal) {
+  if(modToCheck && modToCheck.requires.length && module.requires.length) {
     if(!modData.createdMulti[module.name]) {
       modData.createdMulti[module.name] = [getModule(module.name,true)];
     }
@@ -2403,133 +2251,136 @@ angular.module('ngHintModules', []).config(function() {
   start();
 });
 
-},{"./lib/getModule":64,"./lib/hasNameSpace":68,"./lib/moduleData":70,"./lib/start":73,"./lib/storeDependencies":74,"./lib/storeNgAppAndView":75,"./lib/storeUsedModules":76}],62:[function(require,module,exports){
-var hintLog = angular.hint = require('angular-hint-log'),
-  MODULE_NAME = 'Modules';
+},{"./lib/getModule":64,"./lib/moduleData":71,"./lib/start":74,"./lib/storeDependencies":75,"./lib/storeNgAppAndView":76,"./lib/storeUsedModules":77,"angular-hint-log":59}],61:[function(require,module,exports){
+module.exports = function(s,t) {
+  var strMap = {},
+      similarities = 0,
+      STRICTNESS = 0.66;
+  if(Math.abs(s.length-t.length) > 3) {
+    return false;
+  }
+  s.split('').forEach(function(x){strMap[x] = x;});
+  for (var i = t.length - 1; i >= 0; i--) {
+    similarities = strMap[t.charAt(i)] ? similarities + 1 : similarities;
+  }
+  return similarities >= t.length * STRICTNESS;
+};
 
-module.exports = function(modules) {
-  modules.forEach(function(module) {
-    hintLog.logMessage(MODULE_NAME, module.message, module.severity);
+},{}],62:[function(require,module,exports){
+var hintLog = angular.hint = require('angular-hint-log');
+
+module.exports = function(unusedModules) {
+  unusedModules.forEach(function(module) {
+    hintLog.logMessage('##Modules## ' + module.message);
   });
 };
 
-},{"angular-hint-log":60}],63:[function(require,module,exports){
+},{"angular-hint-log":59}],63:[function(require,module,exports){
 var modData = require('./moduleData');
-  MODULE_NAME = 'Modules',
-  SEVERITY_WARNING = 2;
 
 module.exports = function() {
   var multiLoaded = [];
   for(var modName in modData.createdMulti) {
-    var message = 'Multiple modules with name "' + modName + '" are being created and they will ' +
-      'overwrite each other.';
+    var message = 'Multiple modules with name "'+modName+'" are being created and they will overwrite each other.';
     var multi = modData.createdMulti[modName];
     var details = {
       existingModule: multi[multi.length - 1],
       overwrittenModules: multi.slice(0,multi.length-1)
     };
-    multiLoaded.push({module:details, message:message, name: MODULE_NAME,
-      severity: SEVERITY_WARNING});
+    multiLoaded.push({module:details, message:message});
   }
   return multiLoaded;
 };
 
-},{"./moduleData":70}],64:[function(require,module,exports){
+},{"./moduleData":71}],64:[function(require,module,exports){
 var modData = require('./moduleData');
 
 module.exports = function(moduleName, getCreated) {
-  return (getCreated)? modData.createdModules[moduleName] : modData.loadedModules[moduleName];
+    return (getCreated)? modData.createdModules[moduleName] : modData.loadedModules[moduleName];
 };
 
-},{"./moduleData":70}],65:[function(require,module,exports){
-var hintLog = angular.hint = require('angular-hint-log'),
-  MODULE_NAME = 'Modules',
-  SEVERITY_ERROR = 1;
-module.exports = function(attrs, ngAppFound) {
-  if(attrs['ng-app'] && ngAppFound) {
-    hintLog.logMessage(MODULE_NAME, 'ng-app may only be included once. The module "' +
-      attrs['ng-app'].value + '" was not used to bootstrap because ng-app was already included.',
-      SEVERITY_ERROR);
-  }
+},{"./moduleData":71}],65:[function(require,module,exports){
+module.exports = function(attrs) {
   return attrs['ng-app'] ? attrs['ng-app'].value : undefined;
 };
 
-},{"angular-hint-log":60}],66:[function(require,module,exports){
-var getModule = require('./getModule'),
-  dictionary = Object.keys(require('./moduleData').createdModules),
-  suggest = require('suggest-it')(dictionary),
-  SEVERITY_ERROR = 1;
+},{}],66:[function(require,module,exports){
+var levenshteinDistance = require('./levenshtein');
+var areSimilarEnough = require('./areSimilarEnough');
+var modData = require('./moduleData');
+
+module.exports = function(module){
+  var min_levDist = Infinity,
+      closestMatch = '';
+  for(var createdModule in modData.createdModules) {
+    if(areSimilarEnough(createdModule, module)) {
+      var currentlevDist = levenshteinDistance(module, createdModule);
+      if(currentlevDist < 5) {
+        closestMatch = (currentlevDist < min_levDist)? createdModule : closestMatch;
+        min_levDist = (currentlevDist < min_levDist)? currentlevDist : min_levDist;
+      }
+    }
+  }
+  return closestMatch;
+};
+
+},{"./areSimilarEnough":61,"./levenshtein":70,"./moduleData":71}],67:[function(require,module,exports){
+var getModule = require('./getModule');
+var getSuggestion = require('./getSuggestion');
 
 module.exports = function(loadedModules) {
   var undeclaredModules = [];
   for( var module in loadedModules) {
     var cModule = getModule(module, true);
     if(!cModule) {
-      var match = suggest(module),
-        suggestion = (match) ? '; Try: "'+match+'"' : '',
-        message = 'Module "'+module+'" was loaded but does not exist'+suggestion+'.';
-      undeclaredModules.push({module:null, message:message, severity:SEVERITY_ERROR});
+      var match = getSuggestion(module);
+      var suggestion = (match) ? '; Try: "'+match+'"' : '';
+      var message = 'Module "'+module+'" was loaded but does not exist'+suggestion+'.';
+      undeclaredModules.push({module:null, message:message});
     }
   }
   return undeclaredModules;
 };
 
-},{"./getModule":64,"./moduleData":70,"suggest-it":78}],67:[function(require,module,exports){
-var getModule = require('./getModule'),
-  IGNORED = ['ngHintControllers', 'ngHintDirectives', 'ngHintDOM', 'ngHintEvents',
-    'ngHintInterpolation', 'ngHintModules'];
-  SEVERITY_WARNING = 2;
+},{"./getModule":64,"./getSuggestion":66}],68:[function(require,module,exports){
+var getModule = require('./getModule');
 
 module.exports = function(createdModules) {
   var unusedModules = [];
   for(var module in createdModules) {
     if(!getModule(module)) {
-      var cModule = createdModules[module],
-        message = 'Module "' + cModule.name + '" was created but never loaded.';
-      if(IGNORED.indexOf(cModule.name) === -1) {
-        unusedModules.push({module:cModule, message:message, severity:SEVERITY_WARNING});
-      }
+      var cModule = createdModules[module];
+      var message = 'Module "'+cModule.name+'" was created but never loaded.';
+      unusedModules.push({module:cModule, message:message});
     }
   }
   return unusedModules;
 };
 
-},{"./getModule":64}],68:[function(require,module,exports){
-var hintLog = angular.hint = require('angular-hint-log'),
-  MODULE_NAME = 'Modules',
-  SEVERITY_SUGGESTION = 3;
-module.exports = function(str) {
-  if(str.toLowerCase() === str || str.charAt(0).toUpperCase() === str.charAt(0)) {
-    hintLog.logMessage(MODULE_NAME, 'The best practice for' +
-      ' module names is to use lowerCamelCase. Check the name of "' + str + '".',
-      SEVERITY_SUGGESTION);
-    return false;
-  }
-  return true;
-};
-
-},{"angular-hint-log":60}],69:[function(require,module,exports){
+},{"./getModule":64}],69:[function(require,module,exports){
 var normalizeAttribute = require('./normalizeAttribute');
 
 module.exports = function(attrs) {
   for(var i = 0; i < attrs.length; i++) {
-    if(normalizeAttribute(attrs[i].nodeName) === 'ng-view' ||
-        attrs[i].value.indexOf('ng-view') > -1) {
-          return true;
+    if(normalizeAttribute(attrs[i].nodeName) === 'ng-view'
+      || attrs[i].value.indexOf('ng-view') > -1) {
+      return true;
     }
   }
 };
 
-},{"./normalizeAttribute":72}],70:[function(require,module,exports){
-module.exports = {
-  createdModules: {},
-  createdMulti: {},
-  loadedModules: {}
-};
-
+},{"./normalizeAttribute":73}],70:[function(require,module,exports){
+module.exports=require(56)
 },{}],71:[function(require,module,exports){
-var modData = require('./moduleData'),
-  getModule = require('./getModule');
+module.exports = {
+    createdModules: {},
+    createdMulti: {},
+    loadedModules: {}
+  };
+
+},{}],72:[function(require,module,exports){
+var modData = require('./moduleData');
+var getModule = require('./getModule');
 
 module.exports = function() {
   if(modData.ngViewExists && !getModule('ngRoute')) {
@@ -2537,24 +2388,24 @@ module.exports = function() {
   }
 };
 
-},{"./getModule":64,"./moduleData":70}],72:[function(require,module,exports){
+},{"./getModule":64,"./moduleData":71}],73:[function(require,module,exports){
 module.exports = function(attribute) {
   return attribute.replace(/^(?:data|x)[-_:]/,'').replace(/[:_]/g,'-');
 };
 
-},{}],73:[function(require,module,exports){
-var display = require('./display'),
-  formatMultiLoaded = require('./formatMultiLoaded'),
-  getUnusedModules = require('./getUnusedModules'),
-  getUndeclaredModules = require('./getUndeclaredModules'),
-  modData = require('./moduleData'),
-  ngViewNoNgRoute = require('./ngViewNoNgRoute');
+},{}],74:[function(require,module,exports){
+var display = require('./display');
+var formatMultiLoaded = require('./formatMultiLoaded');
+var getUnusedModules = require('./getUnusedModules');
+var getUndeclaredModules = require('./getUndeclaredModules');
+var modData = require('./moduleData');
+var ngViewNoNgRoute = require('./ngViewNoNgRoute');
 
 module.exports = function() {
-  var unusedModules = getUnusedModules(modData.createdModules),
-    undeclaredModules = getUndeclaredModules(modData.loadedModules),
-    multiLoaded = formatMultiLoaded(),
-    noNgRoute = ngViewNoNgRoute();
+  var unusedModules = getUnusedModules(modData.createdModules);
+  var undeclaredModules = getUndeclaredModules(modData.loadedModules);
+  var multiLoaded = formatMultiLoaded();
+  var noNgRoute = ngViewNoNgRoute();
   if(unusedModules.length || undeclaredModules.length || multiLoaded.length || noNgRoute) {
     var toSend = unusedModules.concat(undeclaredModules)
       .concat(multiLoaded);
@@ -2565,7 +2416,7 @@ module.exports = function() {
   }
 };
 
-},{"./display":62,"./formatMultiLoaded":63,"./getUndeclaredModules":66,"./getUnusedModules":67,"./moduleData":70,"./ngViewNoNgRoute":71}],74:[function(require,module,exports){
+},{"./display":62,"./formatMultiLoaded":63,"./getUndeclaredModules":67,"./getUnusedModules":68,"./moduleData":71,"./ngViewNoNgRoute":72}],75:[function(require,module,exports){
 var modData = require('./moduleData');
 
 module.exports = function(module, isNgAppMod) {
@@ -2581,11 +2432,11 @@ module.exports = function(module, isNgAppMod) {
   }
 };
 
-},{"./moduleData":70}],75:[function(require,module,exports){
-var getNgAppMod = require('./getNgAppMod'),
-  inAttrsOrClasses = require('./inAttrsOrClasses'),
-  storeDependencies = require('./storeDependencies'),
-  modData = require('./moduleData');
+},{"./moduleData":71}],76:[function(require,module,exports){
+var getNgAppMod = require('./getNgAppMod');
+var inAttrsOrClasses = require('./inAttrsOrClasses');
+var storeDependencies = require('./storeDependencies');
+var modData = require('./moduleData');
 
 module.exports = function(doms) {
   var bothFound,
@@ -2601,9 +2452,7 @@ module.exports = function(doms) {
     isInAttrsOrClasses = inAttrsOrClasses(elem.attributes);
 
     ngViewFound = isElemName || isInAttrsOrClasses;
-
-    ngAppMod = getNgAppMod(elem.attributes, modData.ngAppFound);
-    modData.ngAppFound = modData.ngAppFound || ngAppMod;
+    ngAppMod = getNgAppMod(elem.attributes);
 
     if(ngAppMod) {
       storeDependencies(ngAppMod, true);
@@ -2616,7 +2465,7 @@ module.exports = function(doms) {
   }
 };
 
-},{"./getNgAppMod":65,"./inAttrsOrClasses":69,"./moduleData":70,"./storeDependencies":74}],76:[function(require,module,exports){
+},{"./getNgAppMod":65,"./inAttrsOrClasses":69,"./moduleData":71,"./storeDependencies":75}],77:[function(require,module,exports){
 var storeDependencies = require('./storeDependencies');
 
 var storeUsedModules = module.exports = function(module, modules){
@@ -2627,9 +2476,5 @@ var storeUsedModules = module.exports = function(module, modules){
       storeUsedModules(mod, modules);
     });
   }
-};
-},{"./storeDependencies":74}],77:[function(require,module,exports){
-module.exports=require(49)
-},{}],78:[function(require,module,exports){
-module.exports=require(50)
-},{"./levenstein_distance":77}]},{},[2]);
+}
+},{"./storeDependencies":75}]},{},[1]);

@@ -5,3 +5,4 @@ var angularPanel = panels.create(
   "img/angular.png",
   "hint.html"
 );
+
