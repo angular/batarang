@@ -7,6 +7,7 @@
 
     <script src="HintCtrl.js"></script>
 
+    <link rel="stylesheet" href="bower_components/angular/angular-csp.css">
     <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="app.css">
 
@@ -41,20 +42,20 @@
                 <thead>
                   <tr>
                     <th>No.</th>
-                    <th ng-show="module === 'All' && type === 'All-Messages' ">Module</th>
+                    <th ng-show="module === 'All' && type === 'All Messages' ">Module</th>
                     <th>Message</th>
-                    <th ng-show="type === 'All-Messages'">Type</th>
+                    <th ng-show="type === 'All Messages'">Type</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr ng-repeat="message in messageData[module][type]| filter:search"
-                      ng-class="{danger: type === 'All-Messages' && message.type === 'Error-Messages',
-                                 warning: type === 'All-Messages' && message.type === 'Warning-Messages',
-                                 info: type === 'All-Messages' && message.type === 'Suggestion-Messages',}">
+                      ng-class="{danger: type === 'All Messages' && message.type === 'Error Messages',
+                                 warning: type === 'All Messages' && message.type === 'Warning Messages',
+                                 info: type === 'All Messages' && message.type === 'Suggestion Messages'}">
                     <td>{{$index+1}}</td>
-                    <td ng-show="module === 'All' && type === 'All-Messages'">Hint {{message.module}}</td>
+                    <td ng-show="module === 'All' && type === 'All Messages'">{{message.module}}</td>
                     <td>{{message.message || message}}</td>
-                    <td ng-show="type === 'All-Messages'">{{message.type.substring(message.type.indexOf(' '))}}</td>
+                    <td ng-show="type === 'All Messages'">{{message.type.split(' ')[0]}}</td>
                   </tr>
                 </tbody>
               </table>
