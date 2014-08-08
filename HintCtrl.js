@@ -9,7 +9,13 @@ angular.module('ngHintUI')
 
       // connect to background page
       var port = chrome.extension.connect();
+      port.postMessage(chrome.devtools.inspectedWindow.tabId);
       port.onMessage.addListener(function(msg) {
+        if(msg == 'refresh') {
+          $scope.messageData = {};
+          return;
+        }
+
         $scope.messageData = $scope.messageData || {};
         var result = msg.split('##'); //[modName, message, messageType]
         if(!$scope.messageData[result[0]]) {
