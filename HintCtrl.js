@@ -1,10 +1,10 @@
 angular.module('ngHintUI',[]);
 
 angular.module('ngHintUI')
-  .controller('HintCtrl', ['$scope',
-    function($scope){
+  .controller('HintCtrl', ['$scope', '$timeout',
+    function($scope, $timeout){
       $scope.module, $scope.type, $scope.isEmpty = '';
-
+      var currentPromises;
       //message data will be an array sent from hint log to batarang to here
 
       // connect to background page
@@ -20,7 +20,7 @@ angular.module('ngHintUI')
           };
         }
         $scope.messageData[result[0]][result[2]].push(result[1]);
-        updateAll();
+        debounceUpdateAll();
       });
       port.onDisconnect.addListener(function (a) {
         console.log(a);
@@ -61,10 +61,14 @@ angular.module('ngHintUI')
           }
         }
         $scope.messageData['All'] = all;
-        setTimeout(function() {
-          $scope.$apply();
-          console.log("called")
-        }, 3000);
+        $scope.$apply();
+      }
+
+      function debounceUpdateAll(){
+        $timeout.cancel(currentPromises);
+        currentPromises = $timeout(function() {
+          updateAll()
+        }.bind(this),1000)
       }
       $scope.setModule = function(module) {
         $scope.module = module;
