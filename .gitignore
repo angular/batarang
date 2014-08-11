@@ -1,5 +1,7 @@
 batarang-release-*.zip
 *.build.js
+hint.bundle.js
 .idea
+bower_components
 node_modules
 coverage/
