@@ -32,7 +32,6 @@ angular.module('ngHintUI')
         console.log(a);
       });
 
-
       $scope.labels = ['All Messages', 'Error Messages', 'Warning Messages', 'Suggestion Messages'];
 
       function updateAll(){
