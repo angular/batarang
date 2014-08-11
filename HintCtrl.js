@@ -69,7 +69,7 @@ angular.module('ngHintUI')
       $scope.setType = function(type) {
         $scope.type = type;
       }
-      $scope.setModule('Directives');
+      $scope.setModule('All');
       $scope.setType('All Messages');
 
   }]);
