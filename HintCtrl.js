@@ -3,7 +3,7 @@ angular.module('ngHintUI',[]);
 angular.module('ngHintUI')
   .controller('HintCtrl', ['$scope', '$timeout',
     function($scope, $timeout){
-      $scope.module, $scope.type, $scope.isEmpty = '';
+      $scope.module, $scope.type;
       var currentPromises;
       //message data will be an array sent from hint log to batarang to here
 
@@ -32,18 +32,6 @@ angular.module('ngHintUI')
         console.log(a);
       });
 
-      // $scope.messageData = {
-      //   'Modules': {
-      //     'Error-Messages': ['qwer$scope is a message', 'So issdfs $scope', 'Dont forget asdfsbout me too'],
-      //     'Warning-Messages': ['$scope is sdfa message', 'So iqws $scope', 'Dontasdf forget about me too'],
-      //     'Suggestion-Messages': ['$scope meerqessage', 'So is thsdgsis', 'Dont foasdfrget asdfabout me too'],
-      //   },
-      //   'Directives': {
-      //     'Error-Messages': ['rty$scope is asdfnot message', 'So ishggh $scope, not', 'Dont forgedfh abohkhut me too, jk'],
-      //     'Warning-Messages': ['$scope not mqweressage', 'So is $scope, not', 'Dont forget abfghfout me too, jk'],
-      //     'Suggestion-Messages': ['$scope is not masdessage', 'So is thiddfss, not', 'Dont forget abohmgut me too, jk'],
-      //   },
-      // };
 
       $scope.labels = ['All Messages', 'Error Messages', 'Warning Messages', 'Suggestion Messages'];
 
@@ -80,10 +68,6 @@ angular.module('ngHintUI')
         $scope.module = module;
       }
       $scope.setType = function(type) {
-        $scope.isEmpty = '';
-        if($scope.messageData && $scope.messageData[$scope.module][type].length === 0) {
-          $scope.isEmpty = 'There are no messages in this category.';
-        }
         $scope.type = type;
       }
       $scope.setModule('Directives');
