@@ -59,8 +59,8 @@
                   </tr>
                 </tbody>
               </table>
-              <div>
-                <h3 ng-bind="isEmpty"></h3>
+              <div ng-show="!messageData[module][type].length">
+                <h3>There are no messages in this category.</h3>
               </div>
             </div>
           </div>
