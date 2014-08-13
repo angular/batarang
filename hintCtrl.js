@@ -1,21 +1,7 @@
-angular.module('ngHintUI',[]);
-
 angular.module('ngHintUI')
-  .controller('HintCtrl', ['$scope', '$timeout',
-    function($scope, $timeout){
-      $scope.module, $scope.type, $scope.suppressedMessages = {}, $scope.suppressedMessagesLength = 0;
-      var currentPromises;
-      //message data will be an array sent from hint log to batarang to here
-
-      // connect to background page
-      var port = chrome.extension.connect();
-      port.postMessage(chrome.devtools.inspectedWindow.tabId);
-      port.onMessage.addListener(function(msg) {
-        if(msg == 'refresh') {
-          $scope.messageData = {};
-          return;
-        }
-
+  .controller('HintCtrl', ['$scope', '$timeout', 'hintService',
+    function($scope, $timeout, hintService) {
+      hintService.setHintFunction(function(msg) {
         $scope.messageData = $scope.messageData || {};
         var result = msg.split('##'); //[modName, message, messageType]
         if(!$scope.messageData[result[0]]) {
@@ -28,10 +14,10 @@ angular.module('ngHintUI')
         $scope.messageData[result[0]][result[2]].push(result[1]);
         debounceUpdateAll();
       });
-      port.onDisconnect.addListener(function (a) {
-        console.log(a);
-      });
 
+      $scope.module, $scope.type, $scope.suppressedMessages = {}, $scope.suppressedMessagesLength = 0;
+      var currentPromises;
+      //message data will be an array sent from hint log to batarang to here
       $scope.labels = ['All Messages', 'Error Messages', 'Warning Messages', 'Suggestion Messages'];
 
       function updateAll(){
