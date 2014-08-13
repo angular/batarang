@@ -1,5 +1,4 @@
-
-require('./bower_components/angular-loader/angular-loader.js');
+require('./loader.js');
 require('angular-hint');
 var eventProxyElement = document.getElementById('__ngDebugElement');
 
