@@ -5,3 +5,13 @@
 .table-hover > tbody > tr:hover > th {
   background-color: #F3F3F3;
 }
+
+.suppressedMessage{
+  margin-left: 15px;
+  font-size: 10px;
+}
+
+.condenseAlert{
+  padding: 4px 8px;
+  margin: 4px 0px;
+}

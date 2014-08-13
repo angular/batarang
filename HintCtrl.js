@@ -3,7 +3,7 @@ angular.module('ngHintUI',[]);
 angular.module('ngHintUI')
   .controller('HintCtrl', ['$scope', '$timeout',
     function($scope, $timeout){
-      $scope.module, $scope.type;
+      $scope.module, $scope.type, $scope.suppressedMessages = {}, $scope.suppressedMessagesLength = 0;
       var currentPromises;
       //message data will be an array sent from hint log to batarang to here
 
@@ -63,12 +63,36 @@ angular.module('ngHintUI')
           updateAll()
         }.bind(this),1000)
       }
+
+      $scope.isSuppressed = function(message) {
+        message = message.split(' ').slice(6,9).join('');
+        return message in $scope.suppressedMessages;
+      };
+
+      $scope.suppressMessage = function(message) {
+        $scope.suppressedMessagesLength++;
+        var key = message.split(' ').slice(6,9).join('');
+        var secondSpace = message.indexOf(' ', message.indexOf(' '));
+        var endInd = 60;
+        while(message.charAt(endInd) !== ' ') {
+          endInd++;
+        }
+        $scope.suppressedMessages[key] = '...'+message.substring(secondSpace,endInd)+'...';
+      };
+
+      $scope.unsuppressMessage = function(message) {
+        $scope.suppressedMessagesLength--;
+        delete $scope.suppressedMessages[message];
+      }
+
       $scope.setModule = function(module) {
         $scope.module = module;
-      }
+      };
+
       $scope.setType = function(type) {
         $scope.type = type;
-      }
+      };
+
       $scope.setModule('All');
       $scope.setType('All Messages');
 
