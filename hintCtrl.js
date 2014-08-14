@@ -1,54 +1,44 @@
 angular.module('ngHintUI')
   .controller('HintCtrl', ['$scope', '$timeout', 'hintService',
     function($scope, $timeout, hintService) {
+      //Set the hint service to perform this action whenever
+      //a new hint message is received.
       hintService.setHintFunction(function(msg) {
-        $scope.messageData = $scope.messageData || {};
-        var result = msg.split('##'); //[modName, message, messageType]
-        if(!$scope.messageData[result[0]]) {
-          $scope.messageData[result[0]] = {
+        //If there is no scope data, initialize a new data object
+        $scope.messageData = $scope.messageData || {
+          'All' : {
+            'All Messages': [],
             'Error Messages': [],
             'Warning Messages': [],
             'Suggestion Messages': []
+          }
+        };
+
+        //Split the hint message into useful information
+        var result = msg.split('##'),
+          modName = result[0],
+          message = result[1],
+          messageType = result[2];
+
+        //If there are no messages for this module, make new arrays for this module's messages
+        if(!$scope.messageData[modName]) {
+          $scope.messageData[modName] = {
+            'Error Messages': [],
+            'Warning Messages': [],
+            'Suggestion Messages': [],
+            'All Messages': []
           };
         }
-        $scope.messageData[result[0]][result[2]].push(result[1]);
-        debounceUpdateAll();
+
+        $scope.messageData['All']['All Messages'].push({message: message, type: messageType, module: modName});
+        $scope.messageData['All'][messageType].push(message);
+        $scope.messageData[modName]['All Messages'].push({message: message, type: messageType});
+        $scope.messageData[modName][messageType].push(message);
+        $scope.$apply();
       });
 
       $scope.module, $scope.type, $scope.suppressedMessages = {}, $scope.suppressedMessagesLength = 0;
-      var currentPromises;
-      //message data will be an array sent from hint log to batarang to here
       $scope.labels = ['All Messages', 'Error Messages', 'Warning Messages', 'Suggestion Messages'];
-
-      function updateAll(){
-        var all = {
-          'All Messages': [],
-          'Error Messages': [],
-          'Warning Messages': [],
-          'Suggestion Messages': []
-        };
-        for(var id in $scope.messageData) {
-          $scope.messageData[id]['All Messages'] = [];
-          for(var type in $scope.messageData[id]) {
-            $scope.messageData[id][type].forEach(function(message) {
-              if(type !== 'All Messages'){
-                all['All Messages'].push({message: message, type: type, module: id});
-                all[type].push(message);
-                $scope.messageData[id]['All Messages'].push({message: message, type: type});
-              }
-            });
-          }
-        }
-        $scope.messageData['All'] = all;
-        $scope.$apply();
-      }
-
-      function debounceUpdateAll(){
-        $timeout.cancel(currentPromises);
-        currentPromises = $timeout(function() {
-          updateAll()
-        }.bind(this),1000)
-      }
 
       $scope.isSuppressed = function(message) {
         message = message.split(' ').slice(6,9).join('');
