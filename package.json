@@ -4,16 +4,14 @@
   "description": "chrome extension for inspecting angular apps",
   "main": "hint.js",
   "devDependencies": {
-    "karma": "0.12.16",
-    "karma-bro": "^0.6.0",
-    "karma-jasmine": "0.1.5"
+    "karma-chrome-launcher": "^0.1.4",
+    "karma-jasmine": "^0.1.5"
   },
   "dependencies": {
     "browserify": "^5.9.1",
     "gulp": "^3.8.7",
     "vinyl-source-stream": "^0.1.1"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "browserify hint.js -o hint.bundle.js"

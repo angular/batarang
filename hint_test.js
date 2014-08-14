@@ -172,21 +172,48 @@ describe('angularHint', function() {
 
   //TO DO CARLOS WHO WROTE THESE METHODS
   describe('message suppression', function() {
-    describe('isSuppressed', function() {
-      it('should detect if a message is currently suppressed', function() {
-        //TO DO
-      });
-    });
-
     describe('suppressMessage', function() {
       it('should put a message into the list of suppressedMessages', function() {
-
+        var scope = $rootScope.$new();
+        var ctrl = $controller('HintController', {$scope: scope});
+        scope.suppressMessage('an error message that will be suppressed and hid from display and yay');
+        expect(scope.suppressedMessages['suppressedandhid']).toEqual('...error message that will be suppressed and hid from display...');
+      });
+      it('should increment suppressedMessagesLength', function() {
+        var scope = $rootScope.$new();
+        var ctrl = $controller('HintController', {$scope: scope});
+        scope.suppressMessage('an error message that should increment the counter of messages and yay');
+        expect(scope.suppressedMessagesLength).toBe(1);
       });
     });
 
     describe('unsuppressMessage', function() {
-      it('should remove a message from the list of suppressedMessages', function() {
+      it('should remove a message into the list of suppressedMessages', function() {
+        var scope = $rootScope.$new();
+        var ctrl = $controller('HintController', {$scope: scope});
+        scope.suppressMessage('an error message that will be suppressed and hid from display and yay');
+        scope.unsuppressMessage('suppressedandhid');
+        expect(scope.suppressedMessages['suppressedandhid']).toBeUndefined();
+      });
+      it('should decrement suppressedMessagesLength', function() {
+        var scope = $rootScope.$new();
+        var ctrl = $controller('HintController', {$scope: scope});
+        scope.suppressMessage('an error message that should increment the counter of messages');
+        scope.unsuppressMessage('suppressedandhid');
+        expect(scope.suppressedMessagesLength).toBe(0);
+      });
+    });
 
+    describe('isSuppressed', function() {
+      it('should detect if a message is currently suppressed', function() {
+        var scope = $rootScope.$new();
+        var ctrl = $controller('HintController', {$scope: scope});
+        scope.suppressMessage('an error message that will be suppressed and hid from display');
+        var res = scope.isSuppressed('an error message that will be suppressed and hid from display');
+        expect(res).toBe(true);
+
+        res = scope.isSuppressed('this is an error message that has not ever been suppressed');
+        expect(res).toBe(false);
       });
     });
   });

@@ -76,12 +76,15 @@ angular.module('ngHintUI')
         var endInd = 60;
         while(message.charAt(endInd) !== ' ') {
           endInd++;
+          if(endInd > 75) {
+            break;
+          }
         }
-        $scope.suppressedMessages[key] = '...'+message.substring(secondSpace,endInd)+'...';
+        $scope.suppressedMessages[key] = '...'+message.substring(secondSpace+1,endInd)+'...';
       };
 
-      $scope.unsuppressMessage = function(message) {
+      $scope.unsuppressMessage = function(messageKey) {
         $scope.suppressedMessagesLength--;
-        delete $scope.suppressedMessages[message];
+        delete $scope.suppressedMessages[messageKey];
       }
   }]);
