@@ -27,6 +27,9 @@ angular.module('panelApp').controller('ModelCtrl', function ModelCtrl($scope, ap
 
   $scope.enableInspector = appModel.enableInspector;
 
+  $scope.inspectElement = function() {
+    appContext.inspect($scope.selectedScope);
+  };
 
   $scope.$on('poll', function () {
 

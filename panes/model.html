@@ -21,9 +21,11 @@
 
   <div class="span6">
     <h2>Models<span ng-show="selectedScope"> for ({{selectedScope}})</span></h2>
+    <div class="well">
+      <button class="btn" ng-click="enableInspector()">Enable Inspector</button>
+      <button class="btn" ng-click="inspectElement()">Inspect Element</button>
+    </div>
     <bat-json-tree val="model"></bat-json-tree>
   </div>
-  <div class="span6">
-    <button class="btn" ng-click="enableInspector()">Enable Inspector</button>
-  </div>
+
 </div>
