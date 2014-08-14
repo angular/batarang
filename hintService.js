@@ -1,6 +1,6 @@
 angular.module('ngHintUI').
   service('hintService', function() {
-    var onHintFunction;
+    var onHintFunction, onRefreshFunction;
 
     this.setHintFunction = function(hintFunction) {
       onHintFunction = hintFunction;
@@ -10,14 +10,18 @@ angular.module('ngHintUI').
       return onHintFunction;
     }
 
+    this.setRefreshFunction = function(refreshFunction) {
+      onRefreshFunction = refreshFunction;
+    }
+
+    this.getRefreshFunction = function() {
+      return onRefreshFunction;
+    }
+
     var port = chrome.extension.connect();
     port.postMessage(chrome.devtools.inspectedWindow.tabId);
     port.onMessage.addListener(function(msg) {
-      if(msg == 'refresh') {
-        this.messageData = [];
-        return;
-      }
-      onHintFunction(msg);
+      msg == 'refresh' ? onRefreshFunction() : onHintFunction(msg);
     });
 
     port.onDisconnect.addListener(function (a) {

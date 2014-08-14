@@ -1,16 +1,29 @@
 angular.module('ngHintUI')
-  .controller('HintCtrl', ['$scope', '$timeout', 'hintService',
-    function($scope, $timeout, hintService) {
+  .controller('HintController', ['$scope', 'hintService',
+    function($scope, hintService) {
+
+      //Set the hint service to perform this action when the page is refreshed
+      hintService.setRefreshFunction(function() {
+        $scope.messageData = {
+          'All' : {
+            'Error Messages': [],
+            'Warning Messages': [],
+            'Suggestion Messages': [],
+            'All Messages': []
+          }
+        };
+      });
+
       //Set the hint service to perform this action whenever
       //a new hint message is received.
       hintService.setHintFunction(function(msg) {
         //If there is no scope data, initialize a new data object
         $scope.messageData = $scope.messageData || {
           'All' : {
-            'All Messages': [],
             'Error Messages': [],
             'Warning Messages': [],
-            'Suggestion Messages': []
+            'Suggestion Messages': [],
+            'All Messages': []
           }
         };
 
@@ -40,6 +53,17 @@ angular.module('ngHintUI')
       $scope.module, $scope.type, $scope.suppressedMessages = {}, $scope.suppressedMessagesLength = 0;
       $scope.labels = ['All Messages', 'Error Messages', 'Warning Messages', 'Suggestion Messages'];
 
+      $scope.setModule = function(module) {
+        $scope.module = module;
+      };
+
+      $scope.setType = function(type) {
+        $scope.type = type;
+      };
+
+      $scope.setModule('All');
+      $scope.setType('All Messages');
+
       $scope.isSuppressed = function(message) {
         message = message.split(' ').slice(6,9).join('');
         return message in $scope.suppressedMessages;
@@ -60,16 +84,4 @@ angular.module('ngHintUI')
         $scope.suppressedMessagesLength--;
         delete $scope.suppressedMessages[message];
       }
-
-      $scope.setModule = function(module) {
-        $scope.module = module;
-      };
-
-      $scope.setType = function(type) {
-        $scope.type = type;
-      };
-
-      $scope.setModule('All');
-      $scope.setType('All Messages');
-
   }]);

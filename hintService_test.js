@@ -37,4 +37,13 @@ describe('hintService', function() {
     hintService.setHintFunction(onHintFunction);
     expect(hintService.getHintFunction()).toEqual(onHintFunction);
   });
+
+
+  it('should set the function to be executed on a refresh', function() {
+    var onRefreshFunction = function() {
+      console.log('Do this when the page is refreshed.');
+    };
+    hintService.setRefreshFunction(onRefreshFunction);
+    expect(hintService.getRefreshFunction()).toEqual(onRefreshFunction);
+  });
 });
