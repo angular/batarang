@@ -4,7 +4,7 @@ chrome.extension.onConnect.addListener(function(port) {
   port.onMessage.addListener(function (msg) {
     if (msg.action === 'register') {
       var respond = function (tabId, changeInfo, tab) {
-        if (tabId !== msg.inspectedTabId) {
+        if (tabId !== msg.inspectedTabId || changeInfo.status !== 'complete') {
           return;
         }
         port.postMessage('refresh');
