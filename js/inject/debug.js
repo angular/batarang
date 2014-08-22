@@ -612,7 +612,7 @@ var inject = function () {
       // ===============
 
       var ng = angular.module('ng');
-      ng.config(function ($provide) {
+      ng.config(['$provide', function ($provide) {
         // methods to patch
 
         // $provide.provider
@@ -709,7 +709,7 @@ var inject = function () {
           };
         });
 
-        $provide.decorator('$rootScope', function ($delegate) {
+        $provide.decorator('$rootScope', ['$delegate', function ($delegate) {
 
           var watchFnToHumanReadableString = function (fn) {
             if (fn.exp) {
@@ -879,8 +879,8 @@ var inject = function () {
 
 
           return $delegate;
-        });
-      });
+        }]);
+      }]);
     };
 
     // Return a script element with the above code embedded in it
