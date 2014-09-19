@@ -13,8 +13,10 @@ angular.module('panelApp').directive('batTabs', function ($compile, $templateCac
 
             '<li>' +
               '<div class="bat-nav-check">' +
-                '<input type="checkbox" ng-model="enable" id="enable-instrumentation"> ' +
-                'Enable' +
+                '<label style="margin-bottom: 0px;">' +
+                  '<input type="checkbox" ng-model="enable" id="enable-instrumentation"> ' +
+                  'Enable' +
+                '</label>' +
               '</div>' +
             '</li>' +
 
