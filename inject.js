@@ -8,7 +8,7 @@ html.appendChild(eventProxyElement);
 // inject into the application context from the content script context
 
 var script = window.document.createElement('script');
-script.src = chrome.extension.getURL('hint.bundle.js');
+script.src = chrome.extension.getURL('dist/hint.js');
 
 eventProxyElement.addEventListener('myCustomEvent', function () {
   var eventData = eventProxyElement.innerText;
