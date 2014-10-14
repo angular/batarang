@@ -1,91 +1,92 @@
 <!doctype html>
 <html ng-csp ng-app="ngHintUI">
-  <head>
-    <script src="bower_components/angular/angular.js"></script>
-    <script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
-    <script src="bower_components/jquery/dist/jquery.js"></script>
+<head>
+  <link rel="stylesheet" href="bower_components/angular/angular-csp.css">
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="app.css">
 
-    <script src="hintApp.js"></script>
-    <script src="hintService.js"></script>
-    <script src="hintCtrl.js"></script>
-
-    <link rel="stylesheet" href="bower_components/angular/angular-csp.css">
-    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="app.css">
-
-  </head>
-  <body>
-    <div ng-controller="HintController" >
-      <div class="row" style="padding:10px">
-        <div class="col-md-12">
-          <ul class="nav nav-tabs">
-            <li ng-class="{active: module === modName}" ng-repeat="(modName, value) in messageData" ng-click="setModule(modName)">
-              <a data-toggle="tab">
-                {{modName}}
-              </a>
-            </li>
-          </ul>
-          <div class="row" style="padding: 5px 0px">
-            <div class="col-md-2">
+</head>
+<body>
+  <div ng-controller="HintController">
+    <div class="row" style="padding:10px">
+      <div class="col-md-12">
+        <ul class="nav nav-tabs">
+          <li ng-class="{active: module === modName}" ng-repeat="(modName, value) in messageData" ng-click="setModule(modName)">
+            <a data-toggle="tab">
+              {{modName}}
+            </a>
+          </li>
+        </ul>
+        <div class="row" style="padding: 5px 0px">
+          <div class="col-md-2">
+            <ul class="nav nav-pills nav-stacked">
+              <li ng-class="{active: type === label}" ng-repeat="label in labels" ng-click="setType(label)">
+                <a class="offsetTab">{{label}}</a>
+              </li>
+            </ul>
+            <div ng-show="suppressedMessagesLength">
+              <hr>
+              <h5 class="offsetTab">Suppressed Errors:</h5>
               <ul class="nav nav-pills nav-stacked">
-                <li ng-class="{active: type === label}" ng-repeat="label in labels" ng-click="setType(label)">
-                  <a class="offsetTab">
-                    {{label}}
-                  </a>
+                <li ng-repeat="(key,message) in suppressedMessages">
+                  <div class="suppressedMessage">
+                    <div class='alert alert-warning condenseAlert'>
+                      {{message}}
+
+                      <button type="button" class="close" style="margin-top:-5px" ng-click="unsuppressMessage(key)">
+                        <span aria-hidden="true">&times;</span>
+                        <span class="sr-only">Close</span>
+                      </button>
+                    </div>
+                  </div>
                 </li>
               </ul>
-              <div ng-show="suppressedMessagesLength">
-                <hr>
-                <h5 class="offsetTab">Suppressed Errors:</h5>
-                <ul class="nav nav-pills nav-stacked">
-                  <li ng-repeat="(key,message) in suppressedMessages">
-                    <div class="suppressedMessage">
-                      <div class='alert alert-warning condenseAlert'>
-                      {{message}}
-                        <button type="button" class="close" style="margin-top:-5px" ng-click="unsuppressMessage(key)"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span>
-                        </button>
-                      </div>
-                    </div>
-                  </li>
-                </ul>
-              </div>
             </div>
-            <div class="col-md-10">
-              <div class="input-group">
-                <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span></div>
-                <input class="form-control" type="text" placeholder="Search Messages" ng-model="search">
-              </div>
-              <table class="table table-striped table-hover" ng-show="messageData[module][type].length">
-                <thead>
-                  <tr>
-                    <th>No.</th>
-                    <th ng-show="module === 'All' && type === 'All Messages' ">Module</th>
-                    <th>Message</th>
-                    <th ng-show="type === 'All Messages'">Type</th>
-                    <th>Suppress</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr ng-repeat="message in messageData[module][type]| filter:search"
-                      ng-class="{danger: type === 'All Messages' && message.type === 'Error Messages',
-                                 warning: type === 'All Messages' && message.type === 'Warning Messages',
-                                 info: type === 'All Messages' && message.type === 'Suggestion Messages'}"
-                      ng-hide="isSuppressed(message.message)">
-                    <td>{{$index+1}}</td>
-                    <td ng-show="module === 'All' && type === 'All Messages'">{{message.module}}</td>
-                    <td>{{message.message || message}}</td>
-                    <td ng-show="type === 'All Messages'">{{message.type.split(' ')[0]}}</td>
-                    <td align="center"><button type="button" class="btn btn-default btn-xs" ng-click="suppressMessage(message.message)"><span class="glyphicon glyphicon-minus-sign"></span></button></td>
-                  </tr>
-                </tbody>
-              </table>
-              <div ng-show="!messageData[module][type].length">
-                <h3>There are no messages in this category.</h3>
-              </div>
+          </div>
+          <div class="col-md-10">
+            <div class="input-group">
+              <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span></div>
+              <input class="form-control" type="text" placeholder="Search Messages" ng-model="search">
+            </div>
+            <table class="table table-striped table-hover" ng-show="messageData[module][type].length">
+              <thead>
+                <tr>
+                  <th>No.</th>
+                  <th ng-show="module === 'All' && type === 'All Messages' ">Module</th>
+                  <th>Message</th>
+                  <th ng-show="type === 'All Messages'">Type</th>
+                  <th>Suppress</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="message in messageData[module][type] | filter:search"
+                    ng-class="{danger: type === 'All Messages' && message.type === 'Error Messages',
+                               warning: type === 'All Messages' && message.type === 'Warning Messages',
+                               info: type === 'All Messages' && message.type === 'Suggestion Messages'}"
+                    ng-hide="isSuppressed(message.message)">
+                  <td>{{$index + 1}}</td>
+                  <td ng-show="module === 'All' && type === 'All Messages'">{{message.module}}</td>
+                  <td>{{message.message || message}}</td>
+                  <td ng-show="type === 'All Messages'">{{ message.type.split(' ')[0] }}</td>
+                  <td align="center"><button type="button" class="btn btn-default btn-xs" ng-click="suppressMessage(message.message)"><span class="glyphicon glyphicon-minus-sign"></span></button></td>
+                </tr>
+              </tbody>
+            </table>
+            <div ng-show="!messageData[module][type].length">
+              <h3>There are no messages in this category.</h3>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </body>
+  </div>
+
+  <!-- scripts -->
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-bootstrap/ui-bootstrap.js"></script>
+  <script src="bower_components/jquery/dist/jquery.js"></script>
+
+  <script src="hintApp.js"></script>
+
+</body>
 </html>
