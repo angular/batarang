@@ -1,8 +1,24 @@
+'use strict';
+
 angular.module('ngHintUI', []).
+  controller('HintController', ['$scope', 'hintService', HintController]).
+  service('hintService', ['$rootScope', hintService]);
 
-controller('HintController', ['$scope', 'hintService', HintController]).
+function HintController($scope, hintService) {
+  resetMessageData();
 
-service('hintService', ['$rootScope', function($rootScope) {
+  hintService.onRefresh(resetMessageData);
+
+  function resetMessageData() {
+    $scope.hints = [];
+  }
+
+  hintService.onHint(function(hint) {
+    $scope.hints.push(hint);
+  });
+}
+
+function hintService($rootScope) {
   var onHintCallback,
       onRefreshCallback;
 
@@ -29,24 +45,5 @@ service('hintService', ['$rootScope', function($rootScope) {
 
   port.onDisconnect.addListener(function (a) {
     console.log(a);
-  });
-
-}]);
-
-function HintController($scope, hintService) {
-
-  resetMessageData();
-
-  // TODO: rename this ?
-  hintService.onRefresh(resetMessageData);
-
-  function resetMessageData() {
-    $scope.hints = [];
-  }
-
-  //Set the hint service to perform this action whenever
-  //a new hint message is received.
-  hintService.onHint(function(hint) {
-    $scope.hints.push(hint);
   });
 }
