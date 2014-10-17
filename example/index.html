@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>yo</title>
+</head>
+<body ng-app="myApp">
+  <div ng-controller="myKontroller">
+    <h1>{{name}}</h1>
+  </div>
+  <script src="../bower_components/angular/angular.js"></script>
+  <script>
+  angular.module('myApp', []).
+    controller('myKontroller', function ($scope) {
+      $scope.name = 'hey';
+      var thing = 'document';
+
+      window[thing].getElementsByTagName('div')
+    });
+  </script>
+</body>
+</html>
