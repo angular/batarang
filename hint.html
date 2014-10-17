@@ -19,16 +19,19 @@
         </ul>
         <div class="row" style="padding: 5px 0px">
           <div class="col-md-2">
+            <!--
             <ul class="nav nav-pills nav-stacked">
               <li ng-class="{active: type === label}" ng-repeat="label in labels" ng-click="setType(label)">
                 <a class="offsetTab">{{label}}</a>
               </li>
             </ul>
+            -->
+            <!--
             <div ng-show="suppressedMessagesLength">
               <hr>
               <h5 class="offsetTab">Suppressed Errors:</h5>
               <ul class="nav nav-pills nav-stacked">
-                <li ng-repeat="(key,message) in suppressedMessages">
+                <li ng-repeat="(key, message) in suppressedMessages">
                   <div class="suppressedMessage">
                     <div class='alert alert-warning condenseAlert'>
                       {{message}}
@@ -42,39 +45,31 @@
                 </li>
               </ul>
             </div>
+            -->
           </div>
           <div class="col-md-10">
             <div class="input-group">
               <div class="input-group-addon"><span class="glyphicon glyphicon-search"></span></div>
               <input class="form-control" type="text" placeholder="Search Messages" ng-model="search">
             </div>
-            <table class="table table-striped table-hover" ng-show="messageData[module][type].length">
+            <table class="table table-striped table-hover">
               <thead>
                 <tr>
                   <th>No.</th>
-                  <th ng-show="module === 'All' && type === 'All Messages' ">Module</th>
+                  <th>Module</th>
                   <th>Message</th>
-                  <th ng-show="type === 'All Messages'">Type</th>
-                  <th>Suppress</th>
+                  <th>Severity</th>
                 </tr>
               </thead>
               <tbody>
-                <tr ng-repeat="message in messageData[module][type] | filter:search"
-                    ng-class="{danger: type === 'All Messages' && message.type === 'Error Messages',
-                               warning: type === 'All Messages' && message.type === 'Warning Messages',
-                               info: type === 'All Messages' && message.type === 'Suggestion Messages'}"
-                    ng-hide="isSuppressed(message.message)">
+                <tr ng-repeat="hint in hints">
                   <td>{{$index + 1}}</td>
-                  <td ng-show="module === 'All' && type === 'All Messages'">{{message.module}}</td>
-                  <td>{{message.message || message}}</td>
-                  <td ng-show="type === 'All Messages'">{{ message.type.split(' ')[0] }}</td>
-                  <td align="center"><button type="button" class="btn btn-default btn-xs" ng-click="suppressMessage(message.message)"><span class="glyphicon glyphicon-minus-sign"></span></button></td>
+                  <td>{{hint.module}}</td>
+                  <td>{{hint.message}}</td>
+                  <td>{{hint.severity}}</td>
                 </tr>
               </tbody>
             </table>
-            <div ng-show="!messageData[module][type].length">
-              <h3>There are no messages in this category.</h3>
-            </div>
           </div>
         </div>
       </div>
