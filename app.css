@@ -1,17 +1,17 @@
-.offsetTab{
+.offsetTab {
   margin-left: 15px;
 }
-.table-hover > tbody > tr:hover > td,
-.table-hover > tbody > tr:hover > th {
+.table-hover tr:hover td,
+.table-hover tr:hover th {
   background-color: #F3F3F3;
 }
 
-.suppressedMessage{
+.suppressedMessage {
   margin-left: 15px;
   font-size: 10px;
 }
 
-.condenseAlert{
+.condenseAlert {
   padding: 4px 8px;
   margin: 4px 0px;
 }
