@@ -765,8 +765,6 @@ var inject = function () {
             // ---------------------
             var w = watchExpression;
 
-
-
             if (typeof w === 'function') {
               watchExpression = function () {
 
@@ -775,7 +773,6 @@ var inject = function () {
                 var end = performance.now();
                 debug.watchPerf[watchStr].time += (end - start);
                 debug.watchPerf[watchStr].calls += 1;
-
 
                 return ret;
               };
@@ -827,9 +824,7 @@ var inject = function () {
                 return ret;
               };
             }
-
-
-            
+          
             var unwatch = _watch.apply(this, arguments);
             debug.watchPerf[watchStr + '_' + thatScope.$id] = unwatch;
 
