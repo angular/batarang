@@ -1,5 +1,5 @@
 {
-  "name": "AngularJS Batarang",
+  "name": "AngularJS Batarang / EOL fork",
   "version": "0.4.6",
   "description": "Extends the Developer Tools, adding tools for debugging and profiling AngularJS applications.",
   "background": {

@@ -746,12 +746,7 @@ var inject = function () {
           var _watch = $delegate.__proto__.$watch;
 
           $delegate.__proto__.$watch = function (watchExpression, applyFunction) {
-            var bindOnce = false;
-            // console.log({
-            //   w: watchExpression, 
-            //   a: applyFunction,
-            //   exp: watchExpression.exp ? watchExpression.exp : null
-            // });
+
             var thatScope = this;
             var watchStr = watchFnToHumanReadableString(watchExpression);
 
@@ -774,10 +769,6 @@ var inject = function () {
 
             if (typeof w === 'function') {
               watchExpression = function () {
-
-
-
-                //console.log(w.exp, thatScope.$id);
 
                 var start = performance.now();
                 var ret = w.apply(this, arguments);
@@ -806,7 +797,6 @@ var inject = function () {
               var unpatchedApplyFunction = applyFunction;
               applyFunction = function (value, old, scope) {
                 var lastValue;
-                //console.log(value, old, scope);
                 var start = performance.now();
                 var ret = unpatchedApplyFunction.apply(this, arguments);
                 var end = performance.now();
@@ -819,7 +809,7 @@ var inject = function () {
                     calls: 0
                   };
                 }
-                //console.log('bf1', watchStr, value, old, thatScope.$id);
+
                 var cleanWatchStr = watchStr.replace(/[{}]/g, '');
                if (watchStr && cleanWatchStr && cleanWatchStr.charAt(0) === ':' && cleanWatchStr.charAt(1) === ':') { 
                   lastValue = value;
@@ -840,8 +830,8 @@ var inject = function () {
 
 
             
-           unwatch = _watch.apply(this, arguments);
-           debug.watchPerf[watchStr + '_' + thatScope.$id] = unwatch;
+            var unwatch = _watch.apply(this, arguments);
+            debug.watchPerf[watchStr + '_' + thatScope.$id] = unwatch;
 
             return unwatch;
           };
