@@ -310,9 +310,11 @@ var inject = function () {
 
         getWatchPerf: function () {
           var changes = [];
+
           angular.forEach(debug.watchPerf, function (info, name) {
             if (info.time > 0) {
               changes.push({
+                calls: info.calls,
                 name: name,
                 time: info.time
               });
@@ -742,7 +744,14 @@ var inject = function () {
           // ==========================
 
           var _watch = $delegate.__proto__.$watch;
+
           $delegate.__proto__.$watch = function (watchExpression, applyFunction) {
+            var bindOnce = false;
+            // console.log({
+            //   w: watchExpression, 
+            //   a: applyFunction,
+            //   exp: watchExpression.exp ? watchExpression.exp : null
+            // });
             var thatScope = this;
             var watchStr = watchFnToHumanReadableString(watchExpression);
 
@@ -760,13 +769,23 @@ var inject = function () {
             // patch watchExpression
             // ---------------------
             var w = watchExpression;
+
+
+
             if (typeof w === 'function') {
               watchExpression = function () {
+
+
+
+                //console.log(w.exp, thatScope.$id);
+
                 var start = performance.now();
                 var ret = w.apply(this, arguments);
                 var end = performance.now();
                 debug.watchPerf[watchStr].time += (end - start);
                 debug.watchPerf[watchStr].calls += 1;
+
+
                 return ret;
               };
             } else {
@@ -785,7 +804,9 @@ var inject = function () {
             if (typeof applyFunction === 'function') {
               var applyStr = applyFunction.toString();
               var unpatchedApplyFunction = applyFunction;
-              applyFunction = function () {
+              applyFunction = function (value, old, scope) {
+                var lastValue;
+                //console.log(value, old, scope);
                 var start = performance.now();
                 var ret = unpatchedApplyFunction.apply(this, arguments);
                 var end = performance.now();
@@ -798,13 +819,31 @@ var inject = function () {
                     calls: 0
                   };
                 }
+                //console.log('bf1', watchStr, value, old, thatScope.$id);
+                var cleanWatchStr = watchStr.replace(/[{}]/g, '');
+               if (watchStr && cleanWatchStr && cleanWatchStr.charAt(0) === ':' && cleanWatchStr.charAt(1) === ':') { 
+                  lastValue = value;
+                  if ( typeof value !== 'undefined' ) {
+                      scope.$$postDigest(function () {
+                        if ( typeof lastValue !== 'undefined') {
+                          debug.watchPerf[watchStr + '_' + thatScope.$id]();
+                        }
+                      });
+                  }
+               }
+
                 debug.applyPerf[applyStr].time += (end - start);
                 debug.applyPerf[applyStr].calls += 1;
                 return ret;
               };
             }
 
-            return _watch.apply(this, arguments);
+
+            
+           unwatch = _watch.apply(this, arguments);
+           debug.watchPerf[watchStr + '_' + thatScope.$id] = unwatch;
+
+            return unwatch;
           };
 
 

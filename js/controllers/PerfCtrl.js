@@ -23,9 +23,12 @@ angular.module('panelApp').controller('PerfCtrl', function PerfCtrl($scope, appC
     appContext.inspect(this.val.id);
   };
 
+
   $scope.$on('poll', function () {
     appPerf.get(function (histogram) {
+
       $scope.$apply(function () {
+
         $scope.histogram = histogram;
       });
     });
