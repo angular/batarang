@@ -42,7 +42,6 @@ angular.module('panelApp').factory('appPerf', function (chromeExtension, appCont
         _histogramCache.push(info);
       }
       _watchNameToPerf[info.name].calls = info.calls;
-      //alert(JSON.stringify(info));
     });
 
     // recalculate all percentages
