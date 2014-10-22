@@ -21,7 +21,7 @@
     ]
   },
   "web_accessible_resources": [
-   "dist/hint.js"
+    "dist/hint.js"
   ],
   "minimum_chrome_version": "21.0.1180.57"
 }

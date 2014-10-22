@@ -1,7 +1,7 @@
 var html = document.getElementsByTagName('html')[0];
 
 var eventProxyElement = document.createElement('div');
-eventProxyElement.id = '__ngDebugElement';
+eventProxyElement.id = '__ngBatarangElement';
 eventProxyElement.style.display = 'none';
 html.appendChild(eventProxyElement);
 
@@ -10,7 +10,7 @@ html.appendChild(eventProxyElement);
 var script = window.document.createElement('script');
 script.src = chrome.extension.getURL('dist/hint.js');
 
-eventProxyElement.addEventListener('myCustomEvent', function () {
+eventProxyElement.addEventListener('batarangDataEvent', function () {
   var eventData = eventProxyElement.innerText;
   chrome.extension.sendMessage(eventData);
 });

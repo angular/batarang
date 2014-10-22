@@ -1,0 +1,39 @@
+<div class="split-view split-view-vertical visible">
+
+  <div
+    class="split-view-contents
+      scroll-target
+      split-view-contents-first
+      split-view-sidebar
+      sidebar"
+    style="width: 200px;">
+      <ol class="sidebar-tree" tabindex="0">
+        <li ng-repeat="pane in panes"
+          ng-click="select(pane)"
+          class="sidebar-tree-item
+          profile-launcher-view-tree-item"
+          ng-class="{selected:pane.selected}">
+
+            <img class="icon">
+            <div class="status"></div>
+            <div class="titles no-subtitle">
+              <span class="title">{{pane.title}}</span>
+              <span class="subtitle"></span>
+            </div>
+
+        </li>
+      </ol>
+  </div>
+
+  <div
+    class="split-view-contents
+      scroll-target
+      split-view-contents-second
+      outline-disclosure
+      bat-tabs-inside"
+    style="left: 200px;">
+  </div>
+
+  <div ng-transclude></div>
+
+</div>

@@ -1,0 +1,32 @@
+<!doctype html>
+<html ng-csp ng-app="batarang.app">
+<head>
+  <link rel="stylesheet" href="reset.css">
+  <link rel="stylesheet" href="app.css">
+
+  <link rel="stylesheet" href="components/json-tree/json-tree.css">
+  <link rel="stylesheet" href="components/scope-tree/scope-tree.css">
+
+  <script src="../bower_components/angular/angular.js"></script>
+
+  <!-- components -->
+  <script src="components/inspected-app/inspected-app.js"></script>
+  <script src="components/code/code.js"></script>
+  <script src="components/json-tree/json-tree.js"></script>
+  <script src="components/scope-tree/scope-tree.js"></script>
+  <script src="components/tabs/tabs.js"></script>
+  <script src="components/vertical-split/vertical-split.js"></script>
+
+  <!-- panes -->
+  <script src="hints/hints.js"></script>
+  <script src="scopes/scopes.js"></script>
+
+  <script src="app.js"></script>
+</head>
+<body>
+  <bat-tabs>
+    <bat-pane title="Scopes" src="scopes/scopes.html"></bat-pane>
+    <bat-pane title="Hints" src="hints/hints.html"></bat-pane>
+  </bat-tabs>
+</body>
+</html>

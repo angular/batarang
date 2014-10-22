@@ -1,0 +1,39 @@
+<div bat-vertical-split ng-controller="ScopesController">
+
+  <div bat-vertical-left class="source-code">
+    <bat-scope-tree bat-model="scopes"></bat-scope-tree>
+  </div>
+
+  <div bat-vertical-right>
+    <div class="sidebar-pane-stack fill visible">
+
+      <div class="sidebar-pane-title"
+          ng-class="{expanded: modelsExpanded}"
+          ng-click="modelsExpanded = !modelsExpanded">Models</div>
+
+      <div class="sidebar-pane visible" ng-if="modelsExpanded">
+        <div class="body">
+          <div class="section expanded">
+            <bat-json-tree val="scopes[inspectedScope].models" scope-id="inspectedScope"></bat-json-tree>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-pane-title"
+          ng-class="{expanded: watchExpanded}"
+          ng-click="watchExpanded = !watchExpanded">Watchers</div>
+
+      <div class="sidebar-pane visible" ng-if="watchExpanded">
+        <div class="body">
+          <div class="section expanded">
+            <div class="watcher-list">
+              <li ng-repeat="watcher in watchers">{{watcher}}</li>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>

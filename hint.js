@@ -1,11 +1,10 @@
+/*
+ * This gets loaded into the context of the app you are inspecting
+ */
 require('./loader.js');
 require('angular-hint');
-var eventProxyElement = document.getElementById('__ngDebugElement');
 
-var customEvent = document.createEvent('Event');
-customEvent.initEvent('myCustomEvent', true, true);
-
-angular.hint.onMessage = function (moduleName, message, messageType) {
+angular.hint.onMessage = function (moduleName, message, messageType, category) {
   if (!message) {
     message = moduleName;
     moduleName = 'Unknown'
@@ -13,10 +12,25 @@ angular.hint.onMessage = function (moduleName, message, messageType) {
   if (typeof messageType === 'undefined') {
     messageType = 1;
   }
-  eventProxyElement.innerText = JSON.stringify({
+  sendMessage({
     module: moduleName,
     message: message,
-    severity: messageType
+    severity: messageType,
+    category: category
   });
-  eventProxyElement.dispatchEvent(customEvent);
 };
+
+angular.hint.emit = function (ev, data) {
+  data.event = ev;
+  sendMessage(data);
+};
+
+var eventProxyElement = document.getElementById('__ngBatarangElement');
+
+var customEvent = document.createEvent('Event');
+customEvent.initEvent('batarangDataEvent', true, true);
+
+function sendMessage (obj) {
+  eventProxyElement.innerText = JSON.stringify(obj);
+  eventProxyElement.dispatchEvent(customEvent);
+}

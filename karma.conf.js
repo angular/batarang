@@ -1,14 +1,16 @@
+/*
+ * This karma conf tests just the panel app
+ */
+
 module.exports = function(config) {
   config.set({
     frameworks: ['browserify', 'jasmine'],
     files: [
       'bower_components/angular/angular.js',
       'bower_components/angular-mocks/angular-mocks.js',
-      'hint.js',
-      'hintApp.js',
-      'hintCtrl.js',
-      'hintService.js',
-      '*_test.js'
+      'panel/app.js',
+      'panel/**/*.js',
+      'panel/**/*.spec.js'
     ],
     exclude: [],
     preprocessors: {

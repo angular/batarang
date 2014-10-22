@@ -10,6 +10,8 @@
   "dependencies": {
     "browserify": "^5.9.1",
     "gulp": "^3.8.7",
+    "karma-bro": "^0.6.0",
+    "karma-sauce-launcher": "^0.2.9",
     "vinyl-source-stream": "^0.1.1"
   },
   "scripts": {
