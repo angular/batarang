@@ -14,7 +14,9 @@
       <div class="sidebar-pane visible" ng-if="modelsExpanded">
         <div class="body">
           <div class="section expanded">
-            <bat-json-tree val="scopes[inspectedScope].models" scope-id="inspectedScope"></bat-json-tree>
+            <bat-json-tree
+                bat-model="scopes[inspectedScope].models"
+                bat-inspect="inspect(path)"></bat-json-tree>
           </div>
         </div>
       </div>

@@ -7,6 +7,9 @@ function ScopesController($scope, inspectedApp) {
   $scope.scopes = inspectedApp.scopes;
 
   $scope.watch = inspectedApp.watch;
+  $scope.inspect = function (path) {
+    inspectedApp.watch($scope.inspectedScope, path);
+  };
 
   $scope.inspectedScope = null;
 
