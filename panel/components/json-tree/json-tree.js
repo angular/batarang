@@ -6,26 +6,29 @@ var BAT_JSON_TREE_TEMPLATE = '<div class="properties-tree"></div>';
 /*
  * TODO: remove dependency on inspectedApp service
  */
-function batJsonTreeDirective($compile, inspectedApp) {
+function batJsonTreeDirective() {
   return {
     restrict: 'E',
     terminal: true,
     scope: {
-      scopeId: '=',
-      val: '='
+      batInspect: '&',
+      batModel: '='
     },
     link: jsonTreeLinkFn
   };
 
   function jsonTreeLinkFn(scope, element, attrs) {
-    var root = angular.element(BAT_JSON_TREE_TEMPLATE)
+    var root = angular.element(BAT_JSON_TREE_TEMPLATE);
     element.append(root);
 
     var branches = {
       '': root
     };
 
-    scope.$watch('val', function (val) {
+    scope.$watch('batModel', function (val) {
+      if (!val) {
+        return;
+      }
       Object.
         keys(val).
         filter(function (key) {
@@ -67,7 +70,7 @@ function batJsonTreeDirective($compile, inspectedApp) {
           // you can't expand an empty array
           if (val['~array-length'] !== 0) {
             parentElt.on('click', function () {
-              inspectedApp.watch(scope.scopeId, fullPath);
+              scope.batInspect({ path: fullPath });
               parentElt.addClass('expanded');
             });
           }
