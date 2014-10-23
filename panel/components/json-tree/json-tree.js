@@ -1,5 +1,5 @@
 angular.module('batarang.json-tree', []).
-  directive('batJsonTree', ['$compile', 'inspectedApp', batJsonTreeDirective]);
+  directive('batJsonTree', [batJsonTreeDirective]);
 
 var BAT_JSON_TREE_TEMPLATE = '<div class="properties-tree"></div>';
 
