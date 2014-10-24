@@ -8,6 +8,7 @@
     "karma-jasmine": "^0.1.5"
   },
   "dependencies": {
+    "angular-hint": "~0.0.0",
     "browserify": "^5.9.1",
     "gulp": "^3.8.7",
     "karma-bro": "^0.6.0",
