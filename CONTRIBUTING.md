@@ -13,6 +13,11 @@ This document describes how to contribute to Batarang
 
 ## Running the tests
 
+## Layout
+
+The `panel` directory contains...
+`panel/components` contains self-contained directives and services.
+
 ## Testing Batarang manually
 
 
