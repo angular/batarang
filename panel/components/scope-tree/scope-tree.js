@@ -1,19 +1,6 @@
 angular.module('batarang.scope-tree', []).
 
-directive('batScopeTree', batScopeTreeDirective);
-
-// TODO: tabindex
-function newBranchElement(descriptor) {
-  return angular.element([
-    '<ol class="children expanded">',
-      '<div class="selection"></div>',
-      '<span>',
-        '<span class="webkit-html-tag">&lt;</span>',
-        '<span class="webkit-html-attribute">Scope #', descriptor, '</span>',
-        '<span class="webkit-html-tag">&gt;</span>',
-      '</span>',
-    '</ol>'].join(''));
-}
+directive('batScopeTree', ['$compile', batScopeTreeDirective]);
 
 function batScopeTreeDirective($compile) {
   return {
@@ -42,6 +29,7 @@ function batScopeTreeDirective($compile) {
         renderScopeElement(data.child, data.parent);
       });
 
+      // when a scope is linked, we can apply the descriptor info
       scope.$on('scope:link', function (ev, data) {
         renderScopeDescriptorElement(data.id, data.descriptor);
       });
@@ -66,7 +54,7 @@ function batScopeTreeDirective($compile) {
             selectedElt.children().eq(0).addClass('selected');
             selectedElt.children().eq(1).addClass('selected');
           });
-        })
+        });
 
         parentElt.append(elt);
       }
@@ -79,6 +67,7 @@ function batScopeTreeDirective($compile) {
         elt.children().eq(1).children().eq(1).html(descriptor);
       }
 
+      // TODO: also destroy elements corresponding to descendant scopes
       scope.$on('scope:destroy', function (ev, data) {
         var id = data.id;
         var elt = map[id];
@@ -92,11 +81,17 @@ function batScopeTreeDirective($compile) {
   };
 }
 
-function repeaterPredicate (child) {
-  return child.name && child.name['ng-repeat'];
-}
 
-function notRepeatedPredicate (child) {
-  return !repeaterPredicate(child);
+// TODO: tabindex
+function newBranchElement(descriptor) {
+  return angular.element([
+    '<ol class="children expanded">',
+      '<div class="selection"></div>',
+      '<span>',
+        '<span class="webkit-html-tag">&lt;</span>',
+        '<span class="webkit-html-attribute">Scope #', descriptor, '</span>',
+        '<span class="webkit-html-tag">&gt;</span>',
+      '</span>',
+    '</ol>'].join(''));
 }
 
