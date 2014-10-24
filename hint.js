@@ -1,4 +1,6 @@
 /*
+ * Batarang instrumentation
+ *
  * This gets loaded into the context of the app you are inspecting
  */
 require('./loader.js');
