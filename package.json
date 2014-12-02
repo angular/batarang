@@ -4,6 +4,7 @@
   "description": "chrome extension for inspecting angular apps",
   "main": "hint.js",
   "devDependencies": {
+    "browserify-ngannotate": "^0.4.0",
     "karma-chrome-launcher": "^0.1.4",
     "karma-jasmine": "^0.1.5"
   },
