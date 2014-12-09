@@ -10,6 +10,9 @@ function ScopesController($scope, inspectedApp) {
   $scope.inspect = function (path) {
     inspectedApp.watch($scope.inspectedScope, path);
   };
+  $scope.assign = function (path, value) {
+    inspectedApp.assign($scope.inspectedScope, path, value);
+  };
 
   $scope.inspectedScope = null;
 

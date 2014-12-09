@@ -17,8 +17,16 @@ function inspectedAppService($rootScope) {
     return invokeAngularHintMethod('unwatch', scopeId, path);
   };
 
-  function invokeAngularHintMethod(method, scopeId, path) {
-    var args = [parseInt(scopeId, 10), path || ''].map(JSON.stringify).join(',');
+  this.assign = function (scopeId, path, value) {
+    return invokeAngularHintMethod('assign', scopeId, path, value);
+  };
+
+  function invokeAngularHintMethod(method, scopeId, path, value) {
+    var args = [parseInt(scopeId, 10), path || ''].
+                  map(JSON.stringify).
+                  concat(value ? [value] : []).
+                  join(',');
+
     chrome.devtools.inspectedWindow.eval('angular.hint.' + method + '(' + args + ')');
   }
 

@@ -12,6 +12,7 @@ function batJsonTreeDirective() {
     terminal: true,
     scope: {
       batInspect: '&',
+      batAssign: '&',
       batModel: '='
     },
     link: jsonTreeLinkFn
@@ -89,9 +90,17 @@ function batJsonTreeDirective() {
             val = '"' + val + '"';
           }
           childElt = angular.element(
-            '<span class="console-formatted-' + (typeof val) + '">' +
+            '<span contentEditable="true" class="console-formatted-' + (typeof val) + '">' +
               val +
             '</span>');
+
+          // TODO: test this
+          childElt.on('blur', function () {
+            scope.batAssign({
+              path: fullPath,
+              value: childElt.text()
+            });
+          })
         }
 
         parentElt.append(childElt);
