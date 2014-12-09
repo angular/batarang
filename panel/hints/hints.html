@@ -1,24 +1,28 @@
 <div class="sidebar-pane-stack audit-result-view fill visible" ng-controller="HintController">
 
+  <div></div>
+
   <div class="sidebar-pane-title expanded"
-       ng-repeat="(groupName, group) in groupedHints">{{groupName}}
+       ng-repeat-start="(groupName, group) in groupedHints">{{groupName}}
     <div class="sidebar-pane-toolbar"></div>
-
-    <div class="sidebar-pane visible" ng-repeat="(summary, hints) in group">
-      <div class="body audit-result-tree">
-        <ol>
-          <li class="parent audit-result">
-            <div class="severity-warning"></div>{{summary}} ({{hints.length}})
-          </li>
-          <li class="parent-expanded expanded selected">
-            Controller names should start with an uppercase character and end with the suffix <code>Controller</code>. For example: <code>UserController</code>.
-          </li>
-          <ol class="children expanded">
-            <li class="selected" ng-repeat="hint in hints" bat-code="hint.message"></li>
-          </ol>
-        </ol>
-      </div>
-    </div>
-
   </div>
+
+  <div class="sidebar-pane visible"
+       ng-repeat-end
+       ng-repeat="(summary, hints) in group">
+    <div class="body audit-result-tree">
+      <ol>
+        <li class="parent audit-result">
+          <div class="severity-warning"></div>{{summary}} ({{hints.length}})
+        </li>
+        <li class="parent-expanded expanded selected">
+          Controller names should start with an uppercase character and end with the suffix <code>Controller</code>. For example: <code>UserController</code>.
+        </li>
+        <ol class="children expanded">
+          <li class="selected" ng-repeat="hint in hints" bat-code="hint.message"></li>
+        </ol>
+      </ol>
+    </div>
+  </div>
+
 </div>
