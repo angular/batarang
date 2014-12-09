@@ -69,7 +69,6 @@ function inspectedAppService($rootScope) {
       $rootScope.$broadcast(hint.event, hint);
     }
 
-    console.log(hint);
   }
 
   function onRefreshMessage() {
