@@ -64,9 +64,14 @@ function batJsonTreeDirective() {
         var val = object[key];
         var fullPath = depth;
         if (depth) {
-          fullPath += '.';
+          if (Number.isNaN(parseInt(key, 10))) {
+            fullPath += '.' + key;
+          } else {
+            fullPath += '[' + key + ']';
+          }
+        } else {
+          fullPath += key;
         }
-        fullPath += key;
 
         var parentElt = angular.element('<li title>' +
             '<span class="name">' + key + '</span>' +
