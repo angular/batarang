@@ -21,6 +21,13 @@ function inspectedAppService($rootScope) {
     return invokeAngularHintMethod('assign', scopeId, path, value);
   };
 
+  /*
+   * sets window.$scope to the scope of the given id
+   */
+  this.inspectScope = function (scopeId) {
+    return invokeAngularHintMethod('inspectScope', scopeId);
+  };
+
   function invokeAngularHintMethod(method, scopeId, path, value) {
     var args = [parseInt(scopeId, 10), path || ''].
                   map(JSON.stringify).

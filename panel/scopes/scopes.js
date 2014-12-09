@@ -23,6 +23,7 @@ function ScopesController($scope, inspectedApp) {
   function inspectScope(scopeId) {
     $scope.watch(scopeId);
     $scope.inspectedScope = scopeId;
+    inspectedApp.inspectScope(scopeId);
   };
 
 }
