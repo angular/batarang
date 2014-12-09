@@ -3,6 +3,17 @@ angular.module('batarang.json-tree', []).
 
 var BAT_JSON_TREE_TEMPLATE = '<div class="properties-tree"></div>';
 
+var BAT_JSON_TREE_UNEDITABLE = [
+  '$id',
+
+  // managed by ngRepeat
+  '$first',
+  '$last',
+  '$index',
+  '$even',
+  '$odd'
+];
+
 /*
  * TODO: remove dependency on inspectedApp service
  */
@@ -89,18 +100,28 @@ function batJsonTreeDirective() {
           if (typeof val === 'string') {
             val = '"' + val + '"';
           }
-          childElt = angular.element(
-            '<span contentEditable="true" class="console-formatted-' + (typeof val) + '">' +
-              val +
-            '</span>');
 
           // TODO: test this
-          childElt.on('blur', function () {
-            scope.batAssign({
-              path: fullPath,
-              value: childElt.text()
+          // some properties (like $id) shouldn't be edited
+          if (BAT_JSON_TREE_UNEDITABLE.indexOf(fullPath) > -1) {
+            childElt = angular.element(
+              '<span class="console-formatted-' + (typeof val) + '">' +
+                val +
+              '</span>');
+          } else {
+            childElt = angular.element(
+              '<span contentEditable="true" class="console-formatted-' + (typeof val) + '">' +
+                val +
+              '</span>');
+
+            // TODO: test this
+            childElt.on('blur', function () {
+              scope.batAssign({
+                path: fullPath,
+                value: childElt.text()
+              });
             });
-          })
+          }
         }
 
         parentElt.append(childElt);
