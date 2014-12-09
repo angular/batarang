@@ -23,7 +23,8 @@ bat-json-tree
     color: rgb(128, 128, 128);
   }
 
-bat-json-tree .console-formatted-number {
+bat-json-tree .console-formatted-number,
+              .console-formatted-boolean {
   color: rgb(28, 0, 207);
 }
 
