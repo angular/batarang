@@ -584,7 +584,7 @@ var LEVELS = [
   'suggestion'
 ];
 
-},{"angular-hint-controllers":4,"angular-hint-directives":5,"angular-hint-events":41,"angular-hint-log":50,"angular-hint-modules":51,"angular-hint-scopes":69}],4:[function(require,module,exports){
+},{"angular-hint-controllers":4,"angular-hint-directives":5,"angular-hint-events":41,"angular-hint-log":51,"angular-hint-modules":52,"angular-hint-scopes":70}],4:[function(require,module,exports){
 'use strict';
 
 var hint = angular.hint = require('angular-hint-log');
@@ -704,7 +704,7 @@ angular.module = function() {
   return module;
 };
 
-},{"angular-hint-log":50}],5:[function(require,module,exports){
+},{"angular-hint-log":51}],5:[function(require,module,exports){
 'use strict';
 
 var ddLibData = require('./lib/ddLib-data');
@@ -1910,7 +1910,7 @@ module.exports = function addSuggestions(messages) {
   return messages;
 };
 
-},{"./getValidProps":47,"suggest-it":49}],43:[function(require,module,exports){
+},{"./getValidProps":47,"suggest-it":50}],43:[function(require,module,exports){
 'use strict';
 
 var hintLog = angular.hint = require('angular-hint-log'),
@@ -1933,7 +1933,7 @@ module.exports = function formatResults(messages) {
   }
 };
 
-},{"./addSuggestions":42,"angular-hint-log":50}],44:[function(require,module,exports){
+},{"./addSuggestions":42,"angular-hint-log":48}],44:[function(require,module,exports){
 'use strict';
 
 var ngEventDirectives = require('./getEventDirectives')();
@@ -1963,6 +1963,9 @@ module.exports = function getEventDirectives() {
 'use strict';
 
 module.exports = function getFunctionNames(str) {
+  if (typeof str !== 'string') {
+    return [];
+  }
   var results = str.replace(/\s+/g, '').split(/[\+\-\/\|\<\>\^=&!%~]/g).map(function(x) {
     if(isNaN(+x)) {
       if(x.match(/\w+\(.*\)$/)){
@@ -1988,6 +1991,8 @@ module.exports = function getValidProps(obj) {
 };
 
 },{}],48:[function(require,module,exports){
+module.exports=require(36)
+},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-directives/node_modules/angular-hint-log/hint-log.js":36}],49:[function(require,module,exports){
 module.exports = distance;
 
 function distance(a, b) {
@@ -2010,7 +2015,7 @@ function distance(a, b) {
 }
 
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 module.exports = suggestDictionary;
 
 var distance = require('./levenstein_distance');
@@ -2033,7 +2038,7 @@ function suggestDictionary(dict, opts) {
 
 suggestDictionary.distance = distance;
 
-},{"./levenstein_distance":48}],50:[function(require,module,exports){
+},{"./levenstein_distance":49}],51:[function(require,module,exports){
 'use strict';
 
 /*
@@ -2083,7 +2088,7 @@ module.exports.onMessage = function(message) {};
 module.exports.logMessage = logMessage;
 module.exports.flush = flush;
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 'use strict';
 
 var storeDependencies = require('./lib/storeDependencies'),
@@ -2125,7 +2130,7 @@ angular.module('ngHintModules', []).config(function() {
   start();
 });
 
-},{"./lib/getModule":54,"./lib/hasNameSpace":58,"./lib/moduleData":60,"./lib/start":63,"./lib/storeDependencies":64,"./lib/storeNgAppAndView":65,"./lib/storeUsedModules":66}],52:[function(require,module,exports){
+},{"./lib/getModule":55,"./lib/hasNameSpace":59,"./lib/moduleData":61,"./lib/start":64,"./lib/storeDependencies":65,"./lib/storeNgAppAndView":66,"./lib/storeUsedModules":67}],53:[function(require,module,exports){
 var hintLog = angular.hint = require('angular-hint-log'),
   MODULE_NAME = 'Modules';
 
@@ -2135,7 +2140,7 @@ module.exports = function(modules) {
   });
 };
 
-},{"angular-hint-log":50}],53:[function(require,module,exports){
+},{"angular-hint-log":51}],54:[function(require,module,exports){
 var modData = require('./moduleData');
   MODULE_NAME = 'Modules',
   SEVERITY_WARNING = 2;
@@ -2157,14 +2162,14 @@ module.exports = function() {
   return multiLoaded;
 };
 
-},{"./moduleData":60}],54:[function(require,module,exports){
+},{"./moduleData":61}],55:[function(require,module,exports){
 var modData = require('./moduleData');
 
 module.exports = function(moduleName, getCreated) {
   return (getCreated)? modData.createdModules[moduleName] : modData.loadedModules[moduleName];
 };
 
-},{"./moduleData":60}],55:[function(require,module,exports){
+},{"./moduleData":61}],56:[function(require,module,exports){
 var hintLog = angular.hint = require('angular-hint-log'),
   MODULE_NAME = 'Modules',
   SEVERITY_ERROR = 1;
@@ -2179,7 +2184,7 @@ var hintLog = angular.hint = require('angular-hint-log'),
 
 
 
-},{"angular-hint-log":50}],56:[function(require,module,exports){
+},{"angular-hint-log":51}],57:[function(require,module,exports){
 var getModule = require('./getModule'),
   dictionary = Object.keys(require('./moduleData').createdModules),
   suggest = require('suggest-it')(dictionary),
@@ -2200,7 +2205,7 @@ module.exports = function(loadedModules) {
   return undeclaredModules;
 };
 
-},{"./getModule":54,"./moduleData":60,"suggest-it":68}],57:[function(require,module,exports){
+},{"./getModule":55,"./moduleData":61,"suggest-it":69}],58:[function(require,module,exports){
 var getModule = require('./getModule');
 
 var IGNORED = ['ngHintControllers', 'ngHintDirectives', 'ngHintDom', 'ngHintEvents',
@@ -2221,7 +2226,7 @@ module.exports = function(createdModules) {
   return unusedModules;
 };
 
-},{"./getModule":54}],58:[function(require,module,exports){
+},{"./getModule":55}],59:[function(require,module,exports){
 var hintLog = angular.hint = require('angular-hint-log'),
     MODULE_NAME = 'Modules',
     SEVERITY_SUGGESTION = 3;
@@ -2239,7 +2244,7 @@ module.exports = function(str) {
   return true;
 };
 
-},{"angular-hint-log":50}],59:[function(require,module,exports){
+},{"angular-hint-log":51}],60:[function(require,module,exports){
 var normalizeAttribute = require('./normalizeAttribute');
 
 module.exports = function(attrs) {
@@ -2251,14 +2256,14 @@ module.exports = function(attrs) {
   }
 };
 
-},{"./normalizeAttribute":62}],60:[function(require,module,exports){
+},{"./normalizeAttribute":63}],61:[function(require,module,exports){
 module.exports = {
   createdModules: {},
   createdMulti: {},
   loadedModules: {}
 };
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 var modData = require('./moduleData'),
   getModule = require('./getModule');
 
@@ -2268,12 +2273,12 @@ module.exports = function() {
   }
 };
 
-},{"./getModule":54,"./moduleData":60}],62:[function(require,module,exports){
+},{"./getModule":55,"./moduleData":61}],63:[function(require,module,exports){
 module.exports = function(attribute) {
   return attribute.replace(/^(?:data|x)[-_:]/, '').replace(/[:_]/g, '-');
 };
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 var display = require('./display'),
   formatMultiLoaded = require('./formatMultiLoaded'),
   getUnusedModules = require('./getUnusedModules'),
@@ -2296,7 +2301,7 @@ module.exports = function() {
   }
 };
 
-},{"./display":52,"./formatMultiLoaded":53,"./getUndeclaredModules":56,"./getUnusedModules":57,"./moduleData":60,"./ngViewNoNgRoute":61}],64:[function(require,module,exports){
+},{"./display":53,"./formatMultiLoaded":54,"./getUndeclaredModules":57,"./getUnusedModules":58,"./moduleData":61,"./ngViewNoNgRoute":62}],65:[function(require,module,exports){
 var modData = require('./moduleData');
 
 module.exports = function(module, isNgAppMod) {
@@ -2312,7 +2317,7 @@ module.exports = function(module, isNgAppMod) {
   }
 };
 
-},{"./moduleData":60}],65:[function(require,module,exports){
+},{"./moduleData":61}],66:[function(require,module,exports){
 var getNgAppMod = require('./getNgAppMod'),
   inAttrsOrClasses = require('./inAttrsOrClasses'),
   storeDependencies = require('./storeDependencies'),
@@ -2348,7 +2353,7 @@ module.exports = function(doms) {
   }
 };
 
-},{"./getNgAppMod":55,"./inAttrsOrClasses":59,"./moduleData":60,"./storeDependencies":64}],66:[function(require,module,exports){
+},{"./getNgAppMod":56,"./inAttrsOrClasses":60,"./moduleData":61,"./storeDependencies":65}],67:[function(require,module,exports){
 var storeDependencies = require('./storeDependencies');
 
 var storeUsedModules = module.exports = function(module, modules){
@@ -2360,11 +2365,11 @@ var storeUsedModules = module.exports = function(module, modules){
     });
   }
 };
-},{"./storeDependencies":64}],67:[function(require,module,exports){
-module.exports=require(48)
-},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-events/node_modules/suggest-it/lib/levenstein_distance.js":48}],68:[function(require,module,exports){
+},{"./storeDependencies":65}],68:[function(require,module,exports){
 module.exports=require(49)
-},{"./levenstein_distance":67,"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-events/node_modules/suggest-it/lib/suggest-it.js":49}],69:[function(require,module,exports){
+},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-events/node_modules/suggest-it/lib/levenstein_distance.js":49}],69:[function(require,module,exports){
+module.exports=require(50)
+},{"./levenstein_distance":68,"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-events/node_modules/suggest-it/lib/suggest-it.js":50}],70:[function(require,module,exports){
 'use strict';
 
 var summarize = require('./lib/summarize-model');
@@ -2673,7 +2678,7 @@ function humanReadableWatchExpression (fn) {
   return fn.toString();
 }
 
-},{"./lib/summarize-model":70,"angular-hint-log":71,"debounce-on":72}],70:[function(require,module,exports){
+},{"./lib/summarize-model":71,"angular-hint-log":72,"debounce-on":73}],71:[function(require,module,exports){
 
 module.exports = function summarizeModel (model) {
 
@@ -2709,9 +2714,9 @@ function summarizeProperty (obj) {
       obj;
 }
 
-},{}],71:[function(require,module,exports){
-module.exports=require(50)
-},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-log/hint-log.js":50}],72:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
+module.exports=require(51)
+},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-log/hint-log.js":51}],73:[function(require,module,exports){
 module.exports = function debounceOn (fn, timeout, hash) {
   var timeouts = {};
 
