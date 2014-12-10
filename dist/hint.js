@@ -727,12 +727,22 @@ angular.module = function() {
       originalController = module.controller;
 
   module.controller = function(controllerName, controllerConstructor) {
-    nameToControllerMap[controllerName] = controllerConstructor;
-    sendMessageForControllerName(controllerName);
+    if ((controllerName !== null) && (typeof controllerName === 'object')) {
+      Object.keys(controllerName).forEach(function(key) {
+        processController(key, controllerName[key]);
+      });
+    } else {
+      processController(controllerName, controllerConstructor);
+    }
     return originalController.apply(this, arguments);
   };
   return module;
 };
+
+function processController(ctrlName, ctrlConstructor) {
+  nameToControllerMap[ctrlName] = ctrlConstructor;
+  sendMessageForControllerName(ctrlName);
+}
 
 },{"angular-hint-log":50}],5:[function(require,module,exports){
 'use strict';
