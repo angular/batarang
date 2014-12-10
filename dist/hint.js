@@ -537,6 +537,9 @@ function maybeBootstrap() {
 
 function loadModules() {
   var modules = [], elt;
+  if (angular.version.minor < 2) {
+    return modules;
+  }
 
   if ((elt = document.querySelector('[ng-hint-include]'))) {
     modules = hintModulesFromElement(elt);
@@ -580,39 +583,6 @@ var LEVELS = [
   'warning',
   'suggestion'
 ];
-
-function flush() {
-  var log = angular.hint.flush(),
-      groups = Object.keys(log);
-
-  groups.forEach(function (groupName) {
-    var group = log[groupName];
-    var header = 'Angular Hint: ' + groupName;
-
-    console.groupCollapsed ?
-        console.groupCollapsed(header) :
-        console.log(header);
-
-    LEVELS.forEach(function (level) {
-      group[level] && logGroup(group[level], title(level));
-    });
-    console.groupEnd && console.groupEnd();
-  });
-}
-
-setInterval(flush, 2)
-
-angular.hint.onMessage = function () {
-  setTimeout(flush, 2);
-};
-
-function logGroup(group, type) {
-  console.group ? console.group(type) : console.log(type);
-  for(var i = 0, ii = group.length; i < ii; i++) {
-    console.log(group[i]);
-  }
-  console.group && console.groupEnd();
-}
 
 },{"angular-hint-controllers":4,"angular-hint-directives":5,"angular-hint-events":41,"angular-hint-log":50,"angular-hint-modules":51,"angular-hint-scopes":69}],4:[function(require,module,exports){
 'use strict';
