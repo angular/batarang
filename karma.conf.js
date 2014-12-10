@@ -6,8 +6,8 @@ module.exports = function(config) {
   config.set({
     frameworks: ['browserify', 'jasmine'],
     files: [
-      'bower_components/angular/angular.js',
-      'bower_components/angular-mocks/angular-mocks.js',
+      'node_modules/angular/angular.js',
+      'node_modules/angular-mocks/angular-mocks.js',
       'panel/app.js',
       'panel/**/*.js',
       'panel/**/*.spec.js'
