@@ -614,12 +614,13 @@ function logGroup(group, type) {
   console.group && console.groupEnd();
 }
 
-},{"angular-hint-controllers":4,"angular-hint-directives":6,"angular-hint-events":42,"angular-hint-log":51,"angular-hint-modules":52,"angular-hint-scopes":70}],4:[function(require,module,exports){
+},{"angular-hint-controllers":4,"angular-hint-directives":5,"angular-hint-events":41,"angular-hint-log":50,"angular-hint-modules":51,"angular-hint-scopes":69}],4:[function(require,module,exports){
 'use strict';
 
 var hint = angular.hint = require('angular-hint-log');
 
 var MODULE_NAME = 'Controllers',
+    CNTRL_REG = /^(\S+)(\s+as\s+(\w+))?$/,
     CATEGORY_CONTROLLER_NAME = 'Name controllers according to best practices',
     CATEGORY_GLOBAL_CONTROLLER = 'Using global functions as controllers is against Angular best practices and depricated in Angular 1.3 and up',
     SEVERITY_ERROR = 1,
@@ -641,7 +642,10 @@ function controllerDecorator($delegate) {
   return function(ctrl, locals) {
     //If the controller name is passed, find the controller than matches it
     if (typeof ctrl === 'string') {
-      var ctrlName = ctrl;
+
+      var match = ctrl.match(CNTRL_REG);
+      var ctrlName = (match && match[1]) || ctrl;
+
       sendMessageForControllerName(ctrlName);
       if (nameToControllerMap[ctrlName]) {
         ctrl = nameToControllerMap[ctrlName];
@@ -730,57 +734,7 @@ angular.module = function() {
   return module;
 };
 
-},{"angular-hint-log":5}],5:[function(require,module,exports){
-'use strict';
-
-/*
- * HintLog creates a queue of messages logged by ngHint modules. This object
- * has a key for each ngHint module that corresponds to the messages
- * from that module.
- */
-var queuedMessages = {},
-    MESSAGE_TYPES = [
-      'error',
-      'warning',
-      'suggestion'
-    ];
-
-/*
- * Add a message to the HintLog message queue. Messages are organized into categories
- * according to their module name and severity.
- */
-function logMessage(moduleName, message, severity, category) {
-  // If no severity was provided, categorize the message as a `suggestion`
-  severity = severity || 3;
-  var messageType = MESSAGE_TYPES[severity - 1];
-
-  moduleName = moduleName || 'General';
-
-  // If the category does not exist, initialize a new object
-  queuedMessages[moduleName] = queuedMessages[moduleName] || {};
-  queuedMessages[moduleName][messageType] = queuedMessages[moduleName][messageType] || [];
-
-  if (queuedMessages[moduleName][messageType].indexOf(message) < 0) {
-    queuedMessages[moduleName][messageType].push(message);
-  }
-
-  this.onMessage(moduleName, message, messageType, category);
-}
-
-/*
- * Return and empty the current queue of messages.
- */
-function flush() {
-  var flushMessages = queuedMessages;
-  queuedMessages = {};
-  return flushMessages;
-}
-
-module.exports.onMessage = function(message) {};
-module.exports.logMessage = logMessage;
-module.exports.flush = flush;
-
-},{}],6:[function(require,module,exports){
+},{"angular-hint-log":50}],5:[function(require,module,exports){
 'use strict';
 
 var ddLibData = require('./lib/ddLib-data');
@@ -866,7 +820,7 @@ angular.module = function() {
   return module;
 };
 
-},{"./lib/checkPrelimErrors":19,"./lib/ddLib-data":20,"./lib/getKeysAndValues":27,"./lib/search":35}],7:[function(require,module,exports){
+},{"./lib/checkPrelimErrors":18,"./lib/ddLib-data":19,"./lib/getKeysAndValues":26,"./lib/search":34}],6:[function(require,module,exports){
 /**
  *@param s: first string to compare
  *@param t: second string to compare
@@ -886,7 +840,7 @@ module.exports = function(s, t) {
   return similarities >= t.length * STRICTNESS;
 };
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var ddLibData = require('./ddLib-data');
 
 /**
@@ -933,7 +887,7 @@ module.exports = function(attribute, options) {
   return {exsists: anyTrue, wrongUse: wrongUse, typeError: typeError};
 };
 
-},{"./ddLib-data":20}],9:[function(require,module,exports){
+},{"./ddLib-data":19}],8:[function(require,module,exports){
 var ddLibData = require('./ddLib-data'),
   SEVERITY_ERROR = 1;
 
@@ -945,7 +899,7 @@ module.exports = function(info, id, type) {
   return [message, SEVERITY_ERROR];
 };
 
-},{"./ddLib-data":20}],10:[function(require,module,exports){
+},{"./ddLib-data":19}],9:[function(require,module,exports){
 var SEVERITY_ERROR = 1;
 
 module.exports = function(info, id, type) {
@@ -961,7 +915,7 @@ module.exports = function(info, id, type) {
   return [message, SEVERITY_ERROR];
 };
 
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var isMutExclusiveDir = require('./isMutExclusiveDir'),
   SEVERITY_ERROR = 1;
 
@@ -972,7 +926,7 @@ module.exports = function(info, id, type) {
   return [message, SEVERITY_ERROR];
 };
 
-},{"./isMutExclusiveDir":32}],12:[function(require,module,exports){
+},{"./isMutExclusiveDir":31}],11:[function(require,module,exports){
 var hintLog = require('angular-hint-log'),
   MODULE_NAME = 'Directives',
   SEVERITY_SUGGESTION = 3;
@@ -984,7 +938,7 @@ module.exports = function(directiveName) {
   hintLog.logMessage(MODULE_NAME, message, SEVERITY_SUGGESTION);
 };
 
-},{"angular-hint-log":37}],13:[function(require,module,exports){
+},{"angular-hint-log":36}],12:[function(require,module,exports){
 var SEVERITY_SUGGESTION = 3;
 
 module.exports = function(info, id, type) {
@@ -994,14 +948,14 @@ module.exports = function(info, id, type) {
   return [message, SEVERITY_SUGGESTION];
 };
 
-},{}],14:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 var SEVERITY_ERROR = 1;
 module.exports = function(info, id, type) {
   var message = 'ngRepeat in '+type+' element'+id+' was used incorrectly. '+info.suggestion;
   return [message, SEVERITY_ERROR];
 };
 
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var ddLibData = require('./ddLib-data'),
   SEVERITY_ERROR = 1;
 
@@ -1012,7 +966,7 @@ module.exports = function(info, id, type) {
   return [message, SEVERITY_ERROR];
 };
 
-},{"./ddLib-data":20}],16:[function(require,module,exports){
+},{"./ddLib-data":19}],15:[function(require,module,exports){
 var hintLog = angular.hint = require('angular-hint-log'),
   MODULE_NAME = 'Directives',
   SEVERITY_ERROR = 1;
@@ -1024,7 +978,7 @@ module.exports = function(directiveName) {
   hintLog.logMessage(MODULE_NAME, message, SEVERITY_ERROR);
 };
 
-},{"angular-hint-log":37}],17:[function(require,module,exports){
+},{"angular-hint-log":36}],16:[function(require,module,exports){
 var ddLibData = require('./ddLib-data'),
   SEVERITY_ERROR = 1;
 
@@ -1037,7 +991,7 @@ module.exports = function(info, id, type) {
   return [message, SEVERITY_ERROR];
 };
 
-},{"./ddLib-data":20}],18:[function(require,module,exports){
+},{"./ddLib-data":19}],17:[function(require,module,exports){
 
 module.exports = function(attrVal){
   var suggestion,
@@ -1060,7 +1014,7 @@ module.exports = function(attrVal){
     }
   }
 }
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 var hasNameSpace = require('./hasNameSpace');
 var buildNameSpace = require('./buildNameSpace');
 var hasReplaceOption = require('./hasReplaceOption');
@@ -1075,7 +1029,7 @@ module.exports = function(dirName, dirFacStr) {
   }
 };
 
-},{"./buildNameSpace":12,"./buildReplaceOption":16,"./hasNameSpace":30,"./hasReplaceOption":31}],20:[function(require,module,exports){
+},{"./buildNameSpace":11,"./buildReplaceOption":15,"./hasNameSpace":29,"./hasReplaceOption":30}],19:[function(require,module,exports){
 module.exports = {
   directiveTypes : {
     'html-directives': {
@@ -1258,7 +1212,7 @@ module.exports = {
   }
 };
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 var areSimilarEnough = require('./areSimilarEnough');
 var levenshteinDistance = require('./levenshtein');
 
@@ -1290,7 +1244,7 @@ module.exports = function(directiveTypeData, attribute) {
   return {min_levDist: min_levDist, match: closestMatch};
 };
 
-},{"./areSimilarEnough":7,"./levenshtein":33}],22:[function(require,module,exports){
+},{"./areSimilarEnough":6,"./levenshtein":32}],21:[function(require,module,exports){
 
 var getFailedAttributesOfElement = require('./getFailedAttributesOfElement');
 
@@ -1299,7 +1253,7 @@ module.exports = function(scopeElements, options) {
       .filter(function(x) {return x;});
 };
 
-},{"./getFailedAttributesOfElement":26}],23:[function(require,module,exports){
+},{"./getFailedAttributesOfElement":25}],22:[function(require,module,exports){
 var ddLibData = require('./ddLib-data');
 
 module.exports = function(dirName, attributes) {
@@ -1317,7 +1271,7 @@ module.exports = function(dirName, attributes) {
   return missing;
 };
 
-},{"./ddLib-data":20}],24:[function(require,module,exports){
+},{"./ddLib-data":19}],23:[function(require,module,exports){
 var hintLog = angular.hint = require('angular-hint-log'),
   MODULE_NAME = 'Directives';
 
@@ -1348,7 +1302,7 @@ module.exports = function(failedElements) {
   });
 };
 
-},{"./buildDeprecated":9,"./buildMissingRequired":10,"./buildMutuallyExclusive":11,"./buildNgEvent":13,"./buildNgRepeatFormat":14,"./buildNonExsisting":15,"./buildWrongUse":17,"angular-hint-log":37}],25:[function(require,module,exports){
+},{"./buildDeprecated":8,"./buildMissingRequired":9,"./buildMutuallyExclusive":10,"./buildNgEvent":12,"./buildNgRepeatFormat":13,"./buildNonExsisting":14,"./buildWrongUse":16,"angular-hint-log":36}],24:[function(require,module,exports){
 var normalizeAttribute = require('./normalizeAttribute');
 var ddLibData = require('./ddLib-data');
 var isMutExclusiveDir = require('./isMutExclusiveDir');
@@ -1426,7 +1380,7 @@ module.exports = function(attributes, options) {
   }
   return failedAttrs;
 };
-},{"./attributeExsistsInTypes":8,"./checkNgRepeatFormat":18,"./ddLib-data":20,"./getSuggestions":28,"./hasMutExclusivePair":29,"./isMutExclusiveDir":32,"./normalizeAttribute":34}],26:[function(require,module,exports){
+},{"./attributeExsistsInTypes":7,"./checkNgRepeatFormat":17,"./ddLib-data":19,"./getSuggestions":27,"./hasMutExclusivePair":28,"./isMutExclusiveDir":31,"./normalizeAttribute":33}],25:[function(require,module,exports){
 var getFailedAttributes = require('./getFailedAttributes');
 var findMissingAttrs = require('./findMissingAttrs');
 
@@ -1468,7 +1422,7 @@ module.exports = function(options, element) {
   }
 };
 
-},{"./findMissingAttrs":23,"./getFailedAttributes":25}],27:[function(require,module,exports){
+},{"./findMissingAttrs":22,"./getFailedAttributes":24}],26:[function(require,module,exports){
 module.exports = function(str) {
   var customDirectives = [],
       pairs = [],
@@ -1491,7 +1445,7 @@ module.exports = function(str) {
   return customDirectives;
 };
 
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 var ddLibData = require('./ddLib-data');
 var findClosestMatchIn = require('./findClosestMatchIn');
 
@@ -1525,7 +1479,7 @@ module.exports = function(attribute, options) {
   };
 };
 
-},{"./ddLib-data":20,"./findClosestMatchIn":21}],29:[function(require,module,exports){
+},{"./ddLib-data":19,"./findClosestMatchIn":20}],28:[function(require,module,exports){
 var isMutExclusiveDir = require('./isMutExclusiveDir');
 
 module.exports = function(attr, attributes) {
@@ -1536,7 +1490,7 @@ module.exports = function(attr, attributes) {
   });
 };
 
-},{"./isMutExclusiveDir":32}],30:[function(require,module,exports){
+},{"./isMutExclusiveDir":31}],29:[function(require,module,exports){
 var dasherize = require('dasherize');
 var validate = require('validate-element-name');
 
@@ -1548,12 +1502,12 @@ module.exports = function(str) {
   return validated && str.toLowerCase() !== str;
 };
 
-},{"dasherize":38,"validate-element-name":39}],31:[function(require,module,exports){
+},{"dasherize":37,"validate-element-name":38}],30:[function(require,module,exports){
 module.exports = function(facStr) {
   return facStr.match(/replace\s*:/);
 };
 
-},{}],32:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 module.exports = function (dirName) {
   var exclusiveDirHash = {
     'ng-show' : 'ng-hide',
@@ -1564,7 +1518,7 @@ module.exports = function (dirName) {
   return exclusiveDirHash[dirName];
 };
 
-},{}],33:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 /**
  *@param s: first string to compare for Levenshtein Distance.
  *@param t: second string to compare for Levenshtein Distance.
@@ -1610,7 +1564,7 @@ module.exports = function(s, t) {
   return d[n][m];
 };
 
-},{}],34:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 /**
  *@param attribute: attribute name before normalization as string
  * e.g. 'data-ng-click', 'width', 'x:ng:src', etc.
@@ -1621,7 +1575,7 @@ module.exports = function(attribute) {
   return attribute.replace(/^(?:data|x)[-_:]/,'').replace(/[:_]/g,'-');
 };
 
-},{}],35:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 
 var formatResults = require('./formatResults');
 var findFailedElements = require('./findFailedElements');
@@ -1656,7 +1610,7 @@ module.exports = function(scopeElements, customDirectives, options) {
   formatResults(failedElements);
 };
 
-},{"./findFailedElements":22,"./formatResults":24,"./setCustomDirectives":36}],36:[function(require,module,exports){
+},{"./findFailedElements":21,"./formatResults":23,"./setCustomDirectives":35}],35:[function(require,module,exports){
 var ddLibData = require('../lib/ddLib-data');
 
 module.exports = function(customDirectives) {
@@ -1667,7 +1621,7 @@ module.exports = function(customDirectives) {
   });
 };
 
-},{"../lib/ddLib-data":20}],37:[function(require,module,exports){
+},{"../lib/ddLib-data":19}],36:[function(require,module,exports){
 /**
 * HintLog creates a queue of messages logged by ngHint modules. This object
 * has a key for each ngHint module that corresponds to the messages
@@ -1716,7 +1670,7 @@ module.exports.onMessage = function(message) {};
 module.exports.logMessage = logMessage;
 module.exports.flush = flush;
 
-},{}],38:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 'use strict';
 
 var isArray = Array.isArray || function (obj) {
@@ -1793,7 +1747,7 @@ module.exports = function (obj) {
   return walk(obj);
 };
 
-},{}],39:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 'use strict';
 var ncname = require('ncname');
 
@@ -1890,7 +1844,7 @@ module.exports = function (name) {
 	};
 };
 
-},{"ncname":40}],40:[function(require,module,exports){
+},{"ncname":39}],39:[function(require,module,exports){
 'use strict';
 var xmlChars = require('xml-char-classes');
 
@@ -1901,7 +1855,7 @@ function getRange(re) {
 // http://www.w3.org/TR/1999/REC-xml-names-19990114/#NT-NCName
 module.exports = new RegExp('^[' + getRange(xmlChars.letter) + '_][' + getRange(xmlChars.letter) + getRange(xmlChars.digit) + '\\.\\-_' + getRange(xmlChars.combiningChar) + getRange(xmlChars.extender) + ']*$');
 
-},{"xml-char-classes":41}],41:[function(require,module,exports){
+},{"xml-char-classes":40}],40:[function(require,module,exports){
 exports.baseChar = /[A-Za-z\xC0-\xD6\xD8-\xF6\xF8-\u0131\u0134-\u013E\u0141-\u0148\u014A-\u017E\u0180-\u01C3\u01CD-\u01F0\u01F4\u01F5\u01FA-\u0217\u0250-\u02A8\u02BB-\u02C1\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03CE\u03D0-\u03D6\u03DA\u03DC\u03DE\u03E0\u03E2-\u03F3\u0401-\u040C\u040E-\u044F\u0451-\u045C\u045E-\u0481\u0490-\u04C4\u04C7\u04C8\u04CB\u04CC\u04D0-\u04EB\u04EE-\u04F5\u04F8\u04F9\u0531-\u0556\u0559\u0561-\u0586\u05D0-\u05EA\u05F0-\u05F2\u0621-\u063A\u0641-\u064A\u0671-\u06B7\u06BA-\u06BE\u06C0-\u06CE\u06D0-\u06D3\u06D5\u06E5\u06E6\u0905-\u0939\u093D\u0958-\u0961\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8B\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AE0\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B36-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB5\u0BB7-\u0BB9\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C33\u0C35-\u0C39\u0C60\u0C61\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CDE\u0CE0\u0CE1\u0D05-\u0D0C\u0D0E-\u0D10\u0D12-\u0D28\u0D2A-\u0D39\u0D60\u0D61\u0E01-\u0E2E\u0E30\u0E32\u0E33\u0E40-\u0E45\u0E81\u0E82\u0E84\u0E87\u0E88\u0E8A\u0E8D\u0E94-\u0E97\u0E99-\u0E9F\u0EA1-\u0EA3\u0EA5\u0EA7\u0EAA\u0EAB\u0EAD\u0EAE\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0F40-\u0F47\u0F49-\u0F69\u10A0-\u10C5\u10D0-\u10F6\u1100\u1102\u1103\u1105-\u1107\u1109\u110B\u110C\u110E-\u1112\u113C\u113E\u1140\u114C\u114E\u1150\u1154\u1155\u1159\u115F-\u1161\u1163\u1165\u1167\u1169\u116D\u116E\u1172\u1173\u1175\u119E\u11A8\u11AB\u11AE\u11AF\u11B7\u11B8\u11BA\u11BC-\u11C2\u11EB\u11F0\u11F9\u1E00-\u1E9B\u1EA0-\u1EF9\u1F00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2126\u212A\u212B\u212E\u2180-\u2182\u3041-\u3094\u30A1-\u30FA\u3105-\u312C\uAC00-\uD7A3]/;
 
 exports.ideographic = /[\u3007\u3021-\u3029\u4E00-\u9FA5]/;
@@ -1913,7 +1867,7 @@ exports.combiningChar = /[\u0300-\u0345\u0360\u0361\u0483-\u0486\u0591-\u05A1\u0
 exports.digit = /[0-9\u0660-\u0669\u06F0-\u06F9\u0966-\u096F\u09E6-\u09EF\u0A66-\u0A6F\u0AE6-\u0AEF\u0B66-\u0B6F\u0BE7-\u0BEF\u0C66-\u0C6F\u0CE6-\u0CEF\u0D66-\u0D6F\u0E50-\u0E59\u0ED0-\u0ED9\u0F20-\u0F29]/;
 
 exports.extender = /[\xB7\u02D0\u02D1\u0387\u0640\u0E46\u0EC6\u3005\u3031-\u3035\u309D\u309E\u30FC-\u30FE]/;
-},{}],42:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1971,7 +1925,7 @@ angular.module('ngHintEvents', [])
       } catch(e) {}
     }
   }]);
-},{"./lib/formatResults":44,"./lib/getEventAttribute":45,"./lib/getEventDirectives":46,"./lib/getFunctionNames":47}],43:[function(require,module,exports){
+},{"./lib/formatResults":43,"./lib/getEventAttribute":44,"./lib/getEventDirectives":45,"./lib/getFunctionNames":46}],42:[function(require,module,exports){
 'use strict';
 
 var getValidProps = require('./getValidProps'),
@@ -1986,7 +1940,7 @@ module.exports = function addSuggestions(messages) {
   return messages;
 };
 
-},{"./getValidProps":48,"suggest-it":50}],44:[function(require,module,exports){
+},{"./getValidProps":47,"suggest-it":49}],43:[function(require,module,exports){
 'use strict';
 
 var hintLog = angular.hint = require('angular-hint-log'),
@@ -2009,7 +1963,7 @@ module.exports = function formatResults(messages) {
   }
 };
 
-},{"./addSuggestions":43,"angular-hint-log":51}],45:[function(require,module,exports){
+},{"./addSuggestions":42,"angular-hint-log":50}],44:[function(require,module,exports){
 'use strict';
 
 var ngEventDirectives = require('./getEventDirectives')();
@@ -2022,7 +1976,7 @@ module.exports = function getEventAttribute(attrs) {
   }
 };
 
-},{"./getEventDirectives":46}],46:[function(require,module,exports){
+},{"./getEventDirectives":45}],45:[function(require,module,exports){
 'use strict';
 
 module.exports = function getEventDirectives() {
@@ -2035,7 +1989,7 @@ module.exports = function getEventDirectives() {
   return eventDirHash;
 };
 
-},{}],47:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 'use strict';
 
 module.exports = function getFunctionNames(str) {
@@ -2050,7 +2004,7 @@ module.exports = function getFunctionNames(str) {
   return results;
 };
 
-},{}],48:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 'use strict';
 
 module.exports = function getValidProps(obj) {
@@ -2063,7 +2017,7 @@ module.exports = function getValidProps(obj) {
   return props;
 };
 
-},{}],49:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 module.exports = distance;
 
 function distance(a, b) {
@@ -2086,7 +2040,7 @@ function distance(a, b) {
 }
 
 
-},{}],50:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 module.exports = suggestDictionary;
 
 var distance = require('./levenstein_distance');
@@ -2109,9 +2063,57 @@ function suggestDictionary(dict, opts) {
 
 suggestDictionary.distance = distance;
 
-},{"./levenstein_distance":49}],51:[function(require,module,exports){
-module.exports=require(5)
-},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-controllers/node_modules/angular-hint-log/hint-log.js":5}],52:[function(require,module,exports){
+},{"./levenstein_distance":48}],50:[function(require,module,exports){
+'use strict';
+
+/*
+ * HintLog creates a queue of messages logged by ngHint modules. This object
+ * has a key for each ngHint module that corresponds to the messages
+ * from that module.
+ */
+var queuedMessages = {},
+    MESSAGE_TYPES = [
+      'error',
+      'warning',
+      'suggestion'
+    ];
+
+/*
+ * Add a message to the HintLog message queue. Messages are organized into categories
+ * according to their module name and severity.
+ */
+function logMessage(moduleName, message, severity, category) {
+  // If no severity was provided, categorize the message as a `suggestion`
+  severity = severity || 3;
+  var messageType = MESSAGE_TYPES[severity - 1];
+
+  moduleName = moduleName || 'General';
+
+  // If the category does not exist, initialize a new object
+  queuedMessages[moduleName] = queuedMessages[moduleName] || {};
+  queuedMessages[moduleName][messageType] = queuedMessages[moduleName][messageType] || [];
+
+  if (queuedMessages[moduleName][messageType].indexOf(message) < 0) {
+    queuedMessages[moduleName][messageType].push(message);
+  }
+
+  this.onMessage(moduleName, message, messageType, category);
+}
+
+/*
+ * Return and empty the current queue of messages.
+ */
+function flush() {
+  var flushMessages = queuedMessages;
+  queuedMessages = {};
+  return flushMessages;
+}
+
+module.exports.onMessage = function(message) {};
+module.exports.logMessage = logMessage;
+module.exports.flush = flush;
+
+},{}],51:[function(require,module,exports){
 'use strict';
 
 var storeDependencies = require('./lib/storeDependencies'),
@@ -2153,7 +2155,7 @@ angular.module('ngHintModules', []).config(function() {
   start();
 });
 
-},{"./lib/getModule":55,"./lib/hasNameSpace":59,"./lib/moduleData":61,"./lib/start":64,"./lib/storeDependencies":65,"./lib/storeNgAppAndView":66,"./lib/storeUsedModules":67}],53:[function(require,module,exports){
+},{"./lib/getModule":54,"./lib/hasNameSpace":58,"./lib/moduleData":60,"./lib/start":63,"./lib/storeDependencies":64,"./lib/storeNgAppAndView":65,"./lib/storeUsedModules":66}],52:[function(require,module,exports){
 var hintLog = angular.hint = require('angular-hint-log'),
   MODULE_NAME = 'Modules';
 
@@ -2163,7 +2165,7 @@ module.exports = function(modules) {
   });
 };
 
-},{"angular-hint-log":51}],54:[function(require,module,exports){
+},{"angular-hint-log":50}],53:[function(require,module,exports){
 var modData = require('./moduleData');
   MODULE_NAME = 'Modules',
   SEVERITY_WARNING = 2;
@@ -2185,14 +2187,14 @@ module.exports = function() {
   return multiLoaded;
 };
 
-},{"./moduleData":61}],55:[function(require,module,exports){
+},{"./moduleData":60}],54:[function(require,module,exports){
 var modData = require('./moduleData');
 
 module.exports = function(moduleName, getCreated) {
   return (getCreated)? modData.createdModules[moduleName] : modData.loadedModules[moduleName];
 };
 
-},{"./moduleData":61}],56:[function(require,module,exports){
+},{"./moduleData":60}],55:[function(require,module,exports){
 var hintLog = angular.hint = require('angular-hint-log'),
   MODULE_NAME = 'Modules',
   SEVERITY_ERROR = 1;
@@ -2207,7 +2209,7 @@ var hintLog = angular.hint = require('angular-hint-log'),
 
 
 
-},{"angular-hint-log":51}],57:[function(require,module,exports){
+},{"angular-hint-log":50}],56:[function(require,module,exports){
 var getModule = require('./getModule'),
   dictionary = Object.keys(require('./moduleData').createdModules),
   suggest = require('suggest-it')(dictionary),
@@ -2228,7 +2230,7 @@ module.exports = function(loadedModules) {
   return undeclaredModules;
 };
 
-},{"./getModule":55,"./moduleData":61,"suggest-it":69}],58:[function(require,module,exports){
+},{"./getModule":54,"./moduleData":60,"suggest-it":68}],57:[function(require,module,exports){
 var getModule = require('./getModule');
 
 var IGNORED = ['ngHintControllers', 'ngHintDirectives', 'ngHintDom', 'ngHintEvents',
@@ -2249,7 +2251,7 @@ module.exports = function(createdModules) {
   return unusedModules;
 };
 
-},{"./getModule":55}],59:[function(require,module,exports){
+},{"./getModule":54}],58:[function(require,module,exports){
 var hintLog = angular.hint = require('angular-hint-log'),
     MODULE_NAME = 'Modules',
     SEVERITY_SUGGESTION = 3;
@@ -2267,7 +2269,7 @@ module.exports = function(str) {
   return true;
 };
 
-},{"angular-hint-log":51}],60:[function(require,module,exports){
+},{"angular-hint-log":50}],59:[function(require,module,exports){
 var normalizeAttribute = require('./normalizeAttribute');
 
 module.exports = function(attrs) {
@@ -2279,14 +2281,14 @@ module.exports = function(attrs) {
   }
 };
 
-},{"./normalizeAttribute":63}],61:[function(require,module,exports){
+},{"./normalizeAttribute":62}],60:[function(require,module,exports){
 module.exports = {
   createdModules: {},
   createdMulti: {},
   loadedModules: {}
 };
 
-},{}],62:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 var modData = require('./moduleData'),
   getModule = require('./getModule');
 
@@ -2296,12 +2298,12 @@ module.exports = function() {
   }
 };
 
-},{"./getModule":55,"./moduleData":61}],63:[function(require,module,exports){
+},{"./getModule":54,"./moduleData":60}],62:[function(require,module,exports){
 module.exports = function(attribute) {
   return attribute.replace(/^(?:data|x)[-_:]/, '').replace(/[:_]/g, '-');
 };
 
-},{}],64:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 var display = require('./display'),
   formatMultiLoaded = require('./formatMultiLoaded'),
   getUnusedModules = require('./getUnusedModules'),
@@ -2324,7 +2326,7 @@ module.exports = function() {
   }
 };
 
-},{"./display":53,"./formatMultiLoaded":54,"./getUndeclaredModules":57,"./getUnusedModules":58,"./moduleData":61,"./ngViewNoNgRoute":62}],65:[function(require,module,exports){
+},{"./display":52,"./formatMultiLoaded":53,"./getUndeclaredModules":56,"./getUnusedModules":57,"./moduleData":60,"./ngViewNoNgRoute":61}],64:[function(require,module,exports){
 var modData = require('./moduleData');
 
 module.exports = function(module, isNgAppMod) {
@@ -2340,7 +2342,7 @@ module.exports = function(module, isNgAppMod) {
   }
 };
 
-},{"./moduleData":61}],66:[function(require,module,exports){
+},{"./moduleData":60}],65:[function(require,module,exports){
 var getNgAppMod = require('./getNgAppMod'),
   inAttrsOrClasses = require('./inAttrsOrClasses'),
   storeDependencies = require('./storeDependencies'),
@@ -2376,7 +2378,7 @@ module.exports = function(doms) {
   }
 };
 
-},{"./getNgAppMod":56,"./inAttrsOrClasses":60,"./moduleData":61,"./storeDependencies":65}],67:[function(require,module,exports){
+},{"./getNgAppMod":55,"./inAttrsOrClasses":59,"./moduleData":60,"./storeDependencies":64}],66:[function(require,module,exports){
 var storeDependencies = require('./storeDependencies');
 
 var storeUsedModules = module.exports = function(module, modules){
@@ -2388,11 +2390,11 @@ var storeUsedModules = module.exports = function(module, modules){
     });
   }
 };
-},{"./storeDependencies":65}],68:[function(require,module,exports){
+},{"./storeDependencies":64}],67:[function(require,module,exports){
+module.exports=require(48)
+},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-events/node_modules/suggest-it/lib/levenstein_distance.js":48}],68:[function(require,module,exports){
 module.exports=require(49)
-},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-events/node_modules/suggest-it/lib/levenstein_distance.js":49}],69:[function(require,module,exports){
-module.exports=require(50)
-},{"./levenstein_distance":68,"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-events/node_modules/suggest-it/lib/suggest-it.js":50}],70:[function(require,module,exports){
+},{"./levenstein_distance":67,"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-events/node_modules/suggest-it/lib/suggest-it.js":49}],69:[function(require,module,exports){
 'use strict';
 
 var summarize = require('./lib/summarize-model');
@@ -2701,7 +2703,7 @@ function humanReadableWatchExpression (fn) {
   return fn.toString();
 }
 
-},{"./lib/summarize-model":71,"angular-hint-log":72,"debounce-on":73}],71:[function(require,module,exports){
+},{"./lib/summarize-model":70,"angular-hint-log":71,"debounce-on":72}],70:[function(require,module,exports){
 
 module.exports = function summarizeModel (model) {
 
@@ -2737,9 +2739,9 @@ function summarizeProperty (obj) {
       obj;
 }
 
-},{}],72:[function(require,module,exports){
-module.exports=require(5)
-},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-controllers/node_modules/angular-hint-log/hint-log.js":5}],73:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
+module.exports=require(50)
+},{"/Users/bford/Development/angularjs-batarang/node_modules/angular-hint/node_modules/angular-hint-log/hint-log.js":50}],72:[function(require,module,exports){
 module.exports = function debounceOn (fn, timeout, hash) {
   var timeouts = {};
 
