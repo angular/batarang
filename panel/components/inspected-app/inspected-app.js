@@ -21,6 +21,14 @@ function inspectedAppService($rootScope) {
     return invokeAngularHintMethod('assign', scopeId, path, value);
   };
 
+  this.enableInstrumentation = function (setting) {
+    setting = !!setting;
+    chrome.devtools.inspectedWindow.eval(
+      "window.document.cookie = '__ngDebug=" + setting + ";';" +
+      "window.document.location.reload();"
+    );
+  };
+
   /*
    * sets window.$scope to the scope of the given id
    */

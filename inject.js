@@ -1,20 +1,26 @@
-var html = document.getElementsByTagName('html')[0];
+if (document.cookie.indexOf('__ngDebug=true') != -1) {
+  bootstrapHint();
+}
 
-var eventProxyElement = document.createElement('div');
-eventProxyElement.id = '__ngBatarangElement';
-eventProxyElement.style.display = 'none';
-html.appendChild(eventProxyElement);
+function bootstrapHint () {
+  var html = document.getElementsByTagName('html')[0];
 
-// inject into the application context from the content script context
+  var eventProxyElement = document.createElement('div');
+  eventProxyElement.id = '__ngBatarangElement';
+  eventProxyElement.style.display = 'none';
+  html.appendChild(eventProxyElement);
 
-var script = window.document.createElement('script');
-script.src = chrome.extension.getURL('dist/hint.js');
+  // inject into the application context from the content script context
 
-eventProxyElement.addEventListener('batarangDataEvent', function () {
-  var eventData = eventProxyElement.innerText;
-  chrome.extension.sendMessage(eventData);
-});
+  var script = window.document.createElement('script');
+  script.src = chrome.extension.getURL('dist/hint.js');
 
-html.setAttribute('ng-hint', '');
+  eventProxyElement.addEventListener('batarangDataEvent', function () {
+    var eventData = eventProxyElement.innerText;
+    chrome.extension.sendMessage(eventData);
+  });
 
-html.appendChild(script);
+  html.setAttribute('ng-hint', '');
+
+  html.appendChild(script);
+}

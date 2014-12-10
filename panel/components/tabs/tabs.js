@@ -1,6 +1,6 @@
 angular.module('batarang.tabs', []).
 
-directive('batTabs', function ($compile, $templateCache, $http) {
+directive('batTabs', function ($compile, $templateCache, $http, inspectedApp) {
   return {
     restrict: 'E',
     transclude: true,
@@ -14,6 +14,12 @@ directive('batTabs', function ($compile, $templateCache, $http) {
       this.addPane = function(pane) {
         panes.push(pane);
       };
+
+      $scope.$watch('enabled', function (newVal) {
+        if (newVal === !!newVal) {
+          inspectedApp.enableInstrumentation(newVal);
+        }
+      });
     },
     link: function (scope, element, attr) {
 

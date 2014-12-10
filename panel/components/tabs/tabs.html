@@ -8,6 +8,16 @@
       sidebar"
     style="width: 200px;">
       <ol class="sidebar-tree" tabindex="0">
+        <li class="sidebar-tree-item
+                   profile-launcher-view-tree-item">
+            <img class="icon">
+            <div class="status"></div>
+            <div class="titles no-subtitle">
+              <span class="title ng-binding">Enable <input type="checkbox" ng-model="enabled"></span>
+              <span class="subtitle"></span>
+            </div>
+
+        </li>
         <li ng-repeat="pane in panes"
           ng-click="select(pane)"
           class="sidebar-tree-item
