@@ -30,7 +30,7 @@ var getPanelContents = function () {
 };
 
 panels.elements.createSidebarPane(
-  "AngularJS Properties",
+  "$scope",
   function (sidebar) {
     panels.elements.onSelectionChanged.addListener(function updateElementProperties() {
       sidebar.setExpression("(" + getPanelContents.toString() + ")()");
