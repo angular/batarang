@@ -630,6 +630,11 @@ function controllerDecorator($delegate) {
 */
 var originalModule = angular.module;
 
+function processController(ctrlName) {
+  nameToControllerMap[ctrlName] = true;
+  sendMessageForControllerName(ctrlName);
+}
+
 function sendMessageForGlobalController(name) {
   hint.logMessage(MODULE_NAME,
     'add `' + name + '` to a module',
@@ -682,10 +687,14 @@ angular.module = function() {
       originalController = module.controller;
 
   module.controller = function(controllerName, controllerConstructor) {
-    nameToControllerMap[controllerName] = true;
-    sendMessageForControllerName(controllerName);
+    if ((controllerName !== null) && (typeof controllerName === 'object')) {
+      Object.keys(controllerName).forEach(processController);
+    } else {
+      processController(controllerName);
+    }
     return originalController.apply(this, arguments);
   };
+
   return module;
 };
 
