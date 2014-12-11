@@ -11,7 +11,7 @@ function HintController($scope, inspectedApp) {
     $scope.groupedHints = {};
     newHints.forEach(function (hint) {
       var moduleName = hint.module || 'Hints';
-      var category = hint.category || (moduleName + ' Stuff');
+      var category = hint.category || moduleName;
       if (!$scope.groupedHints[moduleName]) {
         $scope.groupedHints[moduleName] = {};
       }
