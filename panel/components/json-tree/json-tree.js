@@ -3,6 +3,9 @@ angular.module('batarang.json-tree', []).
 
 var BAT_JSON_TREE_TEMPLATE = '<div class="properties-tree"></div>';
 
+var ENTER_KEY = 13,
+    EXIT_KEY = 27;
+
 var BAT_JSON_TREE_UNEDITABLE = [
   '$id',
 
@@ -120,12 +123,23 @@ function batJsonTreeDirective() {
               '</span>');
 
             // TODO: test this
-            childElt.on('blur', function () {
+            childElt.on('keydown', function (ev) {
+              if (ev.keyCode === ENTER_KEY || ev.keyCode === EXIT_KEY) {
+                ev.preventDefault();
+                childElt[0].blur();
+                doAssign();
+              }
+            });
+
+            // TODO: test this
+            childElt.on('blur', doAssign);
+
+            function doAssign() {
               scope.batAssign({
                 path: fullPath,
                 value: childElt.text()
               });
-            });
+            }
           }
         }
 
