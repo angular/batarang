@@ -8,6 +8,7 @@ chrome.runtime.onConnect.addListener(function(devToolsPort) {
   buffer.forEach(function(msg) {
     devToolsPort.postMessage(msg);
   });
+  buffer = [];
 
   devToolsPort.onMessage.addListener(function(inspectedTabId) {
     chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
