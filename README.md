@@ -14,5 +14,9 @@ https://chrome.google.com/webstore/detail/ighdmehidhipcmcojjgiloacoafjmpfk
 1. Select the directory where you extracted the extension
 1. Close and re-open any inspected tabs
 
+## Installing from Source
+
+See the [instructions in the contributing guide](https://github.com/angular/angularjs-batarang/blob/master/CONTRIBUTING.md#installing-from-source)
+
 ## License
 MIT
