@@ -15,10 +15,9 @@ directive('batTabs', function ($compile, $templateCache, $http, inspectedApp) {
         panes.push(pane);
       };
 
-      $scope.$watch('enabled', function (newVal) {
-        if (newVal === !!newVal) {
-          inspectedApp.enableInstrumentation(newVal);
-        }
+      inspectedApp.getInstrumentationStatus().then(function (status) {
+        $scope.enabled = status;
+        $scope.$watch('enabled', inspectedApp.enableInstrumentation);
       });
     },
     link: function (scope, element, attr) {

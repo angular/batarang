@@ -1,9 +1,9 @@
 'use strict';
 
 angular.module('batarang.inspected-app', []).
-  service('inspectedApp', ['$rootScope', inspectedAppService]);
+  service('inspectedApp', ['$rootScope', '$q', inspectedAppService]);
 
-function inspectedAppService($rootScope) {
+function inspectedAppService($rootScope, $q) {
 
   // TODO: maybe state should live elsewhere
   var scopes = this.scopes = {},
@@ -24,9 +24,21 @@ function inspectedAppService($rootScope) {
   this.enableInstrumentation = function (setting) {
     setting = !!setting;
     chrome.devtools.inspectedWindow.eval(
-      "window.document.cookie = '__ngDebug=" + setting + ";';" +
-      "window.document.location.reload();"
+      "(function () {" +
+        "var prev = document.cookie.indexOf('__ngDebug=true') !== -1;" +
+        "if (prev !== " + setting + ") {" +
+          "window.document.cookie = '__ngDebug=" + setting + ";';" +
+          "window.document.location.reload();" +
+        "}" +
+      "}())"
     );
+  };
+
+  this.getInstrumentationStatus = function () {
+    return $q(function(resolve, reject) {
+      chrome.devtools.inspectedWindow.eval(
+          "document.cookie.indexOf('__ngDebug=true') !== -1", resolve);
+    });
   };
 
   /*
