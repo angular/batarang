@@ -13,6 +13,9 @@ This document describes how to contribute to Batarang
 
 ## Running the tests
 
+1. Install from Source
+2. Run mocha tests `npm run test`
+
 ## Packaging a release
 
 I (@btford) will do this periodically, but I'm adding these instructions here
@@ -32,5 +35,7 @@ The `panel` directory contains...
 `panel/components` contains self-contained directives and services.
 
 ## Testing Batarang manually
+
+Run `mocha` in the source code root directory.
 
 
