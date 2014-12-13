@@ -45,10 +45,18 @@ gulp.task('zip', ['package'], function () {
 // protractor and selenium
 gulp.task('webdriver_update', webdriver_update);
 gulp.task('webdriver_standalone', webdriver_standalone);
-gulp.task('test', ['webdriver_update'], function() {
+gulp.task('profile1', ['webdriver_update'], function() {
   return gulp.src(["./tests/*.js"])
     .pipe(protractor({
-        configFile: "protractor.config.js",
+        configFile: "profiles/protractor.config.js",
+        args: ['--baseUrl', 'http://127.0.0.1:8000']
+    })) 
+    .on('error', function(e) { throw e; })
+});
+gulp.task('profile2', ['webdriver_update'], function() {
+  return gulp.src(["./tests/*.js"])
+    .pipe(protractor({
+        configFile: "profiles/another.config.js",
         args: ['--baseUrl', 'http://127.0.0.1:8000']
     })) 
     .on('error', function(e) { throw e; })
