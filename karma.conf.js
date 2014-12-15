@@ -2,8 +2,11 @@
  * This karma conf tests just the panel app
  */
 
+var sauceConfig = require('./config/karma.sauce.conf');
+var travisConfig = require('./config/karma.travis.conf');
+
 module.exports = function(config) {
-  config.set({
+  var options = {
     frameworks: ['browserify', 'jasmine'],
     files: [
       'node_modules/angular/angular.js',
@@ -17,5 +20,12 @@ module.exports = function(config) {
       'hint.js': [ 'browserify' ]
     },
     browsers: ['Chrome'],
-  });
+  };
+
+  if (process.argv.indexOf('--sauce') > -1) {
+    sauceConfig(options);
+    travisConfig(options);
+  }
+
+  config.set(options);
 };
