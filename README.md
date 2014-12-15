@@ -1,4 +1,5 @@
 # AngularJS Batarang
+[![Build Status](https://travis-ci.org/angular/angularjs-batarang.svg)](https://travis-ci.org/angular/angularjs-batarang)
 
 ## Installing from the Web Store
 
