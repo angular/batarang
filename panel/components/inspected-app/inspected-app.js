@@ -77,16 +77,14 @@ function inspectedAppService($rootScope, $q) {
     if (hint.message) {
       hints.push(hint);
     } else if (hint.event) {
-      if (hint.id) {
-        if (hint.event === 'scope:new') {
-          addNewScope(hint);
-        } else if (scopes[hint.id]) {
-          if (hint.event === 'model:change') {
-            scopes[hint.id].models[hint.path] = (typeof hint.value === 'undefined') ?
-                                                  undefined : JSON.parse(hint.value);
-          } else if (hint.event === 'scope:link') {
-            scopes[hint.id].descriptor = hint.descriptor;
-          }
+      if (hint.event === 'scope:new') {
+        addNewScope(hint);
+      } else if (hint.id && scopes[hint.id]) {
+        if (hint.event === 'model:change') {
+          scopes[hint.id].models[hint.path] = (typeof hint.value === 'undefined') ?
+                                                undefined : JSON.parse(hint.value);
+        } else if (hint.event === 'scope:link') {
+          scopes[hint.id].descriptor = hint.descriptor;
         }
       }
       $rootScope.$broadcast(hint.event, hint);
