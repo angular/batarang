@@ -117,6 +117,9 @@
 }
 
 /* */
+bat-scope-tree {
+  white-space: nowrap;
+}
 
 /*
 bat-scope-tree .selected {
