@@ -8,6 +8,7 @@
     "tabs",
     "<all_urls>"
   ],
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -15,11 +16,22 @@
       "run_at": "document_start"
     }
   ],
+
   "background": {
     "scripts": [
       "background.js"
     ]
   },
+
+  "page_action": {
+    "default_icon": {
+      "19": "img/icon19.png",
+      "38": "img/icon38.png"
+    },
+
+    "default_title": "AngularJS Super-Powered"
+  },
+
   "web_accessible_resources": [
     "dist/hint.js"
   ],

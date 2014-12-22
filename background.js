@@ -11,6 +11,9 @@ function bufferOrForward(message, sender) {
 
   if (!data[tabId] || message === 'refresh') {
     resetState(tabId);
+
+    // TODO: this is kind of a hack-y spot to put this
+    showPageAction(tabId);
   }
 
   // TODO: not sure how I feel about special-casing `refresh`
@@ -97,3 +100,12 @@ chrome.tabs.onRemoved.addListener(function (tabId) {
     delete data[tabId];
   }
 });
+
+
+function showPageAction(tabId) {
+  chrome.pageAction.show(tabId);
+  chrome.pageAction.setTitle({
+    tabId: tabId,
+    title: 'Batarang Active'
+  });
+}
