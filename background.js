@@ -1,24 +1,50 @@
-var buffer = [];
-function addToBuffer(message) {
-  buffer.push(message);
-}
-chrome.runtime.onMessage.addListener(addToBuffer);
-chrome.runtime.onConnect.addListener(function(devToolsPort) {
-  chrome.runtime.onMessage.removeListener(addToBuffer);
-  buffer.forEach(function(msg) {
-    devToolsPort.postMessage(msg);
-  });
-  buffer = [];
 
-  devToolsPort.onMessage.addListener(function(inspectedTabId) {
-    chrome.tabs.onUpdated.addListener(function(tabId, changeInfo) {
-      if(tabId === inspectedTabId && changeInfo.status === 'loading') {
-        devToolsPort.postMessage('refresh');
-      }
+// tabId -> devtool port
+var inspectedTabs = {};
+
+// TODO: keep track of app state here
+// tabId -> list of buffered events
+var buffer = {};
+
+function bufferOrForward(message, sender) {
+  var tabId = sender.tab.id,
+      devToolsPort = inspectedTabs[tabId];
+
+  if (devToolsPort) {
+    devToolsPort.postMessage(message);
+  }
+  if (!buffer[tabId] || message === 'refresh') {
+    resetState(tabId);
+  }
+  buffer[tabId].push(message);
+}
+
+// context script –> background
+chrome.runtime.onMessage.addListener(bufferOrForward);
+
+chrome.runtime.onConnect.addListener(function(devToolsPort) {
+
+  devToolsPort.onMessage.addListener(registerInspectedTabId);
+
+  function registerInspectedTabId(inspectedTabId) {
+    inspectedTabs[inspectedTabId] = devToolsPort;
+
+    if (!buffer[inspectedTabId]) {
+      resetState(inspectedTabId);
+    }
+    buffer[inspectedTabId].forEach(function(msg) {
+      devToolsPort.postMessage(msg);
     });
-  });
-  // context script –> background
-  chrome.runtime.onMessage.addListener(function(msg, sender, sendResponse) {
-    devToolsPort.postMessage(msg);
-  });
+
+    devToolsPort.onDisconnect.addListener(function () {
+      delete inspectedTabs[inspectedTabId];
+    });
+
+    //devToolsPort.onMessage.removeListener(registerInspectedTabId);
+  }
+
 });
+
+function resetState(tabId) {
+  buffer[tabId] = [];
+}

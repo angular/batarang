@@ -3,6 +3,8 @@ if (document.cookie.indexOf('__ngDebug=true') != -1) {
 }
 
 function bootstrapHint () {
+  chrome.extension.sendMessage('refresh');
+
   var html = document.getElementsByTagName('html')[0];
 
   var eventProxyElement = document.createElement('div');
