@@ -36,6 +36,11 @@ function batScopeTreeDirective($compile) {
       renderScopeDescriptorElement(data.id, data.descriptor);
     });
 
+    scope.$on('refresh', function () {
+      map = {};
+      element.html('');
+    });
+
     function renderScopeElement (id, parentId) {
       if (map[id]) {
         return;

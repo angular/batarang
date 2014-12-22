@@ -42,6 +42,13 @@ function batJsonTreeDirective() {
 
     scope.$watch('batModel', function (val) {
       if (!val) {
+        root = angular.element(BAT_JSON_TREE_TEMPLATE);
+        element.html('');
+        element.append(root);
+        branches = {
+          '': root
+        };
+
         return;
       }
       Object.

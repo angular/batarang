@@ -63,6 +63,7 @@ function inspectedAppService($rootScope, $q) {
     $rootScope.$applyAsync(function () {
       if (msg === 'refresh') {
         onRefreshMessage();
+        $rootScope.$broadcast('refresh');
       } else if (typeof msg === 'string') {
         var hint = JSON.parse(msg);
         onHintMessage(hint);

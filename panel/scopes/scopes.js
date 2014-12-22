@@ -16,13 +16,18 @@ function ScopesController($scope, inspectedApp) {
 
   $scope.inspectedScope = null;
 
+  $scope.$on('refresh', function () {
+    $scope.inspectedScope = null;
+  });
+
   // expand models the fist time we inspect a scope
   var cancelWatch = $scope.$watch('inspectedScope', function (newScope) {
     if (newScope) {
       $scope.modelsExpanded = true;
       cancelWatch();
     }
-  })
+  });
+
 
   $scope.$on('inspected-scope:change', function (ev, data) {
     inspectScope(data.id);
