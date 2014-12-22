@@ -91,3 +91,9 @@ chrome.runtime.onConnect.addListener(function(devToolsPort) {
   }
 
 });
+
+chrome.tabs.onRemoved.addListener(function (tabId) {
+  if (data[tabId]) {
+    delete data[tabId];
+  }
+});
