@@ -17,7 +17,7 @@ describe('batJsonTree', function () {
   it('should render a simple model', function () {
     $rootScope.data = {
       '': { '$id': 1 }
-    }
+    };
     compileTree();
     expect(element.text()).toBe('$id: 1');
   });
