@@ -80,11 +80,17 @@ function inspectedAppService($rootScope, $q) {
       if (hint.event === 'scope:new') {
         addNewScope(hint);
       } else if (hint.id && scopes[hint.id]) {
-        if (hint.event === 'model:change') {
-          scopes[hint.id].models[hint.path] = (typeof hint.value === 'undefined') ?
+        var scope = scopes[hint.id];
+        if (hint.event === 'scope:destroy') {
+          if (scope.parent) {
+            scope.parent.children.splice(scope.parent.children.indexOf(child), 1);
+          }
+          delete scopes[hint.id];
+        } else if (hint.event === 'model:change') {
+          scope.models[hint.path] = (typeof hint.value === 'undefined') ?
                                                 undefined : JSON.parse(hint.value);
         } else if (hint.event === 'scope:link') {
-          scopes[hint.id].descriptor = hint.descriptor;
+          scope.descriptor = hint.descriptor;
         }
       }
       $rootScope.$broadcast(hint.event, hint);
@@ -92,6 +98,7 @@ function inspectedAppService($rootScope, $q) {
   }
 
   function onRefreshMessage() {
+    clear(scopes);
     hints.length = 0;
   }
 
@@ -104,6 +111,12 @@ function inspectedAppService($rootScope, $q) {
     if (scopes[hint.parent]) {
       scopes[hint.parent].children.push(hint.child);
     }
+  }
+
+  function clear (obj) {
+    Object.keys(obj).forEach(function (key) {
+      delete obj[key];
+    });
   }
 
 }
