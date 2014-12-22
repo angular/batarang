@@ -5,7 +5,6 @@ angular.module('batarang.inspected-app', []).
 
 function inspectedAppService($rootScope, $q) {
 
-  // TODO: maybe state should live elsewhere
   var scopes = this.scopes = {},
       hints = this.hints = [];
 
