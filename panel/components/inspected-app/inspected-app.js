@@ -67,6 +67,8 @@ function inspectedAppService($rootScope, $q) {
       } else if (typeof msg === 'string') {
         var hint = JSON.parse(msg);
         onHintMessage(hint);
+      } else if (typeof msg === 'object') {
+        onHintMessage(msg);
       }
     });
   });
@@ -78,7 +80,14 @@ function inspectedAppService($rootScope, $q) {
     if (hint.message) {
       hints.push(hint);
     } else if (hint.event) {
-      if (hint.event === 'scope:new') {
+      if (hint.event === 'hydrate') {
+        Object.keys(hint.data.scopes).forEach(function (scopeId) {
+          scopes[scopeId] = hint.data.scopes[scopeId];
+        });
+        hint.data.hints.forEach(function (hint) {
+          hints.push(hint);
+        });
+      } else if (hint.event === 'scope:new') {
         addNewScope(hint);
       } else if (hint.id && scopes[hint.id]) {
         var scope = scopes[hint.id];
