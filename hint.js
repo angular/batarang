@@ -27,12 +27,6 @@ angular.hint.emit = function (ev, data) {
   sendMessage(data);
 };
 
-var eventProxyElement = document.getElementById('__ngBatarangElement');
-
-var customEvent = document.createEvent('Event');
-customEvent.initEvent('batarangDataEvent', true, true);
-
 function sendMessage (obj) {
-  eventProxyElement.innerText = JSON.stringify(obj);
-  eventProxyElement.dispatchEvent(customEvent);
+  window.postMessage(obj, '*');
 }
