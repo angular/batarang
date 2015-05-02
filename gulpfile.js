@@ -4,7 +4,7 @@ var browserify = require('browserify');
 var zip = require('gulp-zip');
 
 var main = require('./package.json').main;
-// TODO: make sure manifest version === package.json version === bower.json version
+// TODO: make sure manifest version === package.json version
 var version = require('./manifest.json').version;
 
 gulp.task('watch', function(){
