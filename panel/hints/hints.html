@@ -15,11 +15,8 @@
         <li class="parent audit-result">
           <div class="severity-warning"></div>{{summary}} ({{hints.length}})
         </li>
-        <li class="parent-expanded expanded selected">
-          Controller names should start with an uppercase character and end with the suffix <code>Controller</code>. For example: <code>UserController</code>.
-        </li>
         <ol class="children expanded">
-          <li class="selected" ng-repeat="hint in hints" bat-code="hint.message"></li>
+          <li class="selected" ng-repeat="hint in hints" bat-code="hint.data"></li>
         </ol>
       </ol>
     </div>

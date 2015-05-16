@@ -16,12 +16,9 @@ function bufferOrForward(message, sender) {
     showPageAction(tabId);
   }
 
-  // TODO: not sure how I feel about special-casing `refresh`
   if (message !== 'refresh') {
-    message = JSON.parse(message);
+    bufferData(tabId, message);
   }
-
-  bufferData(tabId, message);
   if (devToolsPort) {
     devToolsPort.postMessage(message);
   }
@@ -38,34 +35,41 @@ function bufferData(tabId, message) {
   var tabData = data[tabId],
       scope;
 
-  if (message.message) {
-    return tabData.hints.push(message);
+  var hintables = [
+    'Controllers',
+    'general',
+    'Modules',
+    'Events'
+  ];
+
+  if (hintables.indexOf(message.module) > -1) {
+    tabData.hints.push(message);
   }
 
-  if (message.event) {
-    if (message.event === 'scope:new') {
-      tabData.scopes[message.child] = {
-        parent: message.parent,
-        children: [],
-        models: {}
-      };
-      if (tabData.scopes[message.parent]) {
-        tabData.scopes[message.parent].children.push(message.child);
+  if (message.event === 'scope:new') {
+    tabData.scopes[message.data.child] = {
+      parent: message.data.parent,
+      children: [],
+      models: {}
+    };
+    if (tabData.scopes[message.data.parent]) {
+      tabData.scopes[message.data.parent].children.push(message.data.child);
+    }
+  } else if (message.data.id && (scope = tabData.scopes[message.data.id])) {
+    if (message.event === 'scope:destroy') {
+      if (scope.parent) {
+        scope.parent.children.splice(scope.parent.children.indexOf(child), 1);
       }
-    } else if (message.id && (scope = tabData.scopes[message.id])) {
-      if (message.event === 'scope:destroy') {
-        if (scope.parent) {
-          scope.parent.children.splice(scope.parent.children.indexOf(child), 1);
-        }
-        delete scopes[message.id];
-      } else if (message.event === 'model:change') {
-        scope.models[message.path] = (typeof message.value === 'undefined') ?
-                                              undefined : JSON.parse(message.value);
-      } else if (message.event === 'scope:link') {
-        scope.descriptor = message.descriptor;
-      }
+      delete scopes[message.data.id];
+    } else if (message.event === 'model:change') {
+      scope.models[message.data.path] = (typeof message.data.value === 'undefined') ?
+                                            undefined : message.data.value;
+    } else if (message.event === 'scope:link') {
+      scope.descriptor = message.descriptor;
     }
   }
+
+  // TODO: Handle digest timings
 }
 
 // context script –> background
