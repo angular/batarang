@@ -1,13 +1,15 @@
 'use strict';
 
 describe('inspectedApp', function() {
-  var inspectedApp, port;
+  var inspectedApp, rootScope, port;
 
   beforeEach(function() {
     module('batarang.inspected-app')
     window.chrome = createMockChrome();
-    inject(function(_inspectedApp_) {
+    inject(function(_inspectedApp_, _$rootScope_) {
       inspectedApp = _inspectedApp_;
+      rootScope = _$rootScope_;
+      spyOn(rootScope, '$broadcast');
     });
   });
 
@@ -26,20 +28,27 @@ describe('inspectedApp', function() {
     }));
 
     it('should track new scopes', inject(function ($browser) {
-      port.onMessage.trigger(JSON.stringify({ event: 'scope:new', child: 1 }));
+      port.onMessage.trigger(JSON.stringify({ event: 'scope:new', data: { child: 1 } }));
       $browser.defer.flush();
 
       expect(inspectedApp.scopes).toEqual({ 1: { parent: undefined, children: [], models: {} } });
     }));
 
     it('should track updates to scope descriptors', inject(function ($browser) {
-      port.onMessage.trigger(JSON.stringify({ event: 'scope:new', child: 1 }));
-      port.onMessage.trigger(JSON.stringify({ event: 'scope:link', id: 1, descriptor: 'pasta' }));
+      port.onMessage.trigger(JSON.stringify({ event: 'scope:new', data: { child: 1 } }));
+      port.onMessage.trigger(JSON.stringify({ event: 'scope:link', data: { id: 1, descriptor: 'pasta' } }));
       $browser.defer.flush();
 
       expect(inspectedApp.scopes[1].descriptor).toBe('pasta');
     }));
-  })
+    it('should broadcast message from $rootScope', inject(function ($browser) {
+      var message = { event: 'scope:new', data: { child: 1 } };
+      port.onMessage.trigger(JSON.stringify(message));
+      $browser.defer.flush();
+
+      expect(rootScope.$broadcast).toHaveBeenCalledWith(message.event, message.data);
+    }));
+  });
 
   describe('watch', function () {
     it('should call chrome devtools APIs', function() {
