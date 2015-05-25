@@ -88,21 +88,21 @@ function inspectedAppService($rootScope, $q) {
         });
       } else if (hint.event === 'scope:new') {
         addNewScope(hint);
-      } else if (hint.id && scopes[hint.id]) {
-        var scope = scopes[hint.id];
+      } else if (hint.data.id && scopes[hint.data.id]) {
+        var scope = scopes[hint.data.id];
         if (hint.event === 'scope:destroy') {
           if (scope.parent) {
             scope.parent.children.splice(scope.parent.children.indexOf(child), 1);
           }
-          delete scopes[hint.id];
+          delete scopes[hint.data.id];
         } else if (hint.event === 'model:change') {
-          scope.models[hint.path] = (typeof hint.value === 'undefined') ?
-                                                undefined : JSON.parse(hint.value);
+          scope.models[hint.data.path] = (typeof hint.data.value === 'undefined') ?
+                                                undefined : JSON.parse(hint.data.value);
         } else if (hint.event === 'scope:link') {
-          scope.descriptor = hint.descriptor;
+          scope.descriptor = hint.data.descriptor;
         }
       }
-      $rootScope.$broadcast(hint.event, hint);
+      $rootScope.$broadcast(hint.event, hint.data);
     }
   }
 
@@ -112,13 +112,13 @@ function inspectedAppService($rootScope, $q) {
   }
 
   function addNewScope (hint) {
-    scopes[hint.child] = {
-      parent: hint.parent,
+    scopes[hint.data.child] = {
+      parent: hint.data.parent,
       children: [],
       models: {}
     };
-    if (scopes[hint.parent]) {
-      scopes[hint.parent].children.push(hint.child);
+    if (scopes[hint.data.parent]) {
+      scopes[hint.data.parent].children.push(hint.data.child);
     }
   }
 
