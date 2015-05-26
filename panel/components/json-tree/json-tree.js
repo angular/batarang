@@ -51,17 +51,26 @@ function batJsonTreeDirective() {
 
         return;
       }
-      Object.
-        keys(val).
-        filter(function (key) {
-          return key.substr(0, 2) !== '$$';
-        }).
-        sort(byPathDepth).
-        forEach(function (key) {
-          buildDom(val[key], key);
-        });
-    }, true);
+      renderModel(val)
+    });
 
+    scope.$on('model:change', function(ev, data){
+      if(data.id && scope.batModel && scope.batModel[''] && (data.id === scope.batModel[''].$id)){
+        renderModel(scope.batModel);
+      }
+    });
+
+    function renderModel(val){
+      Object.
+          keys(val).
+          filter(function (key) {
+            return key.substr(0, 2) !== '$$';
+          }).
+          sort(byPathDepth).
+          forEach(function (key) {
+            buildDom(val[key], key);
+          });
+    }
 
     function buildDom(object, depth) {
       branches[depth].html('');
