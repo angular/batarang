@@ -65,7 +65,7 @@ function bufferData(tabId, message) {
       scope.models[message.data.path] = (typeof message.data.value === 'undefined') ?
                                             undefined : message.data.value;
     } else if (message.event === 'scope:link') {
-      scope.descriptor = message.descriptor;
+      scope.descriptor = message.data.descriptor;
     }
   }
 
