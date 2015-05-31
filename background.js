@@ -17,6 +17,7 @@ function bufferOrForward(message, sender) {
   }
 
   if (message !== 'refresh') {
+    setIsHintFlag(message);
     bufferData(tabId, message);
   }
   if (devToolsPort) {
@@ -31,18 +32,21 @@ function resetState(tabId) {
   };
 }
 
-function bufferData(tabId, message) {
-  var tabData = data[tabId],
-      scope;
-
+function setIsHintFlag(message) {
   var hintables = [
     'Controllers',
     'general',
     'Modules',
     'Events'
   ];
+  message.isHint = (hintables.indexOf(message.module) > -1);
+}
 
-  if (hintables.indexOf(message.module) > -1) {
+function bufferData(tabId, message) {
+  var tabData = data[tabId],
+      scope;
+
+  if (message.isHint) {
     tabData.hints.push(message);
   }
 
