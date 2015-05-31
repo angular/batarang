@@ -75,34 +75,34 @@ function inspectedAppService($rootScope, $q) {
     console.log(a);
   });
 
-  function onHintMessage(hint) {
-    if (hint.message) {
-      hints.push(hint);
-    } else if (hint.event) {
-      if (hint.event === 'hydrate') {
-        Object.keys(hint.data.scopes).forEach(function (scopeId) {
-          scopes[scopeId] = hint.data.scopes[scopeId];
+  function onHintMessage(message) {
+    if (message.isHint) {
+      hints.push(message);
+    } else if (message.event) {
+      if (message.event === 'hydrate') {
+        Object.keys(message.data.scopes).forEach(function (scopeId) {
+          scopes[scopeId] = message.data.scopes[scopeId];
         });
-        hint.data.hints.forEach(function (hint) {
+        message.data.hints.forEach(function (hint) {
           hints.push(hint);
         });
-      } else if (hint.event === 'scope:new') {
-        addNewScope(hint);
-      } else if (hint.data.id && scopes[hint.data.id]) {
-        var scope = scopes[hint.data.id];
-        if (hint.event === 'scope:destroy') {
+      } else if (message.event === 'scope:new') {
+        addNewScope(message);
+      } else if (message.data.id && scopes[message.data.id]) {
+        var scope = scopes[message.data.id];
+        if (message.event === 'scope:destroy') {
           if (scope.parent) {
             scope.parent.children.splice(scope.parent.children.indexOf(child), 1);
           }
-          delete scopes[hint.data.id];
-        } else if (hint.event === 'model:change') {
-          scope.models[hint.data.path] = (typeof hint.data.value === 'undefined') ?
-                                                undefined : JSON.parse(hint.data.value);
-        } else if (hint.event === 'scope:link') {
-          scope.descriptor = hint.data.descriptor;
+          delete scopes[message.data.id];
+        } else if (message.event === 'model:change') {
+          scope.models[message.data.path] = (typeof message.data.value === 'undefined') ?
+                                                undefined : JSON.parse(message.data.value);
+        } else if (message.event === 'scope:link') {
+          scope.descriptor = message.data.descriptor;
         }
       }
-      $rootScope.$broadcast(hint.event, hint.data);
+      $rootScope.$broadcast(message.event, message.data);
     }
   }
 
@@ -111,14 +111,14 @@ function inspectedAppService($rootScope, $q) {
     hints.length = 0;
   }
 
-  function addNewScope (hint) {
-    scopes[hint.data.child] = {
-      parent: hint.data.parent,
+  function addNewScope (message) {
+    scopes[message.data.child] = {
+      parent: message.data.parent,
       children: [],
       models: {}
     };
-    if (scopes[hint.data.parent]) {
-      scopes[hint.data.parent].children.push(hint.data.child);
+    if (scopes[message.data.parent]) {
+      scopes[message.data.parent].children.push(message.data.child);
     }
   }
 
