@@ -74,7 +74,7 @@ describe('inspectedApp', function() {
 
   function createMockChrome() {
     return {
-      extension: {
+      runtime: {
         connect: function () {
           return port = createMockSocket();
         }

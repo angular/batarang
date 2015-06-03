@@ -56,7 +56,7 @@ function inspectedAppService($rootScope, $q) {
     chrome.devtools.inspectedWindow.eval('angular.hint.' + method + '(' + args + ')');
   }
 
-  var port = chrome.extension.connect();
+  var port = chrome.runtime.connect();
   port.postMessage(chrome.devtools.inspectedWindow.tabId);
   port.onMessage.addListener(function(msg) {
     $rootScope.$applyAsync(function () {

@@ -8,6 +8,7 @@ require('angular-hint');
 
 angular.hint.onAny(function (data, severity) {
   window.postMessage({
+    __fromBatarang: true,
     module: this.event.split(':')[0],
     event: this.event,
     data: data,
