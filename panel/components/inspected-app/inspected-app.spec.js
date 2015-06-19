@@ -68,13 +68,35 @@ describe('inspectedApp', function() {
       expect(inspectedApp.scopes[id]).toEqual({ parent: parentId, children: [], models: {} });
     });
 
+    it('should track destruction of scopes', function () {
+      var id = 2, parentId = 1;
+      inspectedApp.scopes[id] = { parent: parentId };
+      inspectedApp.scopes[parentId] = {
+        children: [ 99, id, 100 ]
+      };
+      triggerAndFlush({ event: 'scope:destroy', data: { id: id, subTree: [id] } });
+
+      expect(inspectedApp.scopes.hasOwnProperty(id)).toBeFalsy();
+      expect(inspectedApp.scopes[parentId].children).toEqual([99, 100]);
+    });
+
     it('should track destruction of scopes without throwing error when parent scope not present', function () {
       var id = 1;
       inspectedApp.scopes[id] = true;
-      port.onMessage.trigger({ event: 'scope:destroy', data: { id: id } });
+      port.onMessage.trigger({ event: 'scope:destroy', data: { id: id, subTree: [id] } });
 
       expect($browser.defer.flush).not.toThrow();
       expect(inspectedApp.scopes.hasOwnProperty(id)).toBeFalsy();
+    });
+
+    it('should delete subtree of destroyed scope', function () {
+      inspectedApp.scopes[1] = true;
+      inspectedApp.scopes[2] = true;
+      inspectedApp.scopes[3] = true;
+      inspectedApp.scopes[4] = true;
+
+      triggerAndFlush({ event: 'scope:destroy', data: { id: 1, subTree: [1, 3, 4] } });
+      expect(inspectedApp.scopes).toEqual({2: true});
     });
 
     it('should track model changes', function () {

@@ -92,9 +92,12 @@ function inspectedAppService($rootScope, $q) {
         var scope = scopes[message.data.id];
         if (message.event === 'scope:destroy') {
           if (scope.parent) {
-            scope.parent.children.splice(scope.parent.children.indexOf(child), 1);
+            var parentScope = scopes[scope.parent];
+            parentScope.children.splice(parentScope.children.indexOf(message.data.id), 1);
           }
-          delete scopes[message.data.id];
+          for(var i = 0; i < message.data.subTree.length; i++){
+            delete scopes[message.data.subTree[i]];
+          }
         } else if (message.event === 'model:change') {
           scope.models[message.data.path] = (typeof message.data.value === 'undefined') ?
                                                 undefined : JSON.parse(message.data.value);
