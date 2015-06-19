@@ -17,7 +17,7 @@ function bufferOrForward(message, sender) {
   }
 
   if (message !== 'refresh') {
-    setIsHintFlag(message);
+    addMessageHelperProperties(tabId, message);
     bufferData(tabId, message);
   }
   if (devToolsPort) {
@@ -32,7 +32,8 @@ function resetState(tabId) {
   };
 }
 
-function setIsHintFlag(message) {
+function addMessageHelperProperties(tabId, message) {
+  var scopes = data[tabId].scopes;
   var hintables = [
     'Controllers',
     'general',
@@ -40,6 +41,20 @@ function setIsHintFlag(message) {
     'Events'
   ];
   message.isHint = (hintables.indexOf(message.module) > -1);
+
+  if(message.event === 'scope:destroy'){
+    message.data.subTree = getSubTree(scopes, message.data.id);
+  }
+}
+
+function getSubTree(scopes, id){
+  var subTree = [id], scope;
+  for(var i = 0; i < subTree.length; i++) {
+    if(scope = scopes[subTree[i]]) {
+      subTree.push.apply(subTree, scope.children);
+    }
+  }
+  return subTree;
 }
 
 function bufferData(tabId, message) {
@@ -62,9 +77,12 @@ function bufferData(tabId, message) {
   } else if (message.data.id && (scope = tabData.scopes[message.data.id])) {
     if (message.event === 'scope:destroy') {
       if (scope.parent) {
-        scope.parent.children.splice(scope.parent.children.indexOf(child), 1);
+        var parentScope = tabData.scopes[scope.parent];
+        parentScope.children.splice(parentScope.children.indexOf(message.data.id), 1);
       }
-      delete scopes[message.data.id];
+      for(var i = 0; i < message.data.subTree.length; i++){
+        delete tabData.scopes[message.data.subTree[i]];
+      }
     } else if (message.event === 'model:change') {
       scope.models[message.data.path] = (typeof message.data.value === 'undefined') ?
                                             undefined : message.data.value;
