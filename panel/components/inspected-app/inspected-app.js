@@ -48,7 +48,7 @@ function inspectedAppService($rootScope, $q) {
   };
 
   function invokeAngularHintMethod(method, scopeId, path, value) {
-    var args = [parseInt(scopeId, 10), path || ''].
+    var args = [scopeId, path || ''].
                   map(JSON.stringify).
                   concat(value ? [value] : []).
                   join(',');

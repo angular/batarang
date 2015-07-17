@@ -159,12 +159,16 @@ describe('inspectedApp', function() {
       expect(chrome.devtools.inspectedWindow.eval).toHaveBeenCalledWith('angular.hint.unwatch(1,"")');
     });
   });
-
-
+  
   describe('inspectScope', function () {
     it('should call chrome devtools APIs', function() {
       inspectedApp.inspectScope(2);
       expect(chrome.devtools.inspectedWindow.eval).toHaveBeenCalledWith('angular.hint.inspectScope(2,"")');
+    });
+
+    it('should handle angular 1.2 style string ids', function() {
+      inspectedApp.inspectScope('002');
+      expect(chrome.devtools.inspectedWindow.eval).toHaveBeenCalledWith('angular.hint.inspectScope("002","")');
     });
   });
 
