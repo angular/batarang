@@ -1,5 +1,5 @@
 # AngularJS Batarang
-[![Build Status](https://travis-ci.org/angular/angularjs-batarang.svg)](https://travis-ci.org/angular/angularjs-batarang)
+[![Build Status](https://travis-ci.org/angular/batarang.svg)](https://travis-ci.org/angular/batarang)
 
 ## Installing from the Web Store
 
@@ -7,7 +7,7 @@ https://chrome.google.com/webstore/detail/ighdmehidhipcmcojjgiloacoafjmpfk
 
 ## Installing Previous Versions
 
-1. Download and extract one of the files from the [Batarang releases page on GitHub](https://github.com/angular/angularjs-batarang/releases)
+1. Download and extract one of the files from the [Batarang releases page on GitHub](https://github.com/angular/batarang/releases)
 1. Navigate to `chrome://chrome/extensions/` in Chrome
 1. If you've installed Batarang from the web store, disable or remove that version
 1. On the top right, check the checkbox for "Developer mode"
@@ -17,7 +17,7 @@ https://chrome.google.com/webstore/detail/ighdmehidhipcmcojjgiloacoafjmpfk
 
 ## Installing from Source
 
-See the [instructions in the contributing guide](https://github.com/angular/angularjs-batarang/blob/master/CONTRIBUTING.md#installing-from-source)
+See the [instructions in the contributing guide](https://github.com/angular/batarang/blob/master/CONTRIBUTING.md#installing-from-source)
 
 ## License
 MIT
