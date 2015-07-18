@@ -108,11 +108,11 @@ describe('inspectedApp', function() {
         data: {
           id: id,
           path: '',
-          value: '"jsonHere"'
+          value: 'modelValue'
         }
       });
 
-      expect(inspectedApp.scopes[id].models['']).toEqual("jsonHere");
+      expect(inspectedApp.scopes[id].models['']).toEqual('modelValue');
     });
 
     it('should track model changes without throwing exception when values are missing', function () {

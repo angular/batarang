@@ -95,12 +95,11 @@ function inspectedAppService($rootScope, $q) {
             var parentScope = scopes[scope.parent];
             parentScope.children.splice(parentScope.children.indexOf(message.data.id), 1);
           }
-          for(var i = 0; i < message.data.subTree.length; i++){
+          for (var i = 0; i < message.data.subTree.length; i++){
             delete scopes[message.data.subTree[i]];
           }
         } else if (message.event === 'model:change') {
-          scope.models[message.data.path] = (typeof message.data.value === 'undefined') ?
-                                                undefined : JSON.parse(message.data.value);
+          scope.models[message.data.path] = message.data.value;
         } else if (message.event === 'scope:link') {
           scope.descriptor = message.data.descriptor;
         }
