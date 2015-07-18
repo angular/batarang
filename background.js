@@ -5,7 +5,7 @@ var inspectedTabs = {};
 // tabId -> buffered data
 var data = {};
 
-function bufferOrForward(message, sender) {
+function brokerMessage(message, sender) {
   var tabId = sender.tab.id,
       devToolsPort = inspectedTabs[tabId];
 
@@ -17,7 +17,7 @@ function bufferOrForward(message, sender) {
   }
 
   if (message !== 'refresh') {
-    addMessageHelperProperties(tabId, message);
+    transformMessage(tabId, message);
     bufferData(tabId, message);
   }
   if (devToolsPort) {
@@ -32,7 +32,7 @@ function resetState(tabId) {
   };
 }
 
-function addMessageHelperProperties(tabId, message) {
+function transformMessage(tabId, message) {
   var scopes = data[tabId].scopes;
   var hintables = [
     'Controllers',
@@ -42,15 +42,20 @@ function addMessageHelperProperties(tabId, message) {
   ];
   message.isHint = (hintables.indexOf(message.module) > -1);
 
-  if(message.event === 'scope:destroy'){
+  if (message.event === 'scope:destroy') {
     message.data.subTree = getSubTree(scopes, message.data.id);
+  }
+
+  if (message.event === 'model:change') {
+    message.data.value = (typeof message.data.value === 'undefined') ?
+        undefined : JSON.parse(message.data.value)
   }
 }
 
 function getSubTree(scopes, id){
   var subTree = [id], scope;
-  for(var i = 0; i < subTree.length; i++) {
-    if(scope = scopes[subTree[i]]) {
+  for (var i = 0; i < subTree.length; i++) {
+    if (scope = scopes[subTree[i]]) {
       subTree.push.apply(subTree, scope.children);
     }
   }
@@ -80,12 +85,11 @@ function bufferData(tabId, message) {
         var parentScope = tabData.scopes[scope.parent];
         parentScope.children.splice(parentScope.children.indexOf(message.data.id), 1);
       }
-      for(var i = 0; i < message.data.subTree.length; i++){
+      for (var i = 0; i < message.data.subTree.length; i++) {
         delete tabData.scopes[message.data.subTree[i]];
       }
     } else if (message.event === 'model:change') {
-      scope.models[message.data.path] = (typeof message.data.value === 'undefined') ?
-                                            undefined : message.data.value;
+      scope.models[message.data.path] = message.data.value;
     } else if (message.event === 'scope:link') {
       scope.descriptor = message.data.descriptor;
     }
@@ -95,7 +99,7 @@ function bufferData(tabId, message) {
 }
 
 // context script –> background
-chrome.runtime.onMessage.addListener(bufferOrForward);
+chrome.runtime.onMessage.addListener(brokerMessage);
 
 chrome.runtime.onConnect.addListener(function(devToolsPort) {
 
