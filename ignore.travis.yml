@@ -1,0 +1,9 @@
+language: node_js
+node_js:
+  - "0.10"
+before_install:
+  - npm config set ca ""
+#before_script:
+#  - npm run-script noop
+after_success:
+  - npm run-script coverage

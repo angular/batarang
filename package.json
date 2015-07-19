@@ -5,11 +5,13 @@
   "main": "hint.js",
   "devDependencies": {
     "angular-mocks": "^1.3.6",
+    "gulp-protractor": "0.0.12",
     "gulp-zip": "^2.0.2",
     "karma-bro": "^0.6.0",
     "karma-chrome-launcher": "^0.1.4",
+    "karma-jasmine": "^0.1.5",
     "karma-sauce-launcher": "^0.2.9",
-    "karma-jasmine": "^0.1.5"
+    "protractor": "^1.5.0"
   },
   "dependencies": {
     "angular": "^1.3.6",
@@ -19,8 +21,9 @@
     "vinyl-source-stream": "^0.1.1"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "gulp"
+    "test": "gulp profile1",
+    "build": "gulp",
+    "coverage": "echo Coverage report not implemented && exit 0"
   },
   "repository": {
     "type": "git",
