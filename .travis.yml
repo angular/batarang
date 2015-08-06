@@ -14,8 +14,6 @@ install:
   - ./scripts/sauce_connect_setup.sh
   - npm install -g npm
   - npm install
-  - npm install -g gulp
-  - npm install -g karma-cli
   - ./scripts/wait_for_browser_provider.sh
 
 script:
