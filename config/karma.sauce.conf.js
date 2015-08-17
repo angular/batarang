@@ -15,6 +15,7 @@ module.exports = function(options) {
     testName: 'AngularJS Batarang Unit Tests',
     startConnect: true
   };
+  options.captureTimeout = 100000;
   options.customLaunchers = CUSTOM_LAUNCHERS;
   options.browsers = Object.keys(CUSTOM_LAUNCHERS);
   options.reporters = ['dots', 'saucelabs'];
