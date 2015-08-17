@@ -9,9 +9,9 @@
     "gulp": "^3.9.0",
     "gulp-zip": "^2.0.2",
     "karma-browserify": "^4.3.0",
-    "karma-chrome-launcher": "^0.1.4",
+    "karma-chrome-launcher": "^0.2.0",
     "karma-jasmine": "^0.1.5",
-    "karma-sauce-launcher": "^0.2.9",
+    "karma-sauce-launcher": "^0.2.14",
     "vinyl-source-stream": "^0.1.1"
   },
   "dependencies": {
