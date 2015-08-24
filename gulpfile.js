@@ -24,6 +24,7 @@ gulp.task('package', ['browserify'], function () {
       './dist/**',
       './img/**',
       './panel/**',
+      'libs/rx.all.js',
       'background.js',
       'devtoolsBackground.*',
       'inject.js',
