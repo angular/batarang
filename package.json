@@ -8,6 +8,7 @@
     "browserify": "^11.0.1",
     "gulp": "^3.9.0",
     "gulp-zip": "^2.0.2",
+    "karma": "^0.13.9",
     "karma-browserify": "^4.3.0",
     "karma-chrome-launcher": "^0.2.0",
     "karma-jasmine": "^0.1.5",
