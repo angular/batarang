@@ -1805,7 +1805,7 @@ function decorateRootScope($delegate, $parse) {
   var scopes = {},
       watching = {};
 
-  var debouncedEmitModelChange = debounceOn(emitModelChange, 10, byScopeId);
+  var debouncedEmitModelChange = debounceOn(emitModelChange, 10);
 
   hint.watch = function (scopeId, path) {
     path = typeof path === 'string' ? path.split('.') : path;
@@ -1987,7 +1987,7 @@ function decorateRootScope($delegate, $parse) {
     var ret = _apply.apply(this, arguments);
     // var end = perf.now();
     // hint.emit('scope:apply', { id: this.$id, time: end - start });
-    debouncedEmitModelChange(this);
+    debouncedEmitModelChange();
     return ret;
   };
 
@@ -2004,15 +2004,14 @@ function decorateRootScope($delegate, $parse) {
     };
   }
 
-  function emitModelChange (scope) {
-    var scopeId = scope.$id;
-    if (watching[scopeId]) {
+  function emitModelChange () {
+    Object.keys(watching).forEach(function (scopeId) {
       Object.keys(watching[scopeId]).forEach(function (path) {
         var model = watching[scopeId][path];
         var value = summarize(model.get());
         if (value !== model.value) {
           hint.emit('model:change', {
-            id: scope.$id,
+            id: (angular.version.minor < 3) ? scopeId : parseInt(scopeId),
             path: path,
             oldValue: model.value,
             value: value
@@ -2020,7 +2019,7 @@ function decorateRootScope($delegate, $parse) {
           model.value = value;
         }
       });
-    }
+    });
   }
 
   hint.emit('scope:new', {
@@ -2085,11 +2084,10 @@ function scopeDescriptor (elt, scope) {
   }
 }
 
-function byScopeId (scope) {
-  return scope.$id;
-}
-
 function humanReadableWatchExpression (fn) {
+  if (fn == null) {
+    return null;
+  }
   if (fn.exp) {
     fn = fn.exp;
   } else if (fn.name) {
