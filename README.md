@@ -8,7 +8,7 @@ https://chrome.google.com/webstore/detail/ighdmehidhipcmcojjgiloacoafjmpfk
 ## Installing Previous Versions
 
 1. Download and extract one of the files from the [Batarang releases page on GitHub](https://github.com/angular/batarang/releases)
-1. Navigate to `chrome://chrome/extensions/` in Chrome
+1. Navigate to `chrome://extensions` in Chrome
 1. If you've installed Batarang from the web store, disable or remove that version
 1. On the top right, check the checkbox for "Developer mode"
 1. Click "Load unpacked extension..."
