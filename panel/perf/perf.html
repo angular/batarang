@@ -1,0 +1,31 @@
+<div bat-vertical-split ng-controller="PerfController" class="perf" ng-class="{disabled: !enabled}">
+
+  <h1>Performance</h1>
+
+  <h3 ng-hide="::lastDigestTime">Waiting for first digest cycle...</h3>
+
+  <div class="stats">
+    <div class="left">
+      <div class="graph">
+        <canvas></canvas>
+        <div>
+          <span>{{ numWatchers }} watchers</span> in <span>{{ lastDigestTime | number }}ms</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="right averages">
+      <div>The last digest cycle took {{ lastDigestTime | number }} ms and had {{ numWatchers || 0 }} watchers</div>
+      <div ng-show="::last30Digests.watchers">The last 30 digest cycles averaged {{ last30Digests.time | number }} ms and averaged {{ last30Digests.watchers | number }} watchers.</div>
+    </div>
+  </div>
+  <hr>
+  <h3>Digest timings</h3>
+  <div ng-repeat="watcher in watchTimings">
+    <pre class="left">{{ watcher.text }}</pre>
+    <pre class="right">{{ watcher.time | number }} ms</pre>
+  </div>
+  <hr>
+  <h3>Raw data</h3>
+  <pre>{{ perf | json }}</pre>
+</div>

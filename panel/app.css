@@ -15,6 +15,10 @@ body {
   background-color: rgba(0,0,0,0.06);
 }
 
+/* TODO: Figure out why Angular's CSS isn't loading */
+.ng-hide {
+  display: none!important;
+}
 
 .well-top {
   border-radius: 4px 4px 0 0;
@@ -306,4 +310,49 @@ li .status:empty {
   position: relative;
   left: -28px;
   margin-top: 3px;
+}
+
+/* Performance tab */
+.perf {
+  overflow: scroll;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+.perf.disabled {
+  opacity: 0.5;
+}
+
+.perf .stats {
+  height: 100px;
+}
+
+.perf .averages {
+  vertical-align: top;
+}
+
+.perf .left {
+  display: inline-block;
+  width: 45%;
+}
+.perf .right {
+  display: inline-block;
+  width: 45%;
+}
+.perf pre {
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* for the canvas */
+.graph {
+  background: black;
+  border-bottom: 1px solid #666;
+  border-right: 1px solid #666;
+  color: #666;
+  font-family: 'Courier';
+  width: 80%;
+  z-index: 9999;
+  text-align: right;
 }

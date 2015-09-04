@@ -3,6 +3,7 @@
 angular.module('batarang.app', [
   'batarang.app.hint',
   'batarang.app.scopes',
+  'batarang.app.perf',
 
   'batarang.scope-tree',
   'batarang.code',

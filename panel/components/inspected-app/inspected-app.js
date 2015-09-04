@@ -6,7 +6,8 @@ angular.module('batarang.inspected-app', []).
 function inspectedAppService($rootScope, $q) {
 
   var scopes = this.scopes = {},
-      hints = this.hints = [];
+      hints = this.hints = [],
+      perf = this.perf = [];
 
   this.watch = function (scopeId, path) {
     return invokeAngularHintMethod('watch', scopeId, path);
@@ -102,6 +103,9 @@ function inspectedAppService($rootScope, $q) {
           scope.models[message.data.path] = message.data.value;
         } else if (message.event === 'scope:link') {
           scope.descriptor = message.data.descriptor;
+        } else if (message.event === 'scope:digest') {
+          // Hack to avoid reference shenanigans
+          perf[0] = message.data;
         }
       }
       $rootScope.$broadcast(message.event, message.data);
