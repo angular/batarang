@@ -1663,7 +1663,7 @@ var getFunctionNames = function(str) {
   // To fully fix these issues we would need a full blown expression parser.
   var results = removeStringExp(str.replace(/\s+/g, ''))
     .replace(/\(.*?\)/g, '')
-    .split(/[\+\-\/\|\<\>\^=&!%~;]/g).map(function(x) {
+    .split(/[\+\-\/\|\<\>\^=&!%~?:;]/g).map(function(x) {
       if (isNaN(+x)) {
         if (x.match(/\w+\(.*\)$/)){
           return x.substr(0, x.indexOf('('));
@@ -1699,22 +1699,31 @@ function ngEventDirectivesDecorator(ngEventAttrName) {
 
       return function ngEventHandler(scope, element, attrs) {
         var boundFuncs = getFunctionNames(attrs[ngEventAttrName]);
-        boundFuncs.forEach(function(boundFn) {
-          var property, propChain, lastProp = '';
-          while((property = boundFn.match(/^.+?([^\.\[])*/)) !== null) {
-            property = property[0];
-            propChain = lastProp + property;
-            if ($parse(propChain)(scope) === undefined) {
-              angular.hint.emit(MODULE_NAME + ':undef', propChain + ' is undefined');
+
+        // guard against any parsing errors since the parsing code
+        // to split the expression is pretty simple and naive.
+        try {
+          boundFuncs.forEach(function(boundFn) {
+            var property, propChain, lastProp = '';
+            while((property = boundFn.match(/^.+?([^\.\[])*/)) !== null) {
+              property = property[0];
+              propChain = lastProp + property;
+              if ($parse(propChain)(scope) === undefined) {
+                angular.hint.emit(MODULE_NAME + ':undef', propChain + ' is undefined');
+              }
+              boundFn = boundFn.replace(property, '');
+              lastProp += property;
+              if(boundFn.charAt(0) === '.') {
+                lastProp += '.';
+                boundFn = boundFn.substr(1);
+              }
             }
-            boundFn = boundFn.replace(property, '');
-            lastProp += property;
-            if(boundFn.charAt(0) === '.') {
-              lastProp += '.';
-              boundFn = boundFn.substr(1);
-            }
-          }
-        });
+          });
+        } catch (e) {
+          angular.hint.emit(MODULE_NAME + ':undef', '' +
+            'parsing error: please inform the angular-hint ' +
+            'or batarang teams. expression: ' + boundFuncs.join(''));
+        }
 
         return linkFn.apply(this, arguments);
       };
@@ -1863,14 +1872,36 @@ function decorateRootScope($delegate, $parse) {
 
   var _watch = scopePrototype.$watch;
   var _digestEvents = [];
+  var skipNextPerfWatchers = false;
   scopePrototype.$watch = function (watchExpression, reactionFunction) {
+    // if `skipNextPerfWatchers` is true, this means the previous run of the
+    // `$watch` decorator was a one time binding expression and this invocation
+    // of the $watch function has the `oneTimeInterceptedExpression` (internal angular function)
+    // as the `watchExpression` parameter. If we decorate it with the performance
+    // timers function this will cause us to invoke `oneTimeInterceptedExpression`
+    // on subsequent digest loops and will update the one time bindings
+    // if anything mutated the property.
+    if (skipNextPerfWatchers) {
+      skipNextPerfWatchers = false;
+      return _watch.apply(this, arguments);
+    }
+
     if (typeof watchExpression === 'string' &&
         isOneTimeBindExp(watchExpression)) {
+      skipNextPerfWatchers = true;
       return _watch.apply(this, arguments);
     }
     var watchStr = humanReadableWatchExpression(watchExpression);
     var scopeId = this.$id;
+    var expressions = null;
     if (typeof watchExpression === 'function') {
+      expressions = watchExpression.expressions;
+      if (Object.prototype.toString.call(expressions) === '[object Array]' &&
+          expressions.some(isOneTimeBindExp)) {
+        skipNextPerfWatchers = true;
+        return _watch.apply(this, arguments);
+      }
+
       arguments[0] = function () {
         var start = perf.now();
         var ret = watchExpression.apply(this, arguments);
