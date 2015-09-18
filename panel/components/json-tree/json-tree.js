@@ -191,7 +191,7 @@ function byPathDepth(a, b) { // sort '' first
     return -1;
   } else if (b === '') {
     return 1;
-  } else { // sort by tree depth
-    return a.split('.').length - b.split('.').length;
+  } else { // sort by tree depth, and ensure array objects come before their members
+    return a.split(/[\.,\[]/).length - b.split(/[\.,\[]/).length;
   }
 }
