@@ -28,7 +28,8 @@ gulp.task('package', ['browserify'], function () {
       'devtoolsBackground.*',
       'inject.js',
       'manifest.json',
-      './node_modules/angular/angular.js'
+      './node_modules/angular/angular.js',
+      './node_modules/browserify-eep/out.js'
     ], {base: '.'})
     .pipe(gulp.dest('./package'));
 });
