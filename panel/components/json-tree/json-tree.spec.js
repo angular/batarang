@@ -63,6 +63,89 @@ describe('batJsonTree', function () {
     });
   });
 
+  describe('processing of model data', function() {
+    it('should handle an element of an array being supplied before the array itself', function () {
+      $rootScope.data = {
+        '': {
+          arrayA: { '~array-length': 1 }
+        },
+        'arrayA[0]': { hello: 'world' },
+        'arrayA': [
+          { '~object': true }
+        ]
+      };
+      compileAndExpectOutputToEqual('arrayA: 0: hello: "world"');
+    });
+
+    it('should handle an element of an array being supplied after the array itself', function () {
+      $rootScope.data = {
+        '': {
+          arrayA: { '~array-length': 1 }
+        },
+        'arrayA': [
+          { '~object': true }
+        ],
+        'arrayA[0]': { hello: 'world' }
+      };
+      compileAndExpectOutputToEqual('arrayA: 0: hello: "world"');
+    });
+
+    it('should handle an object member being supplied after the object itself', function () {
+      $rootScope.data = {
+        '': {
+          objectA: { '~object': true }
+        },
+        objectA: {
+          objectB: { '~object': true }
+        },
+        'objectA.objectB': { hello: 'world' }
+      };
+      compileAndExpectOutputToEqual('objectA: objectB: hello: "world"');
+    });
+
+    it('should handle an object member being supplied before the object itself', function () {
+      $rootScope.data = {
+        '': {
+          objectA: { '~object': true }
+        },
+        'objectA.objectB': { hello: 'world' },
+        objectA: {
+          objectB: { '~object': true }
+        }
+      };
+      compileAndExpectOutputToEqual('objectA: objectB: hello: "world"');
+    });
+
+    it('should handle the root element being supplied first', function () {
+      $rootScope.data = {
+        '': {
+          objectA: { '~object': true }
+        },
+        objectA: {
+          hello: 'world'
+        }
+      };
+      compileAndExpectOutputToEqual('objectA: hello: "world"');
+    });
+
+    it('should handle the root element being supplied after another element', function () {
+      $rootScope.data = {
+        objectA: {
+          hello: 'world'
+        },
+        '': {
+          objectA: { '~object': true }
+        }
+      };
+      compileAndExpectOutputToEqual('objectA: hello: "world"');
+    });
+  });
+
+  function compileAndExpectOutputToEqual(expected) {
+    compileTree();
+    expect(element.text()).toEqual(expected);
+  }
+
   function compileTree() {
     element = compile('<bat-json-tree bat-model="data"></bat-json-tree>');
     $rootScope.$apply();
