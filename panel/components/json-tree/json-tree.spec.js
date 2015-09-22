@@ -141,6 +141,51 @@ describe('batJsonTree', function () {
     });
   });
 
+  describe('expanded css', function() {
+    var modelWithObject = {
+      '': {
+        '$id': 1,
+        objectA: { '~object': true }
+      }
+    };
+    it("should not add expanded class to object that is not expanded", function () {
+      $rootScope.data = modelWithObject;
+      compileTree();
+      expect(element[0].querySelectorAll('.expanded').length).toEqual(0);
+    });
+
+    it("should add expanded class to object that is expanded", function () {
+      setupTreeWithModelAndExpandIt();
+      waitsFor(function() {
+        return element[0].querySelector('.parent.expanded');
+      }, 'Expected parent element to have the class .expanded');
+    });
+
+    it("should clear the history of expanded elements when model changes", function () {
+      setupTreeWithModelAndExpandIt();
+      $rootScope.data = {
+        '': {
+          '$id': 1,
+          objectA: { '~object': true }
+        }
+      };
+      $rootScope.$apply();
+      waitsFor(function() {
+        return element[0].querySelector('.parent');
+      }, 'Expected parent element to be present');
+      runs(function() {
+        expect(element[0].querySelector('.parent.expanded')).toBeNull();
+      });
+    });
+
+    function setupTreeWithModelAndExpandIt(){
+      $rootScope.data = modelWithObject;
+      compileTree();
+      angular.element(element[0].querySelector('.parent')).triggerHandler('click');
+      $rootScope.$broadcast('model:change', { id: 1 });
+    }
+  });
+
   function compileAndExpectOutputToEqual(expected) {
     compileTree();
     expect(element.text()).toEqual(expected);

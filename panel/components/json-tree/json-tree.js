@@ -40,7 +40,10 @@ function batJsonTreeDirective() {
       '': root
     };
 
+    var expandedPaths = {};
+
     scope.$watch('batModel', function (val) {
+      expandedPaths = {};
       if (!val) {
         root = angular.element(BAT_JSON_TREE_TEMPLATE);
         element.html('');
@@ -98,6 +101,10 @@ function batJsonTreeDirective() {
           '</li>'),
           childElt;
 
+        if (expandedPaths.hasOwnProperty(fullPath)) {
+          parentElt.addClass('expanded');
+        }
+
         if (val === null) {
           childElt = angular.element('<span class="value console-formatted-null">null</span>');
         } else if (val['~object'] || val['~array-length'] !== undefined) {
@@ -106,8 +113,8 @@ function batJsonTreeDirective() {
           // you can't expand an empty array
           if (val['~array-length'] !== 0) {
             parentElt.on('click', function () {
+              expandedPaths[fullPath] = true;
               scope.batInspect({ path: fullPath });
-              parentElt.addClass('expanded');
             });
           }
 

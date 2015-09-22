@@ -55,16 +55,17 @@ bat-json-tree .properties-tree li.parent li {
 
 bat-json-tree .properties-tree li.parent::before {
   -webkit-user-select: none;
-  background-image: url(../../img/statusbarButtonGlyphs.png);
-  background-size: 320px 120px;
+  background-image: url(../../../img/statusbarButtonGlyphs.png);
+  background-size: 320px 144px;
   opacity: 0.5;
   content: "a";
-  width: 8px;
+  width: 6px;
+  height: 10px;
   float: left;
   margin-right: 2px;
   color: transparent;
   text-shadow: none;
-  margin-top: -2px;
+  margin-top: -3px;
 }
 
 bat-json-tree .properties-tree li.parent::before {
