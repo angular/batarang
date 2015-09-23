@@ -345,6 +345,16 @@ li .status:empty {
   text-overflow: ellipsis;
 }
 
+.perf .watcher-table {
+  width: 100%;
+  text-align: center;
+}
+
+.perf .watcher-table thead {
+  text-decoration: underline;;
+  font-size: 1.2em;
+}
+
 /* for the canvas */
 .graph {
   background: black;

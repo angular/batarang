@@ -20,12 +20,26 @@
     </div>
   </div>
   <hr>
-  <h3>Digest timings</h3>
-  <div ng-repeat="watcher in watchTimings">
-    <pre class="left">{{ watcher.text }}</pre>
-    <pre class="right">{{ watcher.time | number }} ms</pre>
-  </div>
+  <h2>Digest timings</h2>
+  <table class="watcher-table">
+    <thead>
+      <tr>
+        <td>Watcher text</td>
+        <td>Watcher total time</td>
+        <td>Number of Watchers</td>
+        <td>Average watcher time</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="watcher in watchTimings">
+        <td><pre>{{ watcher.text }}</pre></td>
+        <td><pre>{{ watcher.time | number }} ms</pre></td>
+        <td><pre>{{ watcher.count }}</pre></td>
+        <td><pre>{{ watcher.time / watcher.count | number }} ms</pre></td>
+      </tr>
+    </tbody>
+  </table>
   <hr>
-  <h3>Raw data</h3>
+  <h2>Raw data</h2>
   <pre>{{ perf | json }}</pre>
 </div>

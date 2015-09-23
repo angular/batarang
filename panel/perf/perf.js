@@ -1,6 +1,6 @@
 'use strict';
 
-/* globals angular,document,console */
+/* globals angular,document */
 
 // Awesome canvas graph built with help from Kent Dodds
 // https://github.com/kentcdodds/ng-stats
@@ -8,9 +8,9 @@
 // https://github.com/darach/eep-js
 
 angular.module('batarang.app.perf', [])
-  .controller('PerfController', ['$scope', 'inspectedApp', '$timeout', '$window', PerfController]);
+  .controller('PerfController', ['$scope', '$timeout', '$window', PerfController]);
 
-function PerfController($scope, inspectedApp, $timeout, $window) {
+function PerfController($scope, $timeout, $window) {
 
   $scope.watchTimings = [];
   $scope.numWatchers = 0;
@@ -57,19 +57,24 @@ function PerfController($scope, inspectedApp, $timeout, $window) {
 
     var reducedWatches = digestData.events.reduce(function (prev, next) {
       if (!prev[next.watch]) {
-        prev[next.watch] = next.time;
+        prev[next.watch] = {
+          time: next.time,
+          count: 1
+        };
       } else {
-        prev[next.watch] += next.time;
+        prev[next.watch].time += next.time;
+        prev[next.watch].count++;
       }
       return prev;
     }, {});
 
     $scope.watchTimings = Object.keys(reducedWatches)
-    .filter(function (key) { return reducedWatches[key]; })
+    .filter(function (key) { return reducedWatches[key].time; })
     .map(function (key) {
       return {
         text: key.trim().replace(/\s{2,}/g, ' '),
-        time: reducedWatches[key]
+        time: reducedWatches[key].time,
+        count: reducedWatches[key].count
       };
     })
     .sort(function (a, b) {
