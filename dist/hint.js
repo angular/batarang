@@ -479,11 +479,13 @@ var AVAILABLE_MODULES = [
 ];
 
 var SEVERITY_WARNING = 2;
+var DEFER_LABEL = 'NG_DEFER_BOOTSTRAP!';
 
+var deferRegex = new RegExp('^' + DEFER_LABEL + '.*');
 // Determine whether this run is by protractor.
 // If protractor is running, the bootstrap will already be deferred.
 // In this case `resumeBootstrap` should be patched to load the hint modules.
-if (window.name === 'NG_DEFER_BOOTSTRAP!') {
+if (deferRegex.test(window.name)) {
   var originalResumeBootstrap;
   Object.defineProperty(angular, 'resumeBootstrap', {
     get: function() {
@@ -498,10 +500,19 @@ if (window.name === 'NG_DEFER_BOOTSTRAP!') {
 }
 //If this is not a test, defer bootstrapping
 else {
-  window.name = 'NG_DEFER_BOOTSTRAP!';
+  window.name = DEFER_LABEL + window.name;
 
   // determine which modules to load and resume bootstrap
   document.addEventListener('DOMContentLoaded', maybeBootstrap);
+
+  /* angular should remove DEFER_LABEL from window.name, but if angular is never loaded, we want
+   to remove it ourselves, otherwise hint will incorrectly detect protractor as being present on
+   the next page load */
+  window.addEventListener('beforeunload', function() {
+    if (deferRegex.test(window.name)) {
+      window.name = window.name.substring(DEFER_LABEL.length);
+    }
+  });
 }
 
 function maybeBootstrap() {
@@ -1835,7 +1846,7 @@ function decorateRootScope($delegate, $parse) {
         value: value
       };
       hint.emit('model:change', {
-        id: scopeId,
+        id: convertIdToOriginalType(scopeId),
         path: partialPath,
         value: value
       });
@@ -2042,7 +2053,7 @@ function decorateRootScope($delegate, $parse) {
         var value = summarize(model.get());
         if (value !== model.value) {
           hint.emit('model:change', {
-            id: (angular.version.minor < 3) ? scopeId : parseInt(scopeId),
+            id: convertIdToOriginalType(scopeId),
             path: path,
             oldValue: model.value,
             value: value
@@ -2131,6 +2142,10 @@ function isOneTimeBindExp(exp) {
   // this is the same code angular 1.3.15 has to check
   // for a one time bind expression
   return exp.charAt(0) === ':' && exp.charAt(1) === ':';
+}
+
+function convertIdToOriginalType(scopeId) {
+  return (angular.version.minor < 3) ? scopeId : parseInt(scopeId, 10);
 }
 
 },{"../lib/summarize-model":9,"debounce-on":4}]},{},[1]);
