@@ -16,6 +16,10 @@ This document describes how to contribute to Batarang
 - To run the tests once: `npm test`
 - To watch the directory, running tests whenver something is updated: `npm run test:watch`
 
+## Creating a PR
+
+Please follow the code & commit guidelines found in [Angular core's CONTRIBUTING.md](https://github.com/angular/angular.js/blob/master/CONTRIBUTING.md#submitting-a-pull-request).
+
 ## Packaging a release
 
 I (@btford) will do this periodically, but I'm adding these instructions here
