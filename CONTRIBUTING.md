@@ -13,6 +13,10 @@ This document describes how to contribute to Batarang
 
 ## Running the tests
 
+## Creating a PR
+
+Please follow the code & commit guidelines found in [Angular core's CONTRIBUTING.md](https://github.com/angular/angular.js/blob/master/CONTRIBUTING.md#submitting-a-pull-request).
+
 ## Packaging a release
 
 I (@btford) will do this periodically, but I'm adding these instructions here
