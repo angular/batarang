@@ -2103,7 +2103,8 @@ var TYPES = [
   'ng-app',
   'ng-controller',
   'ng-repeat',
-  'ng-include'
+  'ng-include',
+  'ng-batarang'
 ];
 
 function scopeDescriptor (elt, scope) {
@@ -2120,7 +2121,11 @@ function scopeDescriptor (elt, scope) {
     }
   }
   if (theseTypes.length === 0) {
-    return 'scope.$id=' + scope.$id;
+    if (scope.$description === scope.$parent.$description){
+      // Don't use $description from $parent
+      return 'scope.$id=' + scope.$id;
+    }
+    return scope.$description || 'scope.$id=' + scope.$id;
   } else {
     return theseTypes.join(' ');
   }
