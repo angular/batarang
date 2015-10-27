@@ -355,6 +355,10 @@ li .status:empty {
   font-size: 1.2em;
 }
 
+.perf .watcher-table .watcher-text {
+  text-align: right;
+}
+
 /* for the canvas */
 .graph {
   background: black;
