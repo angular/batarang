@@ -17,6 +17,18 @@ var BAT_JSON_TREE_UNEDITABLE = [
   '$odd'
 ];
 
+// http://stackoverflow.com/a/6234804/1216976
+function escapeHtml(unsafeStr) {
+  if (typeof unsafeStr !== 'string') {
+    unsafeStr += '';
+  }
+  return unsafeStr
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 /*
  * TODO: remove dependency on inspectedApp service
  */
@@ -96,7 +108,7 @@ function batJsonTreeDirective() {
         }
 
         var parentElt = angular.element('<li title>' +
-            '<span class="name">' + key + '</span>' +
+            '<span class="name">' + escapeHtml(key) + '</span>' +
             '<span class="separator">: </span>' +
           '</li>'),
           childElt;
@@ -137,12 +149,12 @@ function batJsonTreeDirective() {
           if (BAT_JSON_TREE_UNEDITABLE.indexOf(fullPath) > -1) {
             childElt = angular.element(
               '<span class="console-formatted-' + (typeof val) + '">' +
-                val +
+                escapeHtml(val) +
               '</span>');
           } else {
             childElt = angular.element(
               '<span contentEditable="true" class="console-formatted-' + (typeof val) + '">' +
-                val +
+                escapeHtml(val) +
               '</span>');
 
             // TODO: test this
