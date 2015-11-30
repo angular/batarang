@@ -340,9 +340,26 @@ li .status:empty {
   width: 45%;
 }
 .perf pre {
-  display: inline-block;
+  word-break: break-all;
+}
+
+.perf .watcher-text {
+  width: 55%;
   overflow: hidden;
   text-overflow: ellipsis;
+  display: inline-block;
+}
+.perf .watcher-time {
+  width: 15%;
+  display: inline-block;
+}
+.perf .watcher-count {
+  width: 15%;
+  display: inline-block;
+}
+.perf .watcher-avg {
+  width: 15%;
+  display: inline-block;
 }
 
 .perf .watcher-table {
@@ -350,9 +367,12 @@ li .status:empty {
   text-align: center;
 }
 
-.perf .watcher-table thead {
-  text-decoration: underline;;
+.perf .watcher-table-head {
+  text-decoration: underline;
   font-size: 1.2em;
+}
+.perf .watcher-table-row {
+  white-space: nowrap;
 }
 
 /* for the canvas */
