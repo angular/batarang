@@ -24,7 +24,7 @@
   <table class="watcher-table">
     <thead>
       <tr>
-        <td>Watcher text</td>
+        <td class="watcher-text">Watcher text</td>
         <td>Watcher total time</td>
         <td>Number of Watchers</td>
         <td>Average watcher time</td>
@@ -32,7 +32,7 @@
     </thead>
     <tbody>
       <tr ng-repeat="watcher in watchTimings">
-        <td><pre>{{ watcher.text }}</pre></td>
+        <td class="watcher-text"><pre>{{ watcher.text }}</pre></td>
         <td><pre>{{ watcher.time | number }} ms</pre></td>
         <td><pre>{{ watcher.count }}</pre></td>
         <td><pre>{{ watcher.time / watcher.count | number }} ms</pre></td>
