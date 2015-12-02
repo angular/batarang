@@ -1501,8 +1501,12 @@ module.exports = function(doms) {
 },{"./getNgAppMod":13,"./inAttrsOrClasses":17,"./moduleData":18,"./storeDependencies":22}],24:[function(require,module,exports){
 var storeDependencies = require('./storeDependencies');
 
+var seen = [];
+
 var storeUsedModules = module.exports = function(module, modules){
-  if(module) {
+  var name = module.name || module;
+  if(module && seen.indexOf(name) === -1) {
+    seen.push(name);
     storeDependencies(module);
     module.requires.forEach(function(modName) {
       var mod = modules[modName];
