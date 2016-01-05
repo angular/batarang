@@ -6,6 +6,11 @@
 
 (function() {'use strict';
 
+
+function isFunction(value) {
+  return typeof value === 'function';
+}
+
 /**
  * @description
  *
@@ -271,6 +276,18 @@ function setupModuleLoader(window) {
            */
           constant: invokeLater('$provide', 'constant', 'unshift'),
 
+           /**
+           * @ngdoc method
+           * @name angular.Module#decorator
+           * @module ng
+           * @param {string} The name of the service to decorate.
+           * @param {Function} This function will be invoked when the service needs to be
+           *                                    instantiated and should return the decorated service instance.
+           * @description
+           * See {@link auto.$provide#decorator $provide.decorator()}.
+           */
+          decorator: invokeLaterAndSetModuleName('$provide', 'decorator'),
+
           /**
            * @ngdoc method
            * @name angular.Module#animation
@@ -339,7 +356,20 @@ function setupModuleLoader(window) {
            * @description
            * See {@link ng.$compileProvider#directive $compileProvider.directive()}.
            */
-          directive: invokeLater('$compileProvider', 'directive'),
+          directive: invokeLaterAndSetModuleName('$compileProvider', 'directive'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#component
+           * @module ng
+           * @param {string} name Name of the component in camel-case (i.e. myComp which will match as my-comp)
+           * @param {Object} options Component definition object (a simplified
+           *    {@link ng.$compile#directive-definition-object directive definition object})
+           *
+           * @description
+           * See {@link ng.$compileProvider#component $compileProvider.component()}.
+           */
+          component: invokeLaterAndSetModuleName('$compileProvider', 'component'),
 
           /**
            * @ngdoc method
