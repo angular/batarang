@@ -1,4 +1,501 @@
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*
+ * Batarang instrumentation
+ *
+ * This gets loaded into the context of the app you are inspecting
+ */
+require('./loader.js');
+require('angular-hint');
+
+angular.hint.onAny(function (data, severity) {
+  window.postMessage({
+    __fromBatarang: true,
+    module: this.event.split(':')[0],
+    event: this.event,
+    data: data,
+    severity: severity
+  }, '*');
+});
+
+},{"./loader.js":2,"angular-hint":3}],2:[function(require,module,exports){
+/**
+ * @license AngularJS v1.3.0-build.3042+sha.76e57a7
+ * (c) 2010-2014 Google, Inc. http://angularjs.org
+ * License: MIT
+ */
+
+(function() {'use strict';
+
+
+function isFunction(value) {
+  return typeof value === 'function';
+}
+
+/**
+ * @description
+ *
+ * This object provides a utility for producing rich Error messages within
+ * Angular. It can be called as follows:
+ *
+ * var exampleMinErr = minErr('example');
+ * throw exampleMinErr('one', 'This {0} is {1}', foo, bar);
+ *
+ * The above creates an instance of minErr in the example namespace. The
+ * resulting error will have a namespaced error code of example.one.  The
+ * resulting error will replace {0} with the value of foo, and {1} with the
+ * value of bar. The object is not restricted in the number of arguments it can
+ * take.
+ *
+ * If fewer arguments are specified than necessary for interpolation, the extra
+ * interpolation markers will be preserved in the final string.
+ *
+ * Since data will be parsed statically during a build step, some restrictions
+ * are applied with respect to how minErr instances are created and called.
+ * Instances should have names of the form namespaceMinErr for a minErr created
+ * using minErr('namespace') . Error codes, namespaces and template strings
+ * should all be static strings, not variables or general expressions.
+ *
+ * @param {string} module The namespace to use for the new minErr instance.
+ * @returns {function(code:string, template:string, ...templateArgs): Error} minErr instance
+ */
+
+function minErr(module) {
+  return function () {
+    var code = arguments[0],
+      prefix = '[' + (module ? module + ':' : '') + code + '] ',
+      template = arguments[1],
+      templateArgs = arguments,
+      stringify = function (obj) {
+        if (typeof obj === 'function') {
+          return obj.toString().replace(/ \{[\s\S]*$/, '');
+        } else if (typeof obj === 'undefined') {
+          return 'undefined';
+        } else if (typeof obj !== 'string') {
+          return JSON.stringify(obj);
+        }
+        return obj;
+      },
+      message, i;
+
+    message = prefix + template.replace(/\{\d+\}/g, function (match) {
+      var index = +match.slice(1, -1), arg;
+
+      if (index + 2 < templateArgs.length) {
+        arg = templateArgs[index + 2];
+        if (typeof arg === 'function') {
+          return arg.toString().replace(/ ?\{[\s\S]*$/, '');
+        } else if (typeof arg === 'undefined') {
+          return 'undefined';
+        } else if (typeof arg !== 'string') {
+          return toJson(arg);
+        }
+        return arg;
+      }
+      return match;
+    });
+
+    message = message + '\nhttp://errors.angularjs.org/1.3.0-build.3042+sha.76e57a7/' +
+      (module ? module + '/' : '') + code;
+    for (i = 2; i < arguments.length; i++) {
+      message = message + (i == 2 ? '?' : '&') + 'p' + (i-2) + '=' +
+        encodeURIComponent(stringify(arguments[i]));
+    }
+
+    return new Error(message);
+  };
+}
+
+/**
+ * @ngdoc type
+ * @name angular.Module
+ * @module ng
+ * @description
+ *
+ * Interface for configuring angular {@link angular.module modules}.
+ */
+
+function setupModuleLoader(window) {
+
+  var $injectorMinErr = minErr('$injector');
+  var ngMinErr = minErr('ng');
+
+  function ensure(obj, name, factory) {
+    return obj[name] || (obj[name] = factory());
+  }
+
+  var angular = ensure(window, 'angular', Object);
+
+  // We need to expose `angular.$$minErr` to modules such as `ngResource` that reference it during bootstrap
+  angular.$$minErr = angular.$$minErr || minErr;
+
+  return ensure(angular, 'module', function() {
+    /** @type {Object.<string, angular.Module>} */
+    var modules = {};
+
+    /**
+     * @ngdoc function
+     * @name angular.module
+     * @module ng
+     * @description
+     *
+     * The `angular.module` is a global place for creating, registering and retrieving Angular
+     * modules.
+     * All modules (angular core or 3rd party) that should be available to an application must be
+     * registered using this mechanism.
+     *
+     * When passed two or more arguments, a new module is created.  If passed only one argument, an
+     * existing module (the name passed as the first argument to `module`) is retrieved.
+     *
+     *
+     * # Module
+     *
+     * A module is a collection of services, directives, controllers, filters, and configuration information.
+     * `angular.module` is used to configure the {@link auto.$injector $injector}.
+     *
+     * ```js
+     * // Create a new module
+     * var myModule = angular.module('myModule', []);
+     *
+     * // register a new service
+     * myModule.value('appName', 'MyCoolApp');
+     *
+     * // configure existing services inside initialization blocks.
+     * myModule.config(['$locationProvider', function($locationProvider) {
+     *   // Configure existing providers
+     *   $locationProvider.hashPrefix('!');
+     * }]);
+     * ```
+     *
+     * Then you can create an injector and load your modules like this:
+     *
+     * ```js
+     * var injector = angular.injector(['ng', 'myModule'])
+     * ```
+     *
+     * However it's more likely that you'll just use
+     * {@link ng.directive:ngApp ngApp} or
+     * {@link angular.bootstrap} to simplify this process for you.
+     *
+     * @param {!string} name The name of the module to create or retrieve.
+     * @param {!Array.<string>=} requires If specified then new module is being created. If
+     *        unspecified then the module is being retrieved for further configuration.
+     * @param {Function=} configFn Optional configuration function for the module. Same as
+     *        {@link angular.Module#config Module#config()}.
+     * @returns {module} new module with the {@link angular.Module} api.
+     */
+    return function module(name, requires, configFn) {
+      var assertNotHasOwnProperty = function(name, context) {
+        if (name === 'hasOwnProperty') {
+          throw ngMinErr('badname', 'hasOwnProperty is not a valid {0} name', context);
+        }
+      };
+
+      assertNotHasOwnProperty(name, 'module');
+      if (requires && modules.hasOwnProperty(name)) {
+        modules[name] = null;
+      }
+      return ensure(modules, name, function() {
+        if (!requires) {
+          throw $injectorMinErr('nomod', "Module '{0}' is not available! You either misspelled " +
+             "the module name or forgot to load it. If registering a module ensure that you " +
+             "specify the dependencies as the second argument.", name);
+        }
+
+        /** @type {!Array.<Array.<*>>} */
+        var invokeQueue = [];
+
+        /** @type {!Array.<Function>} */
+        var configBlocks = [];
+
+        /** @type {!Array.<Function>} */
+        var runBlocks = [];
+
+        var config = invokeLater('$injector', 'invoke', 'push', configBlocks);
+
+        /** @type {angular.Module} */
+        var moduleInstance = {
+          // Private state
+          _configBlocks: [],
+          _runBlocks: runBlocks,
+
+          /**
+           * @ngdoc property
+           * @name angular.Module#requires
+           * @module ng
+           * @returns {Array.<string>} List of module names which must be loaded before this module.
+           * @description
+           * Holds the list of modules which the injector will load before the current module is
+           * loaded.
+           */
+          requires: requires,
+
+          /**
+           * @ngdoc property
+           * @name angular.Module#name
+           * @module ng
+           * @returns {string} Name of the module.
+           * @description
+           */
+          name: name,
+
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#provider
+           * @module ng
+           * @param {string} name service name
+           * @param {Function} providerType Construction function for creating new instance of the
+           *                                service.
+           * @description
+           * See {@link auto.$provide#provider $provide.provider()}.
+           */
+          provider: invokeLaterAndSetModuleName('$provide', 'provider'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#factory
+           * @module ng
+           * @param {string} name service name
+           * @param {Function} providerFunction Function for creating new instance of the service.
+           * @description
+           * See {@link auto.$provide#factory $provide.factory()}.
+           */
+          factory: invokeLaterAndSetModuleName('$provide', 'factory'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#service
+           * @module ng
+           * @param {string} name service name
+           * @param {Function} constructor A constructor function that will be instantiated.
+           * @description
+           * See {@link auto.$provide#service $provide.service()}.
+           */
+          service: invokeLaterAndSetModuleName('$provide', 'service'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#value
+           * @module ng
+           * @param {string} name service name
+           * @param {*} object Service instance object.
+           * @description
+           * See {@link auto.$provide#value $provide.value()}.
+           */
+          value: invokeLater('$provide', 'value'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#constant
+           * @module ng
+           * @param {string} name constant name
+           * @param {*} object Constant value.
+           * @description
+           * Because the constant are fixed, they get applied before other provide methods.
+           * See {@link auto.$provide#constant $provide.constant()}.
+           */
+          constant: invokeLater('$provide', 'constant', 'unshift'),
+
+           /**
+           * @ngdoc method
+           * @name angular.Module#decorator
+           * @module ng
+           * @param {string} The name of the service to decorate.
+           * @param {Function} This function will be invoked when the service needs to be
+           *                                    instantiated and should return the decorated service instance.
+           * @description
+           * See {@link auto.$provide#decorator $provide.decorator()}.
+           */
+          decorator: invokeLaterAndSetModuleName('$provide', 'decorator'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#animation
+           * @module ng
+           * @param {string} name animation name
+           * @param {Function} animationFactory Factory function for creating new instance of an
+           *                                    animation.
+           * @description
+           *
+           * **NOTE**: animations take effect only if the **ngAnimate** module is loaded.
+           *
+           *
+           * Defines an animation hook that can be later used with
+           * {@link ngAnimate.$animate $animate} service and directives that use this service.
+           *
+           * ```js
+           * module.animation('.animation-name', function($inject1, $inject2) {
+           *   return {
+           *     eventName : function(element, done) {
+           *       //code to run the animation
+           *       //once complete, then run done()
+           *       return function cancellationFunction(element) {
+           *         //code to cancel the animation
+           *       }
+           *     }
+           *   }
+           * })
+           * ```
+           *
+           * See {@link ngAnimate.$animateProvider#register $animateProvider.register()} and
+           * {@link ngAnimate ngAnimate module} for more information.
+           */
+          animation: invokeLaterAndSetModuleName('$animateProvider', 'register'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#filter
+           * @module ng
+           * @param {string} name Filter name.
+           * @param {Function} filterFactory Factory function for creating new instance of filter.
+           * @description
+           * See {@link ng.$filterProvider#register $filterProvider.register()}.
+           */
+          filter: invokeLaterAndSetModuleName('$filterProvider', 'register'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#controller
+           * @module ng
+           * @param {string|Object} name Controller name, or an object map of controllers where the
+           *    keys are the names and the values are the constructors.
+           * @param {Function} constructor Controller constructor function.
+           * @description
+           * See {@link ng.$controllerProvider#register $controllerProvider.register()}.
+           */
+          controller: invokeLaterAndSetModuleName('$controllerProvider', 'register'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#directive
+           * @module ng
+           * @param {string|Object} name Directive name, or an object map of directives where the
+           *    keys are the names and the values are the factories.
+           * @param {Function} directiveFactory Factory function for creating new instance of
+           * directives.
+           * @description
+           * See {@link ng.$compileProvider#directive $compileProvider.directive()}.
+           */
+          directive: invokeLaterAndSetModuleName('$compileProvider', 'directive'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#component
+           * @module ng
+           * @param {string} name Name of the component in camel-case (i.e. myComp which will match as my-comp)
+           * @param {Object} options Component definition object (a simplified
+           *    {@link ng.$compile#directive-definition-object directive definition object})
+           *
+           * @description
+           * See {@link ng.$compileProvider#component $compileProvider.component()}.
+           */
+          component: invokeLaterAndSetModuleName('$compileProvider', 'component'),
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#config
+           * @module ng
+           * @param {Function} configFn Execute this function on module load. Useful for service
+           *    configuration.
+           * @description
+           * Use this method to register work which needs to be performed on module loading.
+           * For more about how to configure services, see
+           * {@link providers#providers_provider-recipe Provider Recipe}.
+           */
+          config: config,
+
+          /**
+           * @ngdoc method
+           * @name angular.Module#run
+           * @module ng
+           * @param {Function} initializationFn Execute this function after injector creation.
+           *    Useful for application initialization.
+           * @description
+           * Use this method to register work which should be performed when the injector is done
+           * loading all modules.
+           */
+          run: function(block) {
+            runBlocks.push(block);
+            return this;
+          }
+        };
+
+        /**
+        * ANGULAR HINT ALTERATION
+        * To make this loader compatible with apps that are running
+        * both Angular 1.2 and 1.3, the loader must handle 1.3 applications
+        * that expect to initialize their config blocks after all providers
+        * are registered. Hence, the configBlocks are added to the end
+        * of the exisiting invokeQueue.
+        */
+        Object.defineProperty(moduleInstance, '_invokeQueue', {
+          get: function() {
+            return invokeQueue.concat(configBlocks);
+          }
+        });
+
+        if (configFn) {
+          config(configFn);
+        }
+
+        return  moduleInstance;
+
+        /**
+         * @param {string} provider
+         * @param {string} method
+         * @param {String=} insertMethod
+         * @returns {angular.Module}
+         */
+        function invokeLater(provider, method, insertMethod, queue) {
+          if (!queue) queue = invokeQueue;
+          return function() {
+            queue[insertMethod || 'push']([provider, method, arguments]);
+            return moduleInstance;
+          };
+        }
+
+        /**
+         * @param {string} provider
+         * @param {string} method
+         * @returns {angular.Module}
+         */
+        function invokeLaterAndSetModuleName(provider, method) {
+          return function(recipeName, factoryFunction) {
+            if (factoryFunction && isFunction(factoryFunction)) factoryFunction.$$moduleName = name;
+            invokeQueue.push([provider, method, arguments]);
+            return moduleInstance;
+          };
+        }
+
+      });
+    };
+  });
+
+}
+
+setupModuleLoader(window);
+})(window);
+
+/**
+ * Closure compiler type information
+ *
+ * @typedef { {
+ *   requires: !Array.<string>,
+ *   invokeQueue: !Array.<Array.<*>>,
+ *
+ *   service: function(string, Function):angular.Module,
+ *   factory: function(string, Function):angular.Module,
+ *   value: function(string, *):angular.Module,
+ *
+ *   filter: function(string, Function):angular.Module,
+ *
+ *   init: function(Function):angular.Module
+ * } }
+ */
+angular.Module;
+
+
+},{}],3:[function(require,module,exports){
 'use strict';
 
 // Create pipe for all hint messages from different modules
@@ -121,7 +618,7 @@ var LEVELS = [
   'suggestion'
 ];
 
-},{"./src/modules/controllers":23,"./src/modules/events":24,"./src/modules/hintEmitter":25,"./src/modules/modules":26,"./src/modules/scopes":27}],2:[function(require,module,exports){
+},{"./src/modules/controllers":25,"./src/modules/events":26,"./src/modules/hintEmitter":27,"./src/modules/modules":28,"./src/modules/scopes":29}],4:[function(require,module,exports){
 module.exports = function debounceOn (fn, timeout, hash) {
   var timeouts = {};
 
@@ -152,7 +649,7 @@ function defaultHash () {
   return Array.prototype.join.call(arguments, '::');
 }
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 /*!
  * EventEmitter2
  * https://github.com/hij1nx/EventEmitter2
@@ -727,7 +1224,7 @@ function defaultHash () {
   }
 }();
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 module.exports = distance;
 
 function distance(a, b) {
@@ -750,7 +1247,7 @@ function distance(a, b) {
 }
 
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 module.exports = suggestDictionary;
 
 var distance = require('./levenstein_distance');
@@ -773,7 +1270,7 @@ function suggestDictionary(dict, opts) {
 
 suggestDictionary.distance = distance;
 
-},{"./levenstein_distance":4}],6:[function(require,module,exports){
+},{"./levenstein_distance":6}],8:[function(require,module,exports){
 'use strict';
 
 var list = 'click submit mouseenter mouseleave mousemove mousedown mouseover mouseup dblclick keyup keydown keypress blur focus submit cut copy paste'.split(' ');
@@ -782,7 +1279,7 @@ module.exports = list.map(function(eventName) {
   return 'ng' + eventName.charAt(0).toUpperCase() + eventName.substr(1);
 });
 
-},{}],7:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 'use strict';
 
 module.exports = function summarizeModel (model) {
@@ -819,7 +1316,7 @@ function summarizeProperty (obj) {
       obj;
 }
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 var MODULE_NAME = 'Modules';
 
 module.exports = function(modules) {
@@ -828,7 +1325,7 @@ module.exports = function(modules) {
   });
 };
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 var modData = require('./moduleData');
   MODULE_NAME = 'Modules',
   SEVERITY_WARNING = 2;
@@ -850,14 +1347,14 @@ module.exports = function() {
   return multiLoaded;
 };
 
-},{"./moduleData":16}],10:[function(require,module,exports){
+},{"./moduleData":18}],12:[function(require,module,exports){
 var modData = require('./moduleData');
 
 module.exports = function(moduleName, getCreated) {
   return (getCreated)? modData.createdModules[moduleName] : modData.loadedModules[moduleName];
 };
 
-},{"./moduleData":16}],11:[function(require,module,exports){
+},{"./moduleData":18}],13:[function(require,module,exports){
 var MODULE_NAME = 'Modules',
   SEVERITY_ERROR = 1;
  module.exports = function(attrs, ngAppFound) {
@@ -871,7 +1368,7 @@ var MODULE_NAME = 'Modules',
 
 
 
-},{}],12:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 var getModule = require('./getModule'),
   dictionary = Object.keys(require('./moduleData').createdModules),
   suggest = require('suggest-it')(dictionary),
@@ -892,7 +1389,7 @@ module.exports = function(loadedModules) {
   return undeclaredModules;
 };
 
-},{"./getModule":10,"./moduleData":16,"suggest-it":5}],13:[function(require,module,exports){
+},{"./getModule":12,"./moduleData":18,"suggest-it":7}],15:[function(require,module,exports){
 var getModule = require('./getModule');
 
 var IGNORED = ['ngHintControllers', 'ngHintDirectives', 'ngHintDom', 'ngHintEvents',
@@ -913,7 +1410,7 @@ module.exports = function(createdModules) {
   return unusedModules;
 };
 
-},{"./getModule":10}],14:[function(require,module,exports){
+},{"./getModule":12}],16:[function(require,module,exports){
 var MODULE_NAME = 'Modules',
     SEVERITY_SUGGESTION = 3;
 
@@ -936,7 +1433,7 @@ module.exports = function(str) {
   return true;
 };
 
-},{}],15:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 var normalizeAttribute = require('./normalizeAttribute');
 
 module.exports = function(attrs) {
@@ -948,14 +1445,14 @@ module.exports = function(attrs) {
   }
 };
 
-},{"./normalizeAttribute":18}],16:[function(require,module,exports){
+},{"./normalizeAttribute":20}],18:[function(require,module,exports){
 module.exports = {
   createdModules: {},
   createdMulti: {},
   loadedModules: {}
 };
 
-},{}],17:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 var modData = require('./moduleData'),
   getModule = require('./getModule');
 
@@ -965,12 +1462,12 @@ module.exports = function() {
   }
 };
 
-},{"./getModule":10,"./moduleData":16}],18:[function(require,module,exports){
+},{"./getModule":12,"./moduleData":18}],20:[function(require,module,exports){
 module.exports = function(attribute) {
   return attribute.replace(/^(?:data|x)[-_:]/, '').replace(/[:_]/g, '-');
 };
 
-},{}],19:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 var display = require('./display'),
   formatMultiLoaded = require('./formatMultiLoaded'),
   getUnusedModules = require('./getUnusedModules'),
@@ -993,7 +1490,7 @@ module.exports = function() {
   }
 };
 
-},{"./display":8,"./formatMultiLoaded":9,"./getUndeclaredModules":12,"./getUnusedModules":13,"./moduleData":16,"./ngViewNoNgRoute":17}],20:[function(require,module,exports){
+},{"./display":10,"./formatMultiLoaded":11,"./getUndeclaredModules":14,"./getUnusedModules":15,"./moduleData":18,"./ngViewNoNgRoute":19}],22:[function(require,module,exports){
 var modData = require('./moduleData');
 
 module.exports = function(module, isNgAppMod) {
@@ -1009,7 +1506,7 @@ module.exports = function(module, isNgAppMod) {
   }
 };
 
-},{"./moduleData":16}],21:[function(require,module,exports){
+},{"./moduleData":18}],23:[function(require,module,exports){
 var getNgAppMod = require('./getNgAppMod'),
   inAttrsOrClasses = require('./inAttrsOrClasses'),
   storeDependencies = require('./storeDependencies'),
@@ -1045,7 +1542,7 @@ module.exports = function(doms) {
   }
 };
 
-},{"./getNgAppMod":11,"./inAttrsOrClasses":15,"./moduleData":16,"./storeDependencies":20}],22:[function(require,module,exports){
+},{"./getNgAppMod":13,"./inAttrsOrClasses":17,"./moduleData":18,"./storeDependencies":22}],24:[function(require,module,exports){
 var storeDependencies = require('./storeDependencies');
 
 var seen = [];
@@ -1061,7 +1558,7 @@ var storeUsedModules = module.exports = function(module, modules){
     });
   }
 };
-},{"./storeDependencies":20}],23:[function(require,module,exports){
+},{"./storeDependencies":22}],25:[function(require,module,exports){
 'use strict';
 
 var MODULE_NAME = 'Controllers',
@@ -1186,7 +1683,7 @@ angular.module = function() {
   return module;
 };
 
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1294,7 +1791,7 @@ function ngEventDirectivesDecorator(ngEventAttrName) {
   }
 }
 
-},{"../lib/event-directives":6}],25:[function(require,module,exports){
+},{"../lib/event-directives":8}],27:[function(require,module,exports){
 'use strict';
 
 /**
@@ -1308,7 +1805,7 @@ angular.hint = new EventEmitter2({
   wildcard: true,
   delimiter: ':'
 });
-},{"eventemitter2":3}],26:[function(require,module,exports){
+},{"eventemitter2":5}],28:[function(require,module,exports){
 'use strict';
 
 var getModule = require('./angular-hint-modules/getModule'),
@@ -1356,7 +1853,7 @@ angular.module('ngHintModules', []).config(function() {
   start();
 });
 
-},{"./angular-hint-modules/getModule":10,"./angular-hint-modules/hasNameSpace":14,"./angular-hint-modules/moduleData":16,"./angular-hint-modules/start":19,"./angular-hint-modules/storeNgAppAndView":21,"./angular-hint-modules/storeUsedModules":22}],27:[function(require,module,exports){
+},{"./angular-hint-modules/getModule":12,"./angular-hint-modules/hasNameSpace":16,"./angular-hint-modules/moduleData":18,"./angular-hint-modules/start":21,"./angular-hint-modules/storeNgAppAndView":23,"./angular-hint-modules/storeUsedModules":24}],29:[function(require,module,exports){
 'use strict';
 
 var summarize = require('../lib/summarize-model');
@@ -1701,457 +2198,4 @@ function convertIdToOriginalType(scopeId) {
   return (angular.version.minor < 3) ? scopeId : parseInt(scopeId, 10);
 }
 
-},{"../lib/summarize-model":7,"debounce-on":2}],28:[function(require,module,exports){
-/*
- * Batarang instrumentation
- *
- * This gets loaded into the context of the app you are inspecting
- */
-require('./loader.js');
-require('angular-hint');
-
-angular.hint.onAny(function (data, severity) {
-  window.postMessage({
-    __fromBatarang: true,
-    module: this.event.split(':')[0],
-    event: this.event,
-    data: data,
-    severity: severity
-  }, '*');
-});
-
-},{"./loader.js":29,"angular-hint":1}],29:[function(require,module,exports){
-/**
- * @license AngularJS v1.3.0-build.3042+sha.76e57a7
- * (c) 2010-2014 Google, Inc. http://angularjs.org
- * License: MIT
- */
-
-(function() {'use strict';
-
-/**
- * @description
- *
- * This object provides a utility for producing rich Error messages within
- * Angular. It can be called as follows:
- *
- * var exampleMinErr = minErr('example');
- * throw exampleMinErr('one', 'This {0} is {1}', foo, bar);
- *
- * The above creates an instance of minErr in the example namespace. The
- * resulting error will have a namespaced error code of example.one.  The
- * resulting error will replace {0} with the value of foo, and {1} with the
- * value of bar. The object is not restricted in the number of arguments it can
- * take.
- *
- * If fewer arguments are specified than necessary for interpolation, the extra
- * interpolation markers will be preserved in the final string.
- *
- * Since data will be parsed statically during a build step, some restrictions
- * are applied with respect to how minErr instances are created and called.
- * Instances should have names of the form namespaceMinErr for a minErr created
- * using minErr('namespace') . Error codes, namespaces and template strings
- * should all be static strings, not variables or general expressions.
- *
- * @param {string} module The namespace to use for the new minErr instance.
- * @returns {function(code:string, template:string, ...templateArgs): Error} minErr instance
- */
-
-function minErr(module) {
-  return function () {
-    var code = arguments[0],
-      prefix = '[' + (module ? module + ':' : '') + code + '] ',
-      template = arguments[1],
-      templateArgs = arguments,
-      stringify = function (obj) {
-        if (typeof obj === 'function') {
-          return obj.toString().replace(/ \{[\s\S]*$/, '');
-        } else if (typeof obj === 'undefined') {
-          return 'undefined';
-        } else if (typeof obj !== 'string') {
-          return JSON.stringify(obj);
-        }
-        return obj;
-      },
-      message, i;
-
-    message = prefix + template.replace(/\{\d+\}/g, function (match) {
-      var index = +match.slice(1, -1), arg;
-
-      if (index + 2 < templateArgs.length) {
-        arg = templateArgs[index + 2];
-        if (typeof arg === 'function') {
-          return arg.toString().replace(/ ?\{[\s\S]*$/, '');
-        } else if (typeof arg === 'undefined') {
-          return 'undefined';
-        } else if (typeof arg !== 'string') {
-          return toJson(arg);
-        }
-        return arg;
-      }
-      return match;
-    });
-
-    message = message + '\nhttp://errors.angularjs.org/1.3.0-build.3042+sha.76e57a7/' +
-      (module ? module + '/' : '') + code;
-    for (i = 2; i < arguments.length; i++) {
-      message = message + (i == 2 ? '?' : '&') + 'p' + (i-2) + '=' +
-        encodeURIComponent(stringify(arguments[i]));
-    }
-
-    return new Error(message);
-  };
-}
-
-/**
- * @ngdoc type
- * @name angular.Module
- * @module ng
- * @description
- *
- * Interface for configuring angular {@link angular.module modules}.
- */
-
-function setupModuleLoader(window) {
-
-  var $injectorMinErr = minErr('$injector');
-  var ngMinErr = minErr('ng');
-
-  function ensure(obj, name, factory) {
-    return obj[name] || (obj[name] = factory());
-  }
-
-  var angular = ensure(window, 'angular', Object);
-
-  // We need to expose `angular.$$minErr` to modules such as `ngResource` that reference it during bootstrap
-  angular.$$minErr = angular.$$minErr || minErr;
-
-  return ensure(angular, 'module', function() {
-    /** @type {Object.<string, angular.Module>} */
-    var modules = {};
-
-    /**
-     * @ngdoc function
-     * @name angular.module
-     * @module ng
-     * @description
-     *
-     * The `angular.module` is a global place for creating, registering and retrieving Angular
-     * modules.
-     * All modules (angular core or 3rd party) that should be available to an application must be
-     * registered using this mechanism.
-     *
-     * When passed two or more arguments, a new module is created.  If passed only one argument, an
-     * existing module (the name passed as the first argument to `module`) is retrieved.
-     *
-     *
-     * # Module
-     *
-     * A module is a collection of services, directives, controllers, filters, and configuration information.
-     * `angular.module` is used to configure the {@link auto.$injector $injector}.
-     *
-     * ```js
-     * // Create a new module
-     * var myModule = angular.module('myModule', []);
-     *
-     * // register a new service
-     * myModule.value('appName', 'MyCoolApp');
-     *
-     * // configure existing services inside initialization blocks.
-     * myModule.config(['$locationProvider', function($locationProvider) {
-     *   // Configure existing providers
-     *   $locationProvider.hashPrefix('!');
-     * }]);
-     * ```
-     *
-     * Then you can create an injector and load your modules like this:
-     *
-     * ```js
-     * var injector = angular.injector(['ng', 'myModule'])
-     * ```
-     *
-     * However it's more likely that you'll just use
-     * {@link ng.directive:ngApp ngApp} or
-     * {@link angular.bootstrap} to simplify this process for you.
-     *
-     * @param {!string} name The name of the module to create or retrieve.
-     * @param {!Array.<string>=} requires If specified then new module is being created. If
-     *        unspecified then the module is being retrieved for further configuration.
-     * @param {Function=} configFn Optional configuration function for the module. Same as
-     *        {@link angular.Module#config Module#config()}.
-     * @returns {module} new module with the {@link angular.Module} api.
-     */
-    return function module(name, requires, configFn) {
-      var assertNotHasOwnProperty = function(name, context) {
-        if (name === 'hasOwnProperty') {
-          throw ngMinErr('badname', 'hasOwnProperty is not a valid {0} name', context);
-        }
-      };
-
-      assertNotHasOwnProperty(name, 'module');
-      if (requires && modules.hasOwnProperty(name)) {
-        modules[name] = null;
-      }
-      return ensure(modules, name, function() {
-        if (!requires) {
-          throw $injectorMinErr('nomod', "Module '{0}' is not available! You either misspelled " +
-             "the module name or forgot to load it. If registering a module ensure that you " +
-             "specify the dependencies as the second argument.", name);
-        }
-
-        /** @type {!Array.<Array.<*>>} */
-        var invokeQueue = [];
-
-        /** @type {!Array.<Function>} */
-        var configBlocks = [];
-
-        /** @type {!Array.<Function>} */
-        var runBlocks = [];
-
-        var config = invokeLater('$injector', 'invoke', 'push', configBlocks);
-
-        /** @type {angular.Module} */
-        var moduleInstance = {
-          // Private state
-          _configBlocks: [],
-          _runBlocks: runBlocks,
-
-          /**
-           * @ngdoc property
-           * @name angular.Module#requires
-           * @module ng
-           * @returns {Array.<string>} List of module names which must be loaded before this module.
-           * @description
-           * Holds the list of modules which the injector will load before the current module is
-           * loaded.
-           */
-          requires: requires,
-
-          /**
-           * @ngdoc property
-           * @name angular.Module#name
-           * @module ng
-           * @returns {string} Name of the module.
-           * @description
-           */
-          name: name,
-
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#provider
-           * @module ng
-           * @param {string} name service name
-           * @param {Function} providerType Construction function for creating new instance of the
-           *                                service.
-           * @description
-           * See {@link auto.$provide#provider $provide.provider()}.
-           */
-          provider: invokeLater('$provide', 'provider'),
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#factory
-           * @module ng
-           * @param {string} name service name
-           * @param {Function} providerFunction Function for creating new instance of the service.
-           * @description
-           * See {@link auto.$provide#factory $provide.factory()}.
-           */
-          factory: invokeLater('$provide', 'factory'),
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#service
-           * @module ng
-           * @param {string} name service name
-           * @param {Function} constructor A constructor function that will be instantiated.
-           * @description
-           * See {@link auto.$provide#service $provide.service()}.
-           */
-          service: invokeLater('$provide', 'service'),
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#value
-           * @module ng
-           * @param {string} name service name
-           * @param {*} object Service instance object.
-           * @description
-           * See {@link auto.$provide#value $provide.value()}.
-           */
-          value: invokeLater('$provide', 'value'),
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#constant
-           * @module ng
-           * @param {string} name constant name
-           * @param {*} object Constant value.
-           * @description
-           * Because the constant are fixed, they get applied before other provide methods.
-           * See {@link auto.$provide#constant $provide.constant()}.
-           */
-          constant: invokeLater('$provide', 'constant', 'unshift'),
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#animation
-           * @module ng
-           * @param {string} name animation name
-           * @param {Function} animationFactory Factory function for creating new instance of an
-           *                                    animation.
-           * @description
-           *
-           * **NOTE**: animations take effect only if the **ngAnimate** module is loaded.
-           *
-           *
-           * Defines an animation hook that can be later used with
-           * {@link ngAnimate.$animate $animate} service and directives that use this service.
-           *
-           * ```js
-           * module.animation('.animation-name', function($inject1, $inject2) {
-           *   return {
-           *     eventName : function(element, done) {
-           *       //code to run the animation
-           *       //once complete, then run done()
-           *       return function cancellationFunction(element) {
-           *         //code to cancel the animation
-           *       }
-           *     }
-           *   }
-           * })
-           * ```
-           *
-           * See {@link ngAnimate.$animateProvider#register $animateProvider.register()} and
-           * {@link ngAnimate ngAnimate module} for more information.
-           */
-          animation: invokeLater('$animateProvider', 'register'),
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#filter
-           * @module ng
-           * @param {string} name Filter name.
-           * @param {Function} filterFactory Factory function for creating new instance of filter.
-           * @description
-           * See {@link ng.$filterProvider#register $filterProvider.register()}.
-           */
-          filter: invokeLater('$filterProvider', 'register'),
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#controller
-           * @module ng
-           * @param {string|Object} name Controller name, or an object map of controllers where the
-           *    keys are the names and the values are the constructors.
-           * @param {Function} constructor Controller constructor function.
-           * @description
-           * See {@link ng.$controllerProvider#register $controllerProvider.register()}.
-           */
-          controller: invokeLater('$controllerProvider', 'register'),
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#directive
-           * @module ng
-           * @param {string|Object} name Directive name, or an object map of directives where the
-           *    keys are the names and the values are the factories.
-           * @param {Function} directiveFactory Factory function for creating new instance of
-           * directives.
-           * @description
-           * See {@link ng.$compileProvider#directive $compileProvider.directive()}.
-           */
-          directive: invokeLater('$compileProvider', 'directive'),
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#config
-           * @module ng
-           * @param {Function} configFn Execute this function on module load. Useful for service
-           *    configuration.
-           * @description
-           * Use this method to register work which needs to be performed on module loading.
-           * For more about how to configure services, see
-           * {@link providers#providers_provider-recipe Provider Recipe}.
-           */
-          config: config,
-
-          /**
-           * @ngdoc method
-           * @name angular.Module#run
-           * @module ng
-           * @param {Function} initializationFn Execute this function after injector creation.
-           *    Useful for application initialization.
-           * @description
-           * Use this method to register work which should be performed when the injector is done
-           * loading all modules.
-           */
-          run: function(block) {
-            runBlocks.push(block);
-            return this;
-          }
-        };
-
-        /**
-        * ANGULAR HINT ALTERATION
-        * To make this loader compatible with apps that are running
-        * both Angular 1.2 and 1.3, the loader must handle 1.3 applications
-        * that expect to initialize their config blocks after all providers
-        * are registered. Hence, the configBlocks are added to the end
-        * of the exisiting invokeQueue.
-        */
-        Object.defineProperty(moduleInstance, '_invokeQueue', {
-          get: function() {
-            return invokeQueue.concat(configBlocks);
-          }
-        });
-
-        if (configFn) {
-          config(configFn);
-        }
-
-        return  moduleInstance;
-
-        /**
-         * @param {string} provider
-         * @param {string} method
-         * @param {String=} insertMethod
-         * @returns {angular.Module}
-         */
-        function invokeLater(provider, method, insertMethod, queue) {
-          if (!queue) queue = invokeQueue;
-          return function() {
-            queue[insertMethod || 'push']([provider, method, arguments]);
-            return moduleInstance;
-          };
-        }
-      });
-    };
-  });
-
-}
-
-setupModuleLoader(window);
-})(window);
-
-/**
- * Closure compiler type information
- *
- * @typedef { {
- *   requires: !Array.<string>,
- *   invokeQueue: !Array.<Array.<*>>,
- *
- *   service: function(string, Function):angular.Module,
- *   factory: function(string, Function):angular.Module,
- *   value: function(string, *):angular.Module,
- *
- *   filter: function(string, Function):angular.Module,
- *
- *   init: function(Function):angular.Module
- * } }
- */
-angular.Module;
-
-
-},{}]},{},[28]);
+},{"../lib/summarize-model":9,"debounce-on":4}]},{},[1]);
