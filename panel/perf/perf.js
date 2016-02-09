@@ -15,6 +15,8 @@ function PerfController($scope, $timeout, $window) {
   $scope.watchTimings = [];
   $scope.numWatchers = 0;
   $scope.last30Digests = {};
+  $scope.last30Seconds = {};
+  $scope.last5Seconds = {};
 
   // used for graph
   var noDigestSteps = 0;
@@ -30,7 +32,8 @@ function PerfController($scope, $timeout, $window) {
   // eep
   var eep = $window.eep;
   // TODO implement rolling windows over time:
-  // var last30Seconds = new eep.EventWorld.make().windows().monotonic(eep.Stats.count, 30);
+  var last30Seconds = new eep.EventWorld.make().windows().sliding(eep.Stats.sum, 30);
+  var last5Seconds = new eep.EventWorld.make().windows().sliding(eep.Stats.sum, 5);
   var last30Digests = {
     watchers: new eep.EventWorld.make().windows().sliding(eep.Stats.mean, 30),
     time: new eep.EventWorld.make().windows().sliding(eep.Stats.mean, 30)
@@ -42,16 +45,26 @@ function PerfController($scope, $timeout, $window) {
   last30Digests.time.on('emit', function (avg) {
     $scope.last30Digests.time = avg;
   });
-  // last30Seconds.on('emit', function (count) {
-  //   $scope.last30Seconds.time = count;
-  // });
+  last5Seconds.on('emit', function (count) {
+    $scope.last5Seconds.digests = count;
+  });
+  last30Seconds.on('emit', function (count) {
+    $scope.last30Seconds.digests = count;
+  });
+
+  var digests = 0;
+  setInterval(() => {
+    last30Seconds.enqueue(digests);
+    last5Seconds.enqueue(digests);
+    digests = 0;
+  }, 1000);
 
 
   $scope.$on('scope:digest', function (e, digestData) {
 
     last30Digests.watchers.enqueue(digestData.events.length);
     last30Digests.time.enqueue(digestData.time);
-    // last30Seconds.enqueue();
+    digests++;
 
     $scope.lastDigestTime = digestData.time;
 

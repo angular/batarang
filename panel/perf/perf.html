@@ -17,6 +17,8 @@
     <div class="right averages">
       <div>The last digest cycle took {{ lastDigestTime | number }} ms and had {{ numWatchers || 0 }} watchers</div>
       <div ng-show="::last30Digests.watchers">The last 30 digest cycles averaged {{ last30Digests.time | number }} ms and averaged {{ last30Digests.watchers | number }} watchers.</div>
+      <div ng-show="::last5Seconds.digests">There were {{ last5Seconds.digests | number }} digests in the last 5 seconds, averaging {{ last5Seconds.digests / 5 | number }} digests/sec</div>
+      <div ng-show="::last30Seconds.digests">There were {{ last30Seconds.digests | number }} digests in the last 30 seconds, averaging {{ last30Seconds.digests / 30 | number }} digests/sec</div>
     </div>
   </div>
   <hr>
