@@ -339,9 +339,6 @@ li .status:empty {
   display: inline-block;
   width: 45%;
 }
-.perf pre {
-  word-break: break-all;
-}
 
 .perf .watcher-text {
   width: 55%;
@@ -363,18 +360,23 @@ li .status:empty {
 }
 
 .perf .watcher-table {
-  width: 100%;
+  width: calc(100% - 30px);
   text-align: center;
+  display: flex;
+  flex-direction: column;
 }
 
-.perf .watcher-table-head {
+.perf .watcher-table-head span {
   text-decoration: underline;
   font-size: 1.2em;
 }
 .perf .watcher-table-row {
   white-space: nowrap;
+  word-break: break-word;
 }
-
+.perf .watcher-table hr {
+  width: 100%;
+}
 /* for the canvas */
 .graph {
   background: black;

@@ -24,16 +24,17 @@
   <div class="watcher-table">
     <div class="watcher-table-head watcher-table-row">
       <span class="watcher-text">Watcher text</span>
-      <span class="watcher-time">Watcher total time</span>
-      <span class="watcher-count">Number of Watchers</span>
-      <span class="watcher-avg">Average watcher time</span>
+      <span class="watcher-time">Total time</span>
+      <span class="watcher-count"># of Watchers</span>
+      <span class="watcher-avg">Avg. time</span>
     </div>
-    <div ng-repeat="watcher in watchTimings" class="watcher-table-row">
+    <div ng-repeat-start="watcher in watchTimings" class="watcher-table-row">
       <div class="watcher-text"><pre>{{ watcher.text }}</pre></div>
       <div class="watcher-time"><pre>{{ watcher.time | number }} ms</pre></div>
       <div class="watcher-count"><pre>{{ watcher.count }}</pre></div>
       <div class="watcher-avg"><pre>{{ watcher.time / watcher.count | number }} ms</pre></div>
     </div>
+    <hr ng-repeat-end ng-show="::!$last">
   </div>
   <hr>
   <h2>Raw data</h2>
