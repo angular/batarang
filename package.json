@@ -1,6 +1,6 @@
 {
   "name": "angularjs-batarang",
-  "version": "0.10.6",
+  "version": "0.10.7",
   "description": "chrome extension for inspecting angular apps",
   "main": "hint.js",
   "devDependencies": {

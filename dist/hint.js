@@ -618,7 +618,935 @@ var LEVELS = [
   'suggestion'
 ];
 
-},{"./src/modules/controllers":25,"./src/modules/events":26,"./src/modules/hintEmitter":27,"./src/modules/modules":28,"./src/modules/scopes":29}],4:[function(require,module,exports){
+},{"./src/modules/controllers":21,"./src/modules/events":22,"./src/modules/hintEmitter":23,"./src/modules/modules":24,"./src/modules/scopes":25}],4:[function(require,module,exports){
+'use strict';
+
+var list = 'click submit mouseenter mouseleave mousemove mousedown mouseover mouseup dblclick keyup keydown keypress blur focus submit cut copy paste'.split(' ');
+
+module.exports = list.map(function(eventName) {
+  return 'ng' + eventName.charAt(0).toUpperCase() + eventName.substr(1);
+});
+
+},{}],5:[function(require,module,exports){
+'use strict';
+
+module.exports = function summarizeModel (model) {
+
+  if (model instanceof Array) {
+    return JSON.stringify(model.map(summarizeProperty));
+  } else if (typeof model === 'object') {
+    return JSON.stringify(Object.
+        keys(model).
+        filter(isAngularPrivatePropertyName).
+        reduce(shallowSummary, {}));
+  } else {
+    return model;
+  }
+
+  function shallowSummary (obj, prop) {
+    obj[prop] = summarizeProperty(model[prop]);
+    return obj;
+  }
+};
+
+function isAngularPrivatePropertyName (key) {
+  return !(key[0] === '$' && key[1] === '$') && key !== '$parent' && key !== '$root';
+}
+
+// TODO: handle DOM nodes, fns, etc better.
+function summarizeProperty (obj) {
+  return obj instanceof Array ?
+      { '~array-length': obj.length } :
+    obj === null ?
+      null :
+    typeof obj === 'object' ?
+      { '~object': true } :
+      obj;
+}
+
+},{}],6:[function(require,module,exports){
+var MODULE_NAME = 'Modules';
+
+module.exports = function(modules) {
+  modules.forEach(function(module) {
+    angular.hint.emit(MODULE_NAME, module.message, module.severity);
+  });
+};
+
+},{}],7:[function(require,module,exports){
+var modData = require('./moduleData');
+  MODULE_NAME = 'Modules',
+  SEVERITY_WARNING = 2;
+
+module.exports = function() {
+  var multiLoaded = [];
+  for(var modName in modData.createdMulti) {
+    var message = 'Multiple modules with name "' + modName + '" are being created and they will ' +
+      'overwrite each other.';
+    var multi = modData.createdMulti[modName];
+    var multiLength = multi.length;
+    var details = {
+      existingModule: multi[multiLength - 1],
+      overwrittenModules: multi.slice(0, multiLength - 1)
+    };
+    multiLoaded
+      .push({module: details, message: message, name: MODULE_NAME, severity: SEVERITY_WARNING});
+  }
+  return multiLoaded;
+};
+
+},{"./moduleData":14}],8:[function(require,module,exports){
+var modData = require('./moduleData');
+
+module.exports = function(moduleName, getCreated) {
+  return (getCreated)? modData.createdModules[moduleName] : modData.loadedModules[moduleName];
+};
+
+},{"./moduleData":14}],9:[function(require,module,exports){
+var MODULE_NAME = 'Modules',
+  SEVERITY_ERROR = 1;
+ module.exports = function(attrs, ngAppFound) {
+   if(attrs['ng-app'] && ngAppFound) {
+     angular.hint.emit(MODULE_NAME, 'ng-app may only be included once. The module "' +
+      attrs['ng-app'].value + '" was not used to bootstrap because ng-app was already included.',
+      SEVERITY_ERROR);
+   }
+  return attrs['ng-app'] ? attrs['ng-app'].value : undefined;
+ };
+
+
+
+},{}],10:[function(require,module,exports){
+var getModule = require('./getModule'),
+  dictionary = Object.keys(require('./moduleData').createdModules),
+  suggest = require('suggest-it')(dictionary),
+  SEVERITY_ERROR = 1;
+
+module.exports = function(loadedModules) {
+  var undeclaredModules = [];
+  for(var module in loadedModules) {
+    var cModule = getModule(module, true);
+    if(!cModule) {
+      var match = suggest(module),
+        suggestion = (match) ? '; Try: "'+match+'"' : '',
+        message = 'Module "'+module+'" was loaded but does not exist'+suggestion+'.';
+
+      undeclaredModules.push({module: null, message: message, severity: SEVERITY_ERROR});
+    }
+  }
+  return undeclaredModules;
+};
+
+},{"./getModule":8,"./moduleData":14,"suggest-it":29}],11:[function(require,module,exports){
+var getModule = require('./getModule');
+
+var IGNORED = ['ngHintControllers', 'ngHintDirectives', 'ngHintDom', 'ngHintEvents',
+             'ngHintInterpolation', 'ngHintModules', 'ngHintScopes', 'ng', 'ngLocale', 'protractorBaseModule_'],
+    SEVERITY_WARNING = 2;
+
+module.exports = function(createdModules) {
+  var unusedModules = [];
+  for(var module in createdModules) {
+    if(!getModule(module)) {
+      var cModule = createdModules[module],
+        message = 'Module "' + cModule.name + '" was created but never loaded.';
+      if(IGNORED.indexOf(cModule.name) === -1) {
+        unusedModules.push({module: cModule, message: message, severity: SEVERITY_WARNING});
+      }
+    }
+  }
+  return unusedModules;
+};
+
+},{"./getModule":8}],12:[function(require,module,exports){
+var MODULE_NAME = 'Modules',
+    SEVERITY_SUGGESTION = 3;
+
+module.exports = function(str) {
+  if (str === 'ng') {
+    return true;
+  }
+
+  if(str.charAt(0).toUpperCase() === str.charAt(0)) {
+    angular.hint.emit(MODULE_NAME, 'The best practice for' +
+      ' module names is to use dot.case or lowerCamelCase. Check the name of "' + str + '".',
+      SEVERITY_SUGGESTION);
+    return false;
+  }
+  if(str.toLowerCase() === str && str.indexOf('.') === -1) {
+    angular.hint.emit(MODULE_NAME, 'Module names should be namespaced' +
+      ' with a dot (app.dashboard) or lowerCamelCase (appDashboard). Check the name of "' + str + '".', SEVERITY_SUGGESTION);
+    return false;
+  }
+  return true;
+};
+
+},{}],13:[function(require,module,exports){
+var normalizeAttribute = require('./normalizeAttribute');
+
+module.exports = function(attrs) {
+  for(var i = 0, length = attrs.length; i < length; i++) {
+    if(normalizeAttribute(attrs[i].nodeName) === 'ng-view' ||
+        attrs[i].value.indexOf('ng-view') > -1) {
+          return true;
+    }
+  }
+};
+
+},{"./normalizeAttribute":16}],14:[function(require,module,exports){
+module.exports = {
+  createdModules: {},
+  createdMulti: {},
+  loadedModules: {}
+};
+
+},{}],15:[function(require,module,exports){
+var modData = require('./moduleData'),
+  getModule = require('./getModule');
+
+module.exports = function() {
+  if(modData.ngViewExists && !getModule('ngRoute')) {
+    return {message: 'Directive "ngView" was used in the application however "ngRoute" was not loaded into any module.'};
+  }
+};
+
+},{"./getModule":8,"./moduleData":14}],16:[function(require,module,exports){
+module.exports = function(attribute) {
+  return attribute.replace(/^(?:data|x)[-_:]/, '').replace(/[:_]/g, '-');
+};
+
+},{}],17:[function(require,module,exports){
+var display = require('./display'),
+  formatMultiLoaded = require('./formatMultiLoaded'),
+  getUnusedModules = require('./getUnusedModules'),
+  getUndeclaredModules = require('./getUndeclaredModules'),
+  modData = require('./moduleData'),
+  ngViewNoNgRoute = require('./ngViewNoNgRoute');
+
+module.exports = function() {
+  var unusedModules = getUnusedModules(modData.createdModules),
+    undeclaredModules = getUndeclaredModules(modData.loadedModules),
+    multiLoaded = formatMultiLoaded(),
+    noNgRoute = ngViewNoNgRoute();
+  if(unusedModules.length || undeclaredModules.length || multiLoaded.length || noNgRoute) {
+    var toSend = unusedModules.concat(undeclaredModules)
+      .concat(multiLoaded);
+    if(noNgRoute) {
+      toSend = toSend.concat(noNgRoute);
+    }
+    display(toSend);
+  }
+};
+
+},{"./display":6,"./formatMultiLoaded":7,"./getUndeclaredModules":10,"./getUnusedModules":11,"./moduleData":14,"./ngViewNoNgRoute":15}],18:[function(require,module,exports){
+var modData = require('./moduleData');
+
+module.exports = function(module, isNgAppMod) {
+  var name = module.name || module;
+  if(!isNgAppMod){
+    module.requires.forEach(function(dependency){
+      modData.loadedModules[dependency] = dependency;
+    });
+  }
+  else {
+    modData.loadedModules[name] = name;
+    modData.ngAppMod = name;
+  }
+};
+
+},{"./moduleData":14}],19:[function(require,module,exports){
+var getNgAppMod = require('./getNgAppMod'),
+  inAttrsOrClasses = require('./inAttrsOrClasses'),
+  storeDependencies = require('./storeDependencies'),
+  modData = require('./moduleData');
+
+module.exports = function(doms) {
+  var bothFound,
+      ngViewFound,
+      elem,
+      isElemName,
+      isInAttrsOrClasses,
+      ngAppMod;
+
+  for(var i = 0; i < doms.length; i++) {
+    elem = doms[i];
+    var attributes = elem.attributes;
+    isElemName = elem.nodeName.toLowerCase() === 'ng-view';
+    isInAttrsOrClasses = inAttrsOrClasses(attributes);
+
+    ngViewFound = isElemName || isInAttrsOrClasses;
+
+    ngAppMod = getNgAppMod(attributes, modData.ngAppFound);
+    modData.ngAppFound = modData.ngAppFound || ngAppMod;
+
+    if(ngAppMod) {
+      storeDependencies(ngAppMod, true);
+    }
+    modData.ngViewExists = ngViewFound ? true : modData.ngViewExists;
+
+    if(bothFound) {
+      break;
+    }
+  }
+};
+
+},{"./getNgAppMod":9,"./inAttrsOrClasses":13,"./moduleData":14,"./storeDependencies":18}],20:[function(require,module,exports){
+var storeDependencies = require('./storeDependencies');
+
+var seen = [];
+
+var storeUsedModules = module.exports = function(module, modules){
+  var name = module.name || module;
+  if(module && seen.indexOf(name) === -1) {
+    seen.push(name);
+    storeDependencies(module);
+    module.requires.forEach(function(modName) {
+      var mod = modules[modName];
+      storeUsedModules(mod, modules);
+    });
+  }
+};
+},{"./storeDependencies":18}],21:[function(require,module,exports){
+'use strict';
+
+var MODULE_NAME = 'Controllers',
+    CNTRL_REG = /^(\S+)(\s+as\s+(\w+))?$/,
+    CATEGORY_CONTROLLER_NAME = 'Name controllers according to best practices',
+    CATEGORY_GLOBAL_CONTROLLER = 'Using global functions as controllers is against Angular best practices and depricated in Angular 1.3 and up',
+    SEVERITY_ERROR = 1,
+    SEVERITY_WARNING = 2;
+
+// local state
+var nameToControllerMap = {};
+
+/**
+* Decorates $controller with a patching function to
+* log a message if the controller is instantiated on the window
+*/
+angular.module('ngHintControllers', []).
+  config(['$provide', '$controllerProvider', function ($provide, $controllerProvider) {
+    $provide.decorator('$controller', ['$delegate', controllerDecorator]);
+
+    var originalRegister = $controllerProvider.register;
+    $controllerProvider.register = function(name, constructor) {
+      stringOrObjectRegister(name);
+      originalRegister.apply($controllerProvider, arguments);
+    }
+  }]);
+
+function controllerDecorator($delegate) {
+  return function(ctrl) {
+    if (typeof ctrl === 'string') {
+      var match = ctrl.match(CNTRL_REG);
+      var ctrlName = (match && match[1]) || ctrl;
+
+      if (!nameToControllerMap[ctrlName]) {
+        sendMessageForControllerName(ctrlName);
+      }
+
+      if (!nameToControllerMap[ctrlName] && typeof window[ctrlName] === 'function') {
+        sendMessageForGlobalController(ctrlName);
+      }
+    }
+    return $delegate.apply(this, arguments);
+  };
+}
+
+/**
+* Save details of the controllers as they are instantiated
+* for use in decoration.
+* Hint about the best practices for naming controllers.
+*/
+var originalModule = angular.module;
+
+function stringOrObjectRegister(controllerName) {
+  if ((controllerName !== null) && (typeof controllerName === 'object')) {
+    Object.keys(controllerName).forEach(processController);
+  } else {
+    processController(controllerName);
+  }
+}
+
+function processController(ctrlName) {
+  nameToControllerMap[ctrlName] = true;
+  sendMessageForControllerName(ctrlName);
+}
+
+function sendMessageForGlobalController(name) {
+  angular.hint.emit(MODULE_NAME + ':global',
+    'add `' + name + '` to a module',
+    angular.version.minor <= 2 ? SEVERITY_WARNING : SEVERITY_ERROR,
+    CATEGORY_GLOBAL_CONTROLLER);
+}
+
+function sendMessageForControllerName(name) {
+  var newName = name;
+  if (!startsWithUpperCase(name)) {
+    newName = title(newName);
+  }
+  if (!endsWithController(name)) {
+    newName = addControllerSuffix(newName);
+  }
+  if (name !== newName) {
+    angular.hint.emit(MODULE_NAME + ':rename',
+      'Consider renaming `' + name + '` to `' + newName + '`.',
+      SEVERITY_WARNING,
+      CATEGORY_CONTROLLER_NAME);
+  }
+}
+
+function startsWithUpperCase(name) {
+  var firstChar = name.charAt(0);
+  return firstChar === firstChar.toUpperCase() &&
+         firstChar !== firstChar.toLowerCase();
+}
+
+function title (name) {
+  return name[0].toUpperCase() + name.substr(1);
+}
+
+var CONTROLLER_RE = /Controller$/;
+function endsWithController(name) {
+  return CONTROLLER_RE.test(name);
+}
+
+var RE = /(Ctrl|Kontroller)?$/;
+function addControllerSuffix(name) {
+  return name.replace(RE, 'Controller');
+}
+
+/*
+ * decorate angular module API
+ */
+
+angular.module = function() {
+  var module = originalModule.apply(this, arguments),
+      originalController = module.controller;
+
+  module.controller = function(controllerName, controllerConstructor) {
+    stringOrObjectRegister(controllerName);
+    return originalController.apply(this, arguments);
+  };
+
+  return module;
+};
+
+},{}],22:[function(require,module,exports){
+'use strict';
+
+/**
+* Load necessary functions from /lib into variables.
+*/
+var ngEventAttributes = require('../lib/event-directives'),
+    MODULE_NAME = 'Events';
+
+/*
+ * Remove string expressions except property accessors.
+ * ex. abc["def"] = "gef"; // `removeStringExp` will remove "gef" but not "def".
+ */
+function removeStringExp(str) {
+  return str.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g,
+    function(match, pos, full) {
+      // this is our lookaround code so that our regex doesn't become so
+      // complicated.
+      if (pos !== 0 && (match.length + pos) !== full.length &&
+          full[pos - 1] === '[' && full[pos + match.length] === ']') {
+           return match;
+      }
+      return '';
+    });
+}
+
+var getFunctionNames = function(str) {
+  if (typeof str !== 'string') {
+    return [];
+  }
+  // There are still a bunch of corner cases here where we aren't going to be able to handle
+  // but we shouldn't break the user's app and we should handle most common cases.
+  // example of corner cases: we can't check for properties inside of function
+  // arguments like `move(a.b.c)` with the current implementation
+  // or property accessors with parentheses in them
+  // like `prop["hello (world)"] = "test";`.
+  // To fully fix these issues we would need a full blown expression parser.
+  var results = removeStringExp(str.replace(/\s+/g, ''))
+    .replace(/\(.*?\)/g, '')
+    .split(/[\+\-\/\|\<\>\^=&!%~?:;]/g).map(function(x) {
+      if (isNaN(+x)) {
+        if (x.match(/\w+\(.*\)$/)){
+          return x.substr(0, x.indexOf('('));
+        }
+        return x;
+      }
+  }).filter(function(x){
+    return x;
+  });
+  return results;
+};
+
+/**
+* Decorate $provide in order to examine ng-event directives
+* and hint about their effective use.
+*/
+angular.module('ngHintEvents', [])
+  .config(['$provide', function($provide) {
+    for (var i = 0; i < ngEventAttributes.length; i++) {
+      try {
+        $provide.decorator(ngEventAttributes[i] + 'Directive',
+            ['$delegate', '$parse', ngEventDirectivesDecorator(ngEventAttributes[i])]);
+      } catch(e) {}
+    }
+  }]);
+
+function ngEventDirectivesDecorator(ngEventAttrName) {
+  return function ($delegate, $parse) {
+    var originalCompileFn = $delegate[0].compile;
+
+    $delegate[0].compile = function(element, attrs, transclude) {
+      var linkFn = originalCompileFn.apply(this, arguments);
+
+      return function ngEventHandler(scope, element, attrs) {
+        var boundFuncs = getFunctionNames(attrs[ngEventAttrName]);
+
+        // guard against any parsing errors since the parsing code
+        // to split the expression is pretty simple and naive.
+        try {
+          boundFuncs.forEach(function(boundFn) {
+            var property, propChain, lastProp = '';
+            while((property = boundFn.match(/^.+?([^\.\[])*/)) !== null) {
+              property = property[0];
+              propChain = lastProp + property;
+              if ($parse(propChain)(scope) === undefined) {
+                angular.hint.emit(MODULE_NAME + ':undef', propChain + ' is undefined');
+              }
+              boundFn = boundFn.replace(property, '');
+              lastProp += property;
+              if(boundFn.charAt(0) === '.') {
+                lastProp += '.';
+                boundFn = boundFn.substr(1);
+              }
+            }
+          });
+        } catch (e) {
+          angular.hint.emit(MODULE_NAME + ':undef', '' +
+            'parsing error: please inform the angular-hint ' +
+            'or batarang teams. expression: ' + boundFuncs.join(''));
+        }
+
+        return linkFn.apply(this, arguments);
+      };
+    };
+    return $delegate;
+  }
+}
+
+},{"../lib/event-directives":4}],23:[function(require,module,exports){
+'use strict';
+
+/**
+ * We use EventEmitter2 here in order to have scoped events
+ * For instance:
+ *    hint.emit('scope:digest', {
+ */
+var EventEmitter2 = require('eventemitter2').EventEmitter2;
+
+angular.hint = new EventEmitter2({
+  wildcard: true,
+  delimiter: ':'
+});
+},{"eventemitter2":27}],24:[function(require,module,exports){
+'use strict';
+
+var getModule = require('./angular-hint-modules/getModule'),
+    start = require('./angular-hint-modules/start'),
+    storeNgAppAndView = require('./angular-hint-modules/storeNgAppAndView'),
+    storeUsedModules = require('./angular-hint-modules/storeUsedModules'),
+    hasNameSpace = require('./angular-hint-modules/hasNameSpace'),
+    modData = require('./angular-hint-modules/moduleData');
+
+var doc = Array.prototype.slice.call(document.getElementsByTagName('*')),
+    originalAngularModule = angular.module,
+    modules = {};
+
+storeNgAppAndView(doc);
+
+angular.module = function(name, requiresOriginal) {
+  var module = originalAngularModule.apply(this, arguments),
+      name = module.name;
+
+  module.requiresOriginal = requiresOriginal;
+  modules[name] = module;
+  var modToCheck = getModule(name, true);
+  //check arguments to determine if called as setter or getter
+  var modIsSetter = arguments.length > 1;
+
+  if (modIsSetter) {
+    hasNameSpace(name);
+  }
+
+  if(modToCheck && modToCheck.requiresOriginal !== module.requiresOriginal && modIsSetter) {
+    if(!modData.createdMulti[name]) {
+      modData.createdMulti[name] = [getModule(name,true)];
+    }
+    modData.createdMulti[name].push(module);
+  }
+  modData.createdModules[name] = module;
+  return module;
+};
+
+angular.module('ngHintModules', []).config(function() {
+  var ngAppMod = modules[modData.ngAppMod];
+  if (ngAppMod) {
+    storeUsedModules(ngAppMod, modules);
+  }
+  start();
+});
+
+},{"./angular-hint-modules/getModule":8,"./angular-hint-modules/hasNameSpace":12,"./angular-hint-modules/moduleData":14,"./angular-hint-modules/start":17,"./angular-hint-modules/storeNgAppAndView":19,"./angular-hint-modules/storeUsedModules":20}],25:[function(require,module,exports){
+'use strict';
+
+var summarize = require('../lib/summarize-model');
+var debounceOn = require('debounce-on');
+
+var hint = angular.hint;
+
+hint.emit = hint.emit || function () {};
+
+module.exports = angular.module('ngHintScopes', []).config(['$provide', function ($provide) {
+  $provide.decorator('$rootScope', ['$delegate', '$parse', decorateRootScope]);
+  $provide.decorator('$compile', ['$delegate', decorateDollaCompile]);
+}]);
+
+function decorateRootScope($delegate, $parse) {
+
+  var perf = window.performance || { now: function () { return 0; } };
+
+  var scopes = {},
+      watching = {};
+
+  var debouncedEmitModelChange = debounceOn(emitModelChange, 10);
+
+  hint.watch = function (scopeId, path) {
+    path = typeof path === 'string' ? path.split('.') : path;
+
+    if (!watching[scopeId]) {
+      watching[scopeId] = {};
+    }
+
+    for (var i = 1, ii = path.length; i <= ii; i += 1) {
+      var partialPath = path.slice(0, i).join('.');
+      if (watching[scopeId][partialPath]) {
+        continue;
+      }
+      var get = gettterer(scopeId, partialPath);
+      var value = summarize(get());
+      watching[scopeId][partialPath] = {
+        get: get,
+        value: value
+      };
+      hint.emit('model:change', {
+        id: convertIdToOriginalType(scopeId),
+        path: partialPath,
+        value: value
+      });
+    }
+  };
+
+  hint.assign = function (scopeId, path, value) {
+    var scope;
+    if (scope = scopes[scopeId]) {
+      scope.$apply(function () {
+        return $parse(path).assign(scope, value);
+      });
+    }
+  };
+
+  hint.inspectScope = function (scopeId) {
+    var scope;
+    if (scope = scopes[scopeId]) {
+      window.$scope = scope;
+    }
+  };
+
+  hint.unwatch = function (scopeId, unwatchPath) {
+    Object.keys(watching[scopeId]).
+      forEach(function (path) {
+        if (path.indexOf(unwatchPath) === 0) {
+          delete watching[scopeId][path];
+        }
+      });
+  };
+
+  var scopePrototype = ('getPrototypeOf' in Object) ?
+      Object.getPrototypeOf($delegate) : $delegate.__proto__;
+
+  var _watch = scopePrototype.$watch;
+  var _digestEvents = [];
+  var skipNextPerfWatchers = false;
+  scopePrototype.$watch = function (watchExpression, reactionFunction) {
+    // if `skipNextPerfWatchers` is true, this means the previous run of the
+    // `$watch` decorator was a one time binding expression and this invocation
+    // of the $watch function has the `oneTimeInterceptedExpression` (internal angular function)
+    // as the `watchExpression` parameter. If we decorate it with the performance
+    // timers function this will cause us to invoke `oneTimeInterceptedExpression`
+    // on subsequent digest loops and will update the one time bindings
+    // if anything mutated the property.
+    if (skipNextPerfWatchers) {
+      skipNextPerfWatchers = false;
+      return _watch.apply(this, arguments);
+    }
+
+    if (typeof watchExpression === 'string' &&
+        isOneTimeBindExp(watchExpression)) {
+      skipNextPerfWatchers = true;
+      return _watch.apply(this, arguments);
+    }
+    var watchStr = humanReadableWatchExpression(watchExpression);
+    var scopeId = this.$id;
+    var expressions = null;
+    if (typeof watchExpression === 'function') {
+      expressions = watchExpression.expressions;
+      if (Object.prototype.toString.call(expressions) === '[object Array]' &&
+          expressions.some(isOneTimeBindExp)) {
+        skipNextPerfWatchers = true;
+        return _watch.apply(this, arguments);
+      }
+
+      arguments[0] = function () {
+        var start = perf.now();
+        var ret = watchExpression.apply(this, arguments);
+        var end = perf.now();
+        _digestEvents.push({
+          eventType: 'scope:watch',
+          id: scopeId,
+          watch: watchStr,
+          time: end - start
+        });
+        return ret;
+      };
+    } else {
+      var thatScope = this;
+      arguments[0] = function () {
+        var start = perf.now();
+        var ret = thatScope.$eval(watchExpression);
+        var end = perf.now();
+        _digestEvents.push({
+          eventType: 'scope:watch',
+          id: scopeId,
+          watch: watchStr,
+          time: end - start
+        });
+        return ret;
+      };
+    }
+
+    if (typeof reactionFunction === 'function') {
+      arguments[1] = function () {
+        var start = perf.now();
+        var ret = reactionFunction.apply(this, arguments);
+        var end = perf.now();
+        _digestEvents.push({
+          eventType: 'scope:reaction',
+          id: scopeId,
+          watch: watchStr,
+          time: end - start
+        });
+        return ret;
+      };
+    }
+
+    return _watch.apply(this, arguments);
+  };
+
+  var _digest = scopePrototype.$digest;
+  scopePrototype.$digest = function (fn) {
+    _digestEvents = [];
+    var start = perf.now();
+    var ret = _digest.apply(this, arguments);
+    var end = perf.now();
+    hint.emit('scope:digest', {
+      id: this.$id,
+      time: end - start,
+      events: _digestEvents
+    });
+    return ret;
+  };
+
+  var _destroy = scopePrototype.$destroy;
+  scopePrototype.$destroy = function () {
+    var id = this.$id;
+
+    hint.emit('scope:destroy', { id: id });
+
+    delete scopes[id];
+    delete watching[id];
+
+    return _destroy.apply(this, arguments);
+  };
+
+
+  var _new = scopePrototype.$new;
+  scopePrototype.$new = function () {
+    var child = _new.apply(this, arguments);
+
+    scopes[child.$id] = child;
+    watching[child.$id] = {};
+
+    hint.emit('scope:new', { parent: this.$id, child: child.$id });
+    setTimeout(function () {
+      emitScopeElt(child);
+    }, 0);
+    return child;
+  };
+
+  function emitScopeElt (scope) {
+    var scopeId = scope.$id;
+    var elt = findElt(scopeId);
+    var descriptor = scopeDescriptor(elt, scope);
+    hint.emit('scope:link', {
+      id: scopeId,
+      descriptor: descriptor
+    });
+  }
+
+  function findElt (scopeId) {
+    var elts = document.querySelectorAll('.ng-scope');
+    var elt, scope;
+
+    for (var i = 0; i < elts.length; i++) {
+      elt = angular.element(elts[i]);
+      scope = elt.scope();
+      if (scope.$id === scopeId) {
+        return elt;
+      }
+    }
+  }
+
+  var _apply = scopePrototype.$apply;
+  scopePrototype.$apply = function (fn) {
+    // var start = perf.now();
+    var ret = _apply.apply(this, arguments);
+    // var end = perf.now();
+    // hint.emit('scope:apply', { id: this.$id, time: end - start });
+    debouncedEmitModelChange();
+    return ret;
+  };
+
+
+  function gettterer (scopeId, path) {
+    if (path === '') {
+      return function () {
+        return scopes[scopeId];
+      };
+    }
+    var getter = $parse(path);
+    return function () {
+      return getter(scopes[scopeId]);
+    };
+  }
+
+  function emitModelChange () {
+    Object.keys(watching).forEach(function (scopeId) {
+      Object.keys(watching[scopeId]).forEach(function (path) {
+        var model = watching[scopeId][path];
+        var value = summarize(model.get());
+        if (value !== model.value) {
+          hint.emit('model:change', {
+            id: convertIdToOriginalType(scopeId),
+            path: path,
+            oldValue: model.value,
+            value: value
+          });
+          model.value = value;
+        }
+      });
+    });
+  }
+
+  hint.emit('scope:new', {
+    parent: null,
+    child: $delegate.$id
+  });
+  scopes[$delegate.$id] = $delegate;
+  watching[$delegate.$id] = {};
+
+  return $delegate;
+}
+
+function decorateDollaCompile ($delegate) {
+  var newCompile = function () {
+    var link = $delegate.apply(this, arguments);
+
+    return function (scope) {
+      var elt = link.apply(this, arguments);
+      var descriptor = scopeDescriptor(elt, scope);
+      hint.emit('scope:link', {
+        id: scope.$id,
+        descriptor: descriptor
+      });
+      return elt;
+    };
+  };
+
+  // TODO: test this
+  // copy private helpers like $$addScopeInfo
+  for (var prop in $delegate) {
+    if ($delegate.hasOwnProperty(prop)) {
+      newCompile[prop] = $delegate[prop];
+    }
+  }
+  return newCompile;
+}
+
+var TYPES = [
+  'ng-app',
+  'ng-controller',
+  'ng-repeat',
+  'ng-include'
+];
+
+function scopeDescriptor (elt, scope) {
+  var val,
+      theseTypes = [],
+      type;
+
+  if (elt) {
+    for (var i = 0, ii = TYPES.length; i < ii; i++) {
+      type = TYPES[i];
+      if (val = elt.attr(type)) {
+        theseTypes.push(type + '="' + val + '"');
+      }
+    }
+  }
+  if (theseTypes.length === 0) {
+    return 'scope.$id=' + scope.$id;
+  } else {
+    return theseTypes.join(' ');
+  }
+}
+
+function humanReadableWatchExpression (fn) {
+  if (fn == null) {
+    return null;
+  }
+  if (fn.exp) {
+    fn = fn.exp;
+  } else if (fn.name) {
+    fn = fn.name;
+  }
+  return fn.toString();
+}
+
+function isOneTimeBindExp(exp) {
+  // this is the same code angular 1.3.15 has to check
+  // for a one time bind expression
+  return exp.charAt(0) === ':' && exp.charAt(1) === ':';
+}
+
+function convertIdToOriginalType(scopeId) {
+  return (angular.version.minor < 3) ? scopeId : parseInt(scopeId, 10);
+}
+
+},{"../lib/summarize-model":5,"debounce-on":26}],26:[function(require,module,exports){
 module.exports = function debounceOn (fn, timeout, hash) {
   var timeouts = {};
 
@@ -649,7 +1577,7 @@ function defaultHash () {
   return Array.prototype.join.call(arguments, '::');
 }
 
-},{}],5:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 /*!
  * EventEmitter2
  * https://github.com/hij1nx/EventEmitter2
@@ -1224,7 +2152,7 @@ function defaultHash () {
   }
 }();
 
-},{}],6:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 module.exports = distance;
 
 function distance(a, b) {
@@ -1247,7 +2175,7 @@ function distance(a, b) {
 }
 
 
-},{}],7:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 module.exports = suggestDictionary;
 
 var distance = require('./levenstein_distance');
@@ -1270,932 +2198,4 @@ function suggestDictionary(dict, opts) {
 
 suggestDictionary.distance = distance;
 
-},{"./levenstein_distance":6}],8:[function(require,module,exports){
-'use strict';
-
-var list = 'click submit mouseenter mouseleave mousemove mousedown mouseover mouseup dblclick keyup keydown keypress blur focus submit cut copy paste'.split(' ');
-
-module.exports = list.map(function(eventName) {
-  return 'ng' + eventName.charAt(0).toUpperCase() + eventName.substr(1);
-});
-
-},{}],9:[function(require,module,exports){
-'use strict';
-
-module.exports = function summarizeModel (model) {
-
-  if (model instanceof Array) {
-    return JSON.stringify(model.map(summarizeProperty));
-  } else if (typeof model === 'object') {
-    return JSON.stringify(Object.
-        keys(model).
-        filter(isAngularPrivatePropertyName).
-        reduce(shallowSummary, {}));
-  } else {
-    return model;
-  }
-
-  function shallowSummary (obj, prop) {
-    obj[prop] = summarizeProperty(model[prop]);
-    return obj;
-  }
-};
-
-function isAngularPrivatePropertyName (key) {
-  return !(key[0] === '$' && key[1] === '$') && key !== '$parent' && key !== '$root';
-}
-
-// TODO: handle DOM nodes, fns, etc better.
-function summarizeProperty (obj) {
-  return obj instanceof Array ?
-      { '~array-length': obj.length } :
-    obj === null ?
-      null :
-    typeof obj === 'object' ?
-      { '~object': true } :
-      obj;
-}
-
-},{}],10:[function(require,module,exports){
-var MODULE_NAME = 'Modules';
-
-module.exports = function(modules) {
-  modules.forEach(function(module) {
-    angular.hint.emit(MODULE_NAME, module.message, module.severity);
-  });
-};
-
-},{}],11:[function(require,module,exports){
-var modData = require('./moduleData');
-  MODULE_NAME = 'Modules',
-  SEVERITY_WARNING = 2;
-
-module.exports = function() {
-  var multiLoaded = [];
-  for(var modName in modData.createdMulti) {
-    var message = 'Multiple modules with name "' + modName + '" are being created and they will ' +
-      'overwrite each other.';
-    var multi = modData.createdMulti[modName];
-    var multiLength = multi.length;
-    var details = {
-      existingModule: multi[multiLength - 1],
-      overwrittenModules: multi.slice(0, multiLength - 1)
-    };
-    multiLoaded
-      .push({module: details, message: message, name: MODULE_NAME, severity: SEVERITY_WARNING});
-  }
-  return multiLoaded;
-};
-
-},{"./moduleData":18}],12:[function(require,module,exports){
-var modData = require('./moduleData');
-
-module.exports = function(moduleName, getCreated) {
-  return (getCreated)? modData.createdModules[moduleName] : modData.loadedModules[moduleName];
-};
-
-},{"./moduleData":18}],13:[function(require,module,exports){
-var MODULE_NAME = 'Modules',
-  SEVERITY_ERROR = 1;
- module.exports = function(attrs, ngAppFound) {
-   if(attrs['ng-app'] && ngAppFound) {
-     angular.hint.emit(MODULE_NAME, 'ng-app may only be included once. The module "' +
-      attrs['ng-app'].value + '" was not used to bootstrap because ng-app was already included.',
-      SEVERITY_ERROR);
-   }
-  return attrs['ng-app'] ? attrs['ng-app'].value : undefined;
- };
-
-
-
-},{}],14:[function(require,module,exports){
-var getModule = require('./getModule'),
-  dictionary = Object.keys(require('./moduleData').createdModules),
-  suggest = require('suggest-it')(dictionary),
-  SEVERITY_ERROR = 1;
-
-module.exports = function(loadedModules) {
-  var undeclaredModules = [];
-  for(var module in loadedModules) {
-    var cModule = getModule(module, true);
-    if(!cModule) {
-      var match = suggest(module),
-        suggestion = (match) ? '; Try: "'+match+'"' : '',
-        message = 'Module "'+module+'" was loaded but does not exist'+suggestion+'.';
-
-      undeclaredModules.push({module: null, message: message, severity: SEVERITY_ERROR});
-    }
-  }
-  return undeclaredModules;
-};
-
-},{"./getModule":12,"./moduleData":18,"suggest-it":7}],15:[function(require,module,exports){
-var getModule = require('./getModule');
-
-var IGNORED = ['ngHintControllers', 'ngHintDirectives', 'ngHintDom', 'ngHintEvents',
-             'ngHintInterpolation', 'ngHintModules', 'ngHintScopes', 'ng', 'ngLocale', 'protractorBaseModule_'],
-    SEVERITY_WARNING = 2;
-
-module.exports = function(createdModules) {
-  var unusedModules = [];
-  for(var module in createdModules) {
-    if(!getModule(module)) {
-      var cModule = createdModules[module],
-        message = 'Module "' + cModule.name + '" was created but never loaded.';
-      if(IGNORED.indexOf(cModule.name) === -1) {
-        unusedModules.push({module: cModule, message: message, severity: SEVERITY_WARNING});
-      }
-    }
-  }
-  return unusedModules;
-};
-
-},{"./getModule":12}],16:[function(require,module,exports){
-var MODULE_NAME = 'Modules',
-    SEVERITY_SUGGESTION = 3;
-
-module.exports = function(str) {
-  if (str === 'ng') {
-    return true;
-  }
-
-  if(str.charAt(0).toUpperCase() === str.charAt(0)) {
-    angular.hint.emit(MODULE_NAME, 'The best practice for' +
-      ' module names is to use dot.case or lowerCamelCase. Check the name of "' + str + '".',
-      SEVERITY_SUGGESTION);
-    return false;
-  }
-  if(str.toLowerCase() === str && str.indexOf('.') === -1) {
-    angular.hint.emit(MODULE_NAME, 'Module names should be namespaced' +
-      ' with a dot (app.dashboard) or lowerCamelCase (appDashboard). Check the name of "' + str + '".', SEVERITY_SUGGESTION);
-    return false;
-  }
-  return true;
-};
-
-},{}],17:[function(require,module,exports){
-var normalizeAttribute = require('./normalizeAttribute');
-
-module.exports = function(attrs) {
-  for(var i = 0, length = attrs.length; i < length; i++) {
-    if(normalizeAttribute(attrs[i].nodeName) === 'ng-view' ||
-        attrs[i].value.indexOf('ng-view') > -1) {
-          return true;
-    }
-  }
-};
-
-},{"./normalizeAttribute":20}],18:[function(require,module,exports){
-module.exports = {
-  createdModules: {},
-  createdMulti: {},
-  loadedModules: {}
-};
-
-},{}],19:[function(require,module,exports){
-var modData = require('./moduleData'),
-  getModule = require('./getModule');
-
-module.exports = function() {
-  if(modData.ngViewExists && !getModule('ngRoute')) {
-    return {message: 'Directive "ngView" was used in the application however "ngRoute" was not loaded into any module.'};
-  }
-};
-
-},{"./getModule":12,"./moduleData":18}],20:[function(require,module,exports){
-module.exports = function(attribute) {
-  return attribute.replace(/^(?:data|x)[-_:]/, '').replace(/[:_]/g, '-');
-};
-
-},{}],21:[function(require,module,exports){
-var display = require('./display'),
-  formatMultiLoaded = require('./formatMultiLoaded'),
-  getUnusedModules = require('./getUnusedModules'),
-  getUndeclaredModules = require('./getUndeclaredModules'),
-  modData = require('./moduleData'),
-  ngViewNoNgRoute = require('./ngViewNoNgRoute');
-
-module.exports = function() {
-  var unusedModules = getUnusedModules(modData.createdModules),
-    undeclaredModules = getUndeclaredModules(modData.loadedModules),
-    multiLoaded = formatMultiLoaded(),
-    noNgRoute = ngViewNoNgRoute();
-  if(unusedModules.length || undeclaredModules.length || multiLoaded.length || noNgRoute) {
-    var toSend = unusedModules.concat(undeclaredModules)
-      .concat(multiLoaded);
-    if(noNgRoute) {
-      toSend = toSend.concat(noNgRoute);
-    }
-    display(toSend);
-  }
-};
-
-},{"./display":10,"./formatMultiLoaded":11,"./getUndeclaredModules":14,"./getUnusedModules":15,"./moduleData":18,"./ngViewNoNgRoute":19}],22:[function(require,module,exports){
-var modData = require('./moduleData');
-
-module.exports = function(module, isNgAppMod) {
-  var name = module.name || module;
-  if(!isNgAppMod){
-    module.requires.forEach(function(dependency){
-      modData.loadedModules[dependency] = dependency;
-    });
-  }
-  else {
-    modData.loadedModules[name] = name;
-    modData.ngAppMod = name;
-  }
-};
-
-},{"./moduleData":18}],23:[function(require,module,exports){
-var getNgAppMod = require('./getNgAppMod'),
-  inAttrsOrClasses = require('./inAttrsOrClasses'),
-  storeDependencies = require('./storeDependencies'),
-  modData = require('./moduleData');
-
-module.exports = function(doms) {
-  var bothFound,
-      ngViewFound,
-      elem,
-      isElemName,
-      isInAttrsOrClasses,
-      ngAppMod;
-
-  for(var i = 0; i < doms.length; i++) {
-    elem = doms[i];
-    var attributes = elem.attributes;
-    isElemName = elem.nodeName.toLowerCase() === 'ng-view';
-    isInAttrsOrClasses = inAttrsOrClasses(attributes);
-
-    ngViewFound = isElemName || isInAttrsOrClasses;
-
-    ngAppMod = getNgAppMod(attributes, modData.ngAppFound);
-    modData.ngAppFound = modData.ngAppFound || ngAppMod;
-
-    if(ngAppMod) {
-      storeDependencies(ngAppMod, true);
-    }
-    modData.ngViewExists = ngViewFound ? true : modData.ngViewExists;
-
-    if(bothFound) {
-      break;
-    }
-  }
-};
-
-},{"./getNgAppMod":13,"./inAttrsOrClasses":17,"./moduleData":18,"./storeDependencies":22}],24:[function(require,module,exports){
-var storeDependencies = require('./storeDependencies');
-
-var seen = [];
-
-var storeUsedModules = module.exports = function(module, modules){
-  var name = module.name || module;
-  if(module && seen.indexOf(name) === -1) {
-    seen.push(name);
-    storeDependencies(module);
-    module.requires.forEach(function(modName) {
-      var mod = modules[modName];
-      storeUsedModules(mod, modules);
-    });
-  }
-};
-},{"./storeDependencies":22}],25:[function(require,module,exports){
-'use strict';
-
-var MODULE_NAME = 'Controllers',
-    CNTRL_REG = /^(\S+)(\s+as\s+(\w+))?$/,
-    CATEGORY_CONTROLLER_NAME = 'Name controllers according to best practices',
-    CATEGORY_GLOBAL_CONTROLLER = 'Using global functions as controllers is against Angular best practices and depricated in Angular 1.3 and up',
-    SEVERITY_ERROR = 1,
-    SEVERITY_WARNING = 2;
-
-// local state
-var nameToControllerMap = {};
-
-/**
-* Decorates $controller with a patching function to
-* log a message if the controller is instantiated on the window
-*/
-angular.module('ngHintControllers', []).
-  config(['$provide', '$controllerProvider', function ($provide, $controllerProvider) {
-    $provide.decorator('$controller', ['$delegate', controllerDecorator]);
-
-    var originalRegister = $controllerProvider.register;
-    $controllerProvider.register = function(name, constructor) {
-      stringOrObjectRegister(name);
-      originalRegister.apply($controllerProvider, arguments);
-    }
-  }]);
-
-function controllerDecorator($delegate) {
-  return function(ctrl) {
-    if (typeof ctrl === 'string') {
-      var match = ctrl.match(CNTRL_REG);
-      var ctrlName = (match && match[1]) || ctrl;
-
-      if (!nameToControllerMap[ctrlName]) {
-        sendMessageForControllerName(ctrlName);
-      }
-
-      if (!nameToControllerMap[ctrlName] && typeof window[ctrlName] === 'function') {
-        sendMessageForGlobalController(ctrlName);
-      }
-    }
-    return $delegate.apply(this, arguments);
-  };
-}
-
-/**
-* Save details of the controllers as they are instantiated
-* for use in decoration.
-* Hint about the best practices for naming controllers.
-*/
-var originalModule = angular.module;
-
-function stringOrObjectRegister(controllerName) {
-  if ((controllerName !== null) && (typeof controllerName === 'object')) {
-    Object.keys(controllerName).forEach(processController);
-  } else {
-    processController(controllerName);
-  }
-}
-
-function processController(ctrlName) {
-  nameToControllerMap[ctrlName] = true;
-  sendMessageForControllerName(ctrlName);
-}
-
-function sendMessageForGlobalController(name) {
-  angular.hint.emit(MODULE_NAME + ':global',
-    'add `' + name + '` to a module',
-    angular.version.minor <= 2 ? SEVERITY_WARNING : SEVERITY_ERROR,
-    CATEGORY_GLOBAL_CONTROLLER);
-}
-
-function sendMessageForControllerName(name) {
-  var newName = name;
-  if (!startsWithUpperCase(name)) {
-    newName = title(newName);
-  }
-  if (!endsWithController(name)) {
-    newName = addControllerSuffix(newName);
-  }
-  if (name !== newName) {
-    angular.hint.emit(MODULE_NAME + ':rename',
-      'Consider renaming `' + name + '` to `' + newName + '`.',
-      SEVERITY_WARNING,
-      CATEGORY_CONTROLLER_NAME);
-  }
-}
-
-function startsWithUpperCase(name) {
-  var firstChar = name.charAt(0);
-  return firstChar === firstChar.toUpperCase() &&
-         firstChar !== firstChar.toLowerCase();
-}
-
-function title (name) {
-  return name[0].toUpperCase() + name.substr(1);
-}
-
-var CONTROLLER_RE = /Controller$/;
-function endsWithController(name) {
-  return CONTROLLER_RE.test(name);
-}
-
-var RE = /(Ctrl|Kontroller)?$/;
-function addControllerSuffix(name) {
-  return name.replace(RE, 'Controller');
-}
-
-/*
- * decorate angular module API
- */
-
-angular.module = function() {
-  var module = originalModule.apply(this, arguments),
-      originalController = module.controller;
-
-  module.controller = function(controllerName, controllerConstructor) {
-    stringOrObjectRegister(controllerName);
-    return originalController.apply(this, arguments);
-  };
-
-  return module;
-};
-
-},{}],26:[function(require,module,exports){
-'use strict';
-
-/**
-* Load necessary functions from /lib into variables.
-*/
-var ngEventAttributes = require('../lib/event-directives'),
-    MODULE_NAME = 'Events';
-
-/*
- * Remove string expressions except property accessors.
- * ex. abc["def"] = "gef"; // `removeStringExp` will remove "gef" but not "def".
- */
-function removeStringExp(str) {
-  return str.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g,
-    function(match, pos, full) {
-      // this is our lookaround code so that our regex doesn't become so
-      // complicated.
-      if (pos !== 0 && (match.length + pos) !== full.length &&
-          full[pos - 1] === '[' && full[pos + match.length] === ']') {
-           return match;
-      }
-      return '';
-    });
-}
-
-var getFunctionNames = function(str) {
-  if (typeof str !== 'string') {
-    return [];
-  }
-  // There are still a bunch of corner cases here where we aren't going to be able to handle
-  // but we shouldn't break the user's app and we should handle most common cases.
-  // example of corner cases: we can't check for properties inside of function
-  // arguments like `move(a.b.c)` with the current implementation
-  // or property accessors with parentheses in them
-  // like `prop["hello (world)"] = "test";`.
-  // To fully fix these issues we would need a full blown expression parser.
-  var results = removeStringExp(str.replace(/\s+/g, ''))
-    .replace(/\(.*?\)/g, '')
-    .split(/[\+\-\/\|\<\>\^=&!%~?:;]/g).map(function(x) {
-      if (isNaN(+x)) {
-        if (x.match(/\w+\(.*\)$/)){
-          return x.substr(0, x.indexOf('('));
-        }
-        return x;
-      }
-  }).filter(function(x){
-    return x;
-  });
-  return results;
-};
-
-/**
-* Decorate $provide in order to examine ng-event directives
-* and hint about their effective use.
-*/
-angular.module('ngHintEvents', [])
-  .config(['$provide', function($provide) {
-    for (var i = 0; i < ngEventAttributes.length; i++) {
-      try {
-        $provide.decorator(ngEventAttributes[i] + 'Directive',
-            ['$delegate', '$parse', ngEventDirectivesDecorator(ngEventAttributes[i])]);
-      } catch(e) {}
-    }
-  }]);
-
-function ngEventDirectivesDecorator(ngEventAttrName) {
-  return function ($delegate, $parse) {
-    var originalCompileFn = $delegate[0].compile;
-
-    $delegate[0].compile = function(element, attrs, transclude) {
-      var linkFn = originalCompileFn.apply(this, arguments);
-
-      return function ngEventHandler(scope, element, attrs) {
-        var boundFuncs = getFunctionNames(attrs[ngEventAttrName]);
-
-        // guard against any parsing errors since the parsing code
-        // to split the expression is pretty simple and naive.
-        try {
-          boundFuncs.forEach(function(boundFn) {
-            var property, propChain, lastProp = '';
-            while((property = boundFn.match(/^.+?([^\.\[])*/)) !== null) {
-              property = property[0];
-              propChain = lastProp + property;
-              if ($parse(propChain)(scope) === undefined) {
-                angular.hint.emit(MODULE_NAME + ':undef', propChain + ' is undefined');
-              }
-              boundFn = boundFn.replace(property, '');
-              lastProp += property;
-              if(boundFn.charAt(0) === '.') {
-                lastProp += '.';
-                boundFn = boundFn.substr(1);
-              }
-            }
-          });
-        } catch (e) {
-          angular.hint.emit(MODULE_NAME + ':undef', '' +
-            'parsing error: please inform the angular-hint ' +
-            'or batarang teams. expression: ' + boundFuncs.join(''));
-        }
-
-        return linkFn.apply(this, arguments);
-      };
-    };
-    return $delegate;
-  }
-}
-
-},{"../lib/event-directives":8}],27:[function(require,module,exports){
-'use strict';
-
-/**
- * We use EventEmitter2 here in order to have scoped events
- * For instance:
- *    hint.emit('scope:digest', {
- */
-var EventEmitter2 = require('eventemitter2').EventEmitter2;
-
-angular.hint = new EventEmitter2({
-  wildcard: true,
-  delimiter: ':'
-});
-},{"eventemitter2":5}],28:[function(require,module,exports){
-'use strict';
-
-var getModule = require('./angular-hint-modules/getModule'),
-    start = require('./angular-hint-modules/start'),
-    storeNgAppAndView = require('./angular-hint-modules/storeNgAppAndView'),
-    storeUsedModules = require('./angular-hint-modules/storeUsedModules'),
-    hasNameSpace = require('./angular-hint-modules/hasNameSpace'),
-    modData = require('./angular-hint-modules/moduleData');
-
-var doc = Array.prototype.slice.call(document.getElementsByTagName('*')),
-    originalAngularModule = angular.module,
-    modules = {};
-
-storeNgAppAndView(doc);
-
-angular.module = function(name, requiresOriginal) {
-  var module = originalAngularModule.apply(this, arguments),
-      name = module.name;
-
-  module.requiresOriginal = requiresOriginal;
-  modules[name] = module;
-  var modToCheck = getModule(name, true);
-  //check arguments to determine if called as setter or getter
-  var modIsSetter = arguments.length > 1;
-
-  if (modIsSetter) {
-    hasNameSpace(name);
-  }
-
-  if(modToCheck && modToCheck.requiresOriginal !== module.requiresOriginal && modIsSetter) {
-    if(!modData.createdMulti[name]) {
-      modData.createdMulti[name] = [getModule(name,true)];
-    }
-    modData.createdMulti[name].push(module);
-  }
-  modData.createdModules[name] = module;
-  return module;
-};
-
-angular.module('ngHintModules', []).config(function() {
-  var ngAppMod = modules[modData.ngAppMod];
-  if (ngAppMod) {
-    storeUsedModules(ngAppMod, modules);
-  }
-  start();
-});
-
-},{"./angular-hint-modules/getModule":12,"./angular-hint-modules/hasNameSpace":16,"./angular-hint-modules/moduleData":18,"./angular-hint-modules/start":21,"./angular-hint-modules/storeNgAppAndView":23,"./angular-hint-modules/storeUsedModules":24}],29:[function(require,module,exports){
-'use strict';
-
-var summarize = require('../lib/summarize-model');
-var debounceOn = require('debounce-on');
-
-var hint = angular.hint;
-
-hint.emit = hint.emit || function () {};
-
-module.exports = angular.module('ngHintScopes', []).config(['$provide', function ($provide) {
-  $provide.decorator('$rootScope', ['$delegate', '$parse', decorateRootScope]);
-  $provide.decorator('$compile', ['$delegate', decorateDollaCompile]);
-}]);
-
-function decorateRootScope($delegate, $parse) {
-
-  var perf = window.performance || { now: function () { return 0; } };
-
-  var scopes = {},
-      watching = {};
-
-  var debouncedEmitModelChange = debounceOn(emitModelChange, 10);
-
-  hint.watch = function (scopeId, path) {
-    path = typeof path === 'string' ? path.split('.') : path;
-
-    if (!watching[scopeId]) {
-      watching[scopeId] = {};
-    }
-
-    for (var i = 1, ii = path.length; i <= ii; i += 1) {
-      var partialPath = path.slice(0, i).join('.');
-      if (watching[scopeId][partialPath]) {
-        continue;
-      }
-      var get = gettterer(scopeId, partialPath);
-      var value = summarize(get());
-      watching[scopeId][partialPath] = {
-        get: get,
-        value: value
-      };
-      hint.emit('model:change', {
-        id: convertIdToOriginalType(scopeId),
-        path: partialPath,
-        value: value
-      });
-    }
-  };
-
-  hint.assign = function (scopeId, path, value) {
-    var scope;
-    if (scope = scopes[scopeId]) {
-      scope.$apply(function () {
-        return $parse(path).assign(scope, value);
-      });
-    }
-  };
-
-  hint.inspectScope = function (scopeId) {
-    var scope;
-    if (scope = scopes[scopeId]) {
-      window.$scope = scope;
-    }
-  };
-
-  hint.unwatch = function (scopeId, unwatchPath) {
-    Object.keys(watching[scopeId]).
-      forEach(function (path) {
-        if (path.indexOf(unwatchPath) === 0) {
-          delete watching[scopeId][path];
-        }
-      });
-  };
-
-  var scopePrototype = ('getPrototypeOf' in Object) ?
-      Object.getPrototypeOf($delegate) : $delegate.__proto__;
-
-  var _watch = scopePrototype.$watch;
-  var _digestEvents = [];
-  var skipNextPerfWatchers = false;
-  scopePrototype.$watch = function (watchExpression, reactionFunction) {
-    // if `skipNextPerfWatchers` is true, this means the previous run of the
-    // `$watch` decorator was a one time binding expression and this invocation
-    // of the $watch function has the `oneTimeInterceptedExpression` (internal angular function)
-    // as the `watchExpression` parameter. If we decorate it with the performance
-    // timers function this will cause us to invoke `oneTimeInterceptedExpression`
-    // on subsequent digest loops and will update the one time bindings
-    // if anything mutated the property.
-    if (skipNextPerfWatchers) {
-      skipNextPerfWatchers = false;
-      return _watch.apply(this, arguments);
-    }
-
-    if (typeof watchExpression === 'string' &&
-        isOneTimeBindExp(watchExpression)) {
-      skipNextPerfWatchers = true;
-      return _watch.apply(this, arguments);
-    }
-    var watchStr = humanReadableWatchExpression(watchExpression);
-    var scopeId = this.$id;
-    var expressions = null;
-    if (typeof watchExpression === 'function') {
-      expressions = watchExpression.expressions;
-      if (Object.prototype.toString.call(expressions) === '[object Array]' &&
-          expressions.some(isOneTimeBindExp)) {
-        skipNextPerfWatchers = true;
-        return _watch.apply(this, arguments);
-      }
-
-      arguments[0] = function () {
-        var start = perf.now();
-        var ret = watchExpression.apply(this, arguments);
-        var end = perf.now();
-        _digestEvents.push({
-          eventType: 'scope:watch',
-          id: scopeId,
-          watch: watchStr,
-          time: end - start
-        });
-        return ret;
-      };
-    } else {
-      var thatScope = this;
-      arguments[0] = function () {
-        var start = perf.now();
-        var ret = thatScope.$eval(watchExpression);
-        var end = perf.now();
-        _digestEvents.push({
-          eventType: 'scope:watch',
-          id: scopeId,
-          watch: watchStr,
-          time: end - start
-        });
-        return ret;
-      };
-    }
-
-    if (typeof reactionFunction === 'function') {
-      arguments[1] = function () {
-        var start = perf.now();
-        var ret = reactionFunction.apply(this, arguments);
-        var end = perf.now();
-        _digestEvents.push({
-          eventType: 'scope:reaction',
-          id: this.$id,
-          watch: watchStr,
-          time: end - start
-        });
-        return ret;
-      };
-    }
-
-    return _watch.apply(this, arguments);
-  };
-
-  var _digest = scopePrototype.$digest;
-  scopePrototype.$digest = function (fn) {
-    _digestEvents = [];
-    var start = perf.now();
-    var ret = _digest.apply(this, arguments);
-    var end = perf.now();
-    hint.emit('scope:digest', {
-      id: this.$id,
-      time: end - start,
-      events: _digestEvents
-    });
-    return ret;
-  };
-
-  var _destroy = scopePrototype.$destroy;
-  scopePrototype.$destroy = function () {
-    var id = this.$id;
-
-    hint.emit('scope:destroy', { id: id });
-
-    delete scopes[id];
-    delete watching[id];
-
-    return _destroy.apply(this, arguments);
-  };
-
-
-  var _new = scopePrototype.$new;
-  scopePrototype.$new = function () {
-    var child = _new.apply(this, arguments);
-
-    scopes[child.$id] = child;
-    watching[child.$id] = {};
-
-    hint.emit('scope:new', { parent: this.$id, child: child.$id });
-    setTimeout(function () {
-      emitScopeElt(child);
-    }, 0);
-    return child;
-  };
-
-  function emitScopeElt (scope) {
-    var scopeId = scope.$id;
-    var elt = findElt(scopeId);
-    var descriptor = scopeDescriptor(elt, scope);
-    hint.emit('scope:link', {
-      id: scopeId,
-      descriptor: descriptor
-    });
-  }
-
-  function findElt (scopeId) {
-    var elts = document.querySelectorAll('.ng-scope');
-    var elt, scope;
-
-    for (var i = 0; i < elts.length; i++) {
-      elt = angular.element(elts[i]);
-      scope = elt.scope();
-      if (scope.$id === scopeId) {
-        return elt;
-      }
-    }
-  }
-
-  var _apply = scopePrototype.$apply;
-  scopePrototype.$apply = function (fn) {
-    // var start = perf.now();
-    var ret = _apply.apply(this, arguments);
-    // var end = perf.now();
-    // hint.emit('scope:apply', { id: this.$id, time: end - start });
-    debouncedEmitModelChange();
-    return ret;
-  };
-
-
-  function gettterer (scopeId, path) {
-    if (path === '') {
-      return function () {
-        return scopes[scopeId];
-      };
-    }
-    var getter = $parse(path);
-    return function () {
-      return getter(scopes[scopeId]);
-    };
-  }
-
-  function emitModelChange () {
-    Object.keys(watching).forEach(function (scopeId) {
-      Object.keys(watching[scopeId]).forEach(function (path) {
-        var model = watching[scopeId][path];
-        var value = summarize(model.get());
-        if (value !== model.value) {
-          hint.emit('model:change', {
-            id: convertIdToOriginalType(scopeId),
-            path: path,
-            oldValue: model.value,
-            value: value
-          });
-          model.value = value;
-        }
-      });
-    });
-  }
-
-  hint.emit('scope:new', {
-    parent: null,
-    child: $delegate.$id
-  });
-  scopes[$delegate.$id] = $delegate;
-  watching[$delegate.$id] = {};
-
-  return $delegate;
-}
-
-function decorateDollaCompile ($delegate) {
-  var newCompile = function () {
-    var link = $delegate.apply(this, arguments);
-
-    return function (scope) {
-      var elt = link.apply(this, arguments);
-      var descriptor = scopeDescriptor(elt, scope);
-      hint.emit('scope:link', {
-        id: scope.$id,
-        descriptor: descriptor
-      });
-      return elt;
-    };
-  };
-
-  // TODO: test this
-  // copy private helpers like $$addScopeInfo
-  for (var prop in $delegate) {
-    if ($delegate.hasOwnProperty(prop)) {
-      newCompile[prop] = $delegate[prop];
-    }
-  }
-  return newCompile;
-}
-
-var TYPES = [
-  'ng-app',
-  'ng-controller',
-  'ng-repeat',
-  'ng-include'
-];
-
-function scopeDescriptor (elt, scope) {
-  var val,
-      theseTypes = [],
-      type;
-
-  if (elt) {
-    for (var i = 0, ii = TYPES.length; i < ii; i++) {
-      type = TYPES[i];
-      if (val = elt.attr(type)) {
-        theseTypes.push(type + '="' + val + '"');
-      }
-    }
-  }
-  if (theseTypes.length === 0) {
-    return 'scope.$id=' + scope.$id;
-  } else {
-    return theseTypes.join(' ');
-  }
-}
-
-function humanReadableWatchExpression (fn) {
-  if (fn == null) {
-    return null;
-  }
-  if (fn.exp) {
-    fn = fn.exp;
-  } else if (fn.name) {
-    fn = fn.name;
-  }
-  return fn.toString();
-}
-
-function isOneTimeBindExp(exp) {
-  // this is the same code angular 1.3.15 has to check
-  // for a one time bind expression
-  return exp.charAt(0) === ':' && exp.charAt(1) === ':';
-}
-
-function convertIdToOriginalType(scopeId) {
-  return (angular.version.minor < 3) ? scopeId : parseInt(scopeId, 10);
-}
-
-},{"../lib/summarize-model":9,"debounce-on":4}]},{},[1]);
+},{"./levenstein_distance":28}]},{},[1]);
