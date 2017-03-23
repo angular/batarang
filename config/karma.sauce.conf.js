@@ -6,7 +6,7 @@ var CUSTOM_LAUNCHERS = {
   'SL_Chrome': {
     base: 'SauceLabs',
     browserName: 'chrome',
-    version: '35'
+    version: 'latest'
   }
 };
 
