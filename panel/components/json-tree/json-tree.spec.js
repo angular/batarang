@@ -148,34 +148,28 @@ describe('batJsonTree', function () {
         objectA: { '~object': true }
       }
     };
-    it("should not add expanded class to object that is not expanded", function () {
+    it('should not add expanded class to object that is not expanded', function () {
       $rootScope.data = modelWithObject;
       compileTree();
       expect(element[0].querySelectorAll('.expanded').length).toEqual(0);
     });
 
-    it("should add expanded class to object that is expanded", function () {
+    it('should add expanded class to object that is expanded', function () {
       setupTreeWithModelAndExpandIt();
-      waitsFor(function() {
-        return element[0].querySelector('.parent.expanded');
-      }, 'Expected parent element to have the class .expanded');
+      expect(element[0].querySelector('.parent.expanded')).toBeTruthy();
     });
 
-    it("should clear the history of expanded elements when model changes", function () {
+    it('should clear the history of expanded elements when model changes', function () {
       setupTreeWithModelAndExpandIt();
       $rootScope.data = {
         '': {
           '$id': 1,
-          objectA: { '~object': true }
+          objectA: {'~object': true}
         }
       };
-      $rootScope.$apply();
-      waitsFor(function() {
-        return element[0].querySelector('.parent');
-      }, 'Expected parent element to be present');
-      runs(function() {
-        expect(element[0].querySelector('.parent.expanded')).toBeNull();
-      });
+      $rootScope.$digest();
+
+      expect(element[0].querySelector('.parent.expanded')).toBeNull();
     });
 
     function setupTreeWithModelAndExpandIt(){
