@@ -1,8 +1,12 @@
 #! /bin/bash
+set -e
+
 SCRIPT_DIR=$(dirname $0)
 cd $SCRIPT_DIR/..
 
-SAUCE_ACCESS_KEY=`echo $SAUCE_ACCESS_KEY | rev`
+# Build
+yarn build --ignore-engines
 
-./node_modules/.bin/gulp
-./node_modules/.bin/karma start --sauce
+# Run unit tests
+SAUCE_ACCESS_KEY=`echo $SAUCE_ACCESS_KEY | rev`
+yarn test --ignore-engines -- --sauce
