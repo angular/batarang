@@ -3,6 +3,16 @@ var panels = chrome && chrome.devtools && chrome.devtools.panels;
 // The function below is executed in the context of the inspected page.
 
 var getPanelContents = function () {
+  function getScope(node) {
+    var scope = window.angular.element(node).scope();
+    if (!scope) {
+      // Might be a child of a DocumentFragment...
+      while (node && node.nodeType === 1) node = node.parentNode;
+      if (node && node.nodeType === 11) node = (node.parentNode || node.host);
+      return getScope(node);
+    }
+    return scope;
+  }
   if (window.angular && $0) {
     //TODO: can we move this scope export into updateElementProperties
     var scope = getScope($0);
