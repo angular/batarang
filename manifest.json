@@ -24,6 +24,7 @@
 
   "background": {
     "scripts": [
+      "libs/rx.all.js",
       "background.js"
     ]
   },

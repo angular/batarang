@@ -5,9 +5,19 @@ var inspectedTabs = {};
 // tabId -> buffered data
 var data = {};
 
-function brokerMessage(message, sender) {
-  var tabId = sender.tab.id,
-      devToolsPort = inspectedTabs[tabId];
+var runtimeMessage = createRxFrom(chrome.runtime.onMessage, messageSelector);
+var runtimeConnect = createRxFrom(chrome.runtime.onConnect);
+var tabsRemoved = createRxFrom(chrome.tabs.onRemoved);
+
+runtimeMessage.forEach(brokerMessage);
+runtimeConnect.forEach(onConnect);
+tabsRemoved.forEach(onTabsRemoved);
+
+function brokerMessage(event) {
+  var message = event.message;
+  var sender = event.sender;
+  var tabId = sender.tab.id;
+  var devToolsPort = inspectedTabs[tabId];
 
   if (!data[tabId] || message === 'refresh') {
     resetState(tabId);
@@ -98,39 +108,37 @@ function bufferData(tabId, message) {
   // TODO: Handle digest timings
 }
 
-// context script –> background
-chrome.runtime.onMessage.addListener(brokerMessage);
+function onConnect(devToolsPort) {
+  var devToolsMessage = createRxFrom(devToolsPort.onMessage);
+  devToolsMessage.forEach(registerInspectedTabId.bind(null, devToolsPort));
+  return event;
+}
 
-chrome.runtime.onConnect.addListener(function(devToolsPort) {
+function registerInspectedTabId(devToolsPort, inspectedTabId) {
+  inspectedTabs[inspectedTabId] = devToolsPort;
 
-  devToolsPort.onMessage.addListener(registerInspectedTabId);
-
-  function registerInspectedTabId(inspectedTabId) {
-    inspectedTabs[inspectedTabId] = devToolsPort;
-
-    if (!data[inspectedTabId]) {
-      resetState(inspectedTabId);
-    }
-    devToolsPort.postMessage({
-      event: 'hydrate',
-      data: data[inspectedTabId]
-    });
-
-    devToolsPort.onDisconnect.addListener(function () {
-      delete inspectedTabs[inspectedTabId];
-    });
-
-    //devToolsPort.onMessage.removeListener(registerInspectedTabId);
+  if (!data[inspectedTabId]) {
+    resetState(inspectedTabId);
   }
+  devToolsPort.postMessage({
+    event: 'hydrate',
+    data: data[inspectedTabId]
+  });
 
-});
+  var devToolsDisconnect = createRxFrom(devToolsPort.onDisconnect);
+  devToolsDisconnect.forEach(onDisconnect);
+  return event;
+}
 
-chrome.tabs.onRemoved.addListener(function (tabId) {
+function onDisconnect(inspectedTabId) {
+  delete inspectedTabs[inspectedTabId];
+}
+
+function onTabsRemoved(tabId) {
   if (data[tabId]) {
     delete data[tabId];
   }
-});
-
+}
 
 function showPageAction(tabId) {
   chrome.pageAction.show(tabId);
@@ -138,4 +146,20 @@ function showPageAction(tabId) {
     tabId: tabId,
     title: 'Batarang Active'
   });
+}
+
+function createRxFrom(target, selector) {
+  return Rx.Observable.fromEventPattern(
+    function(handler) { target.addListener(handler); },
+    function(handler) { target.removeListener(handler); },
+    selector
+  );
+}
+
+function messageSelector() {
+  return {
+    message: arguments[0],
+    sender: arguments[1],
+    sendResponse: arguments[2]
+  };
 }
