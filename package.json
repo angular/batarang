@@ -1,6 +1,6 @@
 {
   "name": "angularjs-batarang",
-  "version": "0.10.7",
+  "version": "0.10.8",
   "description": "chrome extension for inspecting angular apps",
   "main": "hint.js",
   "devDependencies": {
@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "angular": "^1.6.3",
-    "angular-hint": "^0.3.8",
+    "angular-hint": "https://github.com/angular/angular-hint#v0.3.9",
     "browserify-eep": "^0.3.1"
   },
   "scripts": {

@@ -58,13 +58,13 @@ amdefine@>=0.0.4:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/amdefine/-/amdefine-1.0.1.tgz#4a5282ac164729e93619bcfd3ad151f817ce91f5"
 
-angular-hint@^0.3.8:
-  version "0.3.8"
-  resolved "https://registry.yarnpkg.com/angular-hint/-/angular-hint-0.3.8.tgz#916b72da27e7ea363a4749dacf0124b097ac2723"
+"angular-hint@https://github.com/angular/angular-hint#v0.3.9":
+  version "0.3.9"
+  resolved "https://github.com/angular/angular-hint#8c87b792d6f253155a8350613dd76cb368cb1b6c"
   dependencies:
-    debounce-on "0.0.0"
-    eventemitter2 "^0.4.14"
-    suggest-it "0.0.1"
+    debounce-on "^0.0.0"
+    eventemitter2 "^4.0.0"
+    suggest-it "^0.0.1"
 
 angular-mocks@^1.6.3:
   version "1.6.3"
@@ -919,7 +919,7 @@ dateformat@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/dateformat/-/dateformat-2.0.0.tgz#2743e3abb5c3fc2462e527dca445e04e9f4dee17"
 
-debounce-on@0.0.0:
+debounce-on@^0.0.0:
   version "0.0.0"
   resolved "https://registry.yarnpkg.com/debounce-on/-/debounce-on-0.0.0.tgz#cfe66f52f91c5622ecc07ce822250a54aafed99b"
 
@@ -1178,9 +1178,9 @@ esutils@^2.0.2:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/esutils/-/esutils-2.0.2.tgz#0abf4f1caa5bcb1f7a9d8acc6dea4faaa04bac9b"
 
-eventemitter2@^0.4.14:
-  version "0.4.14"
-  resolved "https://registry.yarnpkg.com/eventemitter2/-/eventemitter2-0.4.14.tgz#8f61b75cde012b2e9eb284d4545583b5643b61ab"
+eventemitter2@^4.0.0:
+  version "4.1.0"
+  resolved "https://registry.yarnpkg.com/eventemitter2/-/eventemitter2-4.1.0.tgz#b1fb8a1144e7dfcf80cecce9877ff6d68e7d8506"
 
 eventemitter3@1.x.x:
   version "1.2.0"
@@ -3514,7 +3514,7 @@ subarg@^1.0.0:
   dependencies:
     minimist "^1.1.0"
 
-suggest-it@0.0.1:
+suggest-it@^0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/suggest-it/-/suggest-it-0.0.1.tgz#bcbd79c299af7b8aa188fcc8abb6d4406136a74c"
 
