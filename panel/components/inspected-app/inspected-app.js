@@ -1,9 +1,9 @@
 'use strict';
 
 angular.module('batarang.inspected-app', []).
-  service('inspectedApp', ['$rootScope', '$q', inspectedAppService]);
+  service('inspectedApp', ['$rootScope', '$q', InspectedAppService]);
 
-function inspectedAppService($rootScope, $q) {
+function InspectedAppService($rootScope, $q) {
 
   var scopes = this.scopes = {},
       hints = this.hints = [],
@@ -27,23 +27,21 @@ function inspectedAppService($rootScope, $q) {
       "(function () {" +
         "var prev = document.cookie.indexOf('__ngDebug=true') !== -1;" +
         "if (prev !== " + setting + ") {" +
-          "window.document.cookie = '__ngDebug=" + setting + ";';" +
-          "window.document.location.reload();" +
+          "document.cookie = '__ngDebug=" + setting + ";';" +
+          "document.location.reload();" +
         "}" +
       "}())"
     );
   };
 
   this.getInstrumentationStatus = function () {
-    return $q(function(resolve, reject) {
+    return $q(function (resolve) {
       chrome.devtools.inspectedWindow.eval(
           "document.cookie.indexOf('__ngDebug=true') !== -1", resolve);
     });
   };
 
-  /*
-   * sets window.$scope to the scope of the given id
-   */
+  // Sets window.$scope to the scope of the given id
   this.inspectScope = function (scopeId) {
     return invokeAngularHintMethod('inspectScope', scopeId);
   };
@@ -59,21 +57,21 @@ function inspectedAppService($rootScope, $q) {
 
   var port = chrome.runtime.connect();
   port.postMessage(chrome.devtools.inspectedWindow.tabId);
-  port.onMessage.addListener(function(msg) {
+  port.onMessage.addListener(function (msg) {
     $rootScope.$applyAsync(function () {
       if (msg === 'refresh') {
         onRefreshMessage();
         $rootScope.$broadcast('refresh');
-      } else if (typeof msg === 'string') {
-        var hint = JSON.parse(msg);
-        onHintMessage(hint);
-      } else if (typeof msg === 'object') {
+      } else {
+        if (typeof msg === 'string') {
+          msg = JSON.parse(msg);
+        }
         onHintMessage(msg);
       }
     });
   });
-  port.onDisconnect.addListener(function (a) {
-    console.log(a);
+  port.onDisconnect.addListener(function () {
+    console.log('Disconnected from tab ' + chrome.devtools.inspectedWindow.tabId + '.');
   });
 
   function onHintMessage(message) {
@@ -90,13 +88,16 @@ function inspectedAppService($rootScope, $q) {
       } else if (message.event === 'scope:new') {
         addNewScope(message);
       } else if (message.data.id && scopes[message.data.id]) {
-        var scope = scopes[message.data.id];
+        var scopeId = message.data.id;
+        var scope = scopes[scopeId];
+
         if (message.event === 'scope:destroy') {
-          if (scope.parent) {
-            var parentScope = scopes[scope.parent];
-            parentScope.children.splice(parentScope.children.indexOf(message.data.id), 1);
+          var parentScope = scopes[scope.parent];
+          if (parentScope) {
+            parentScope.children.splice(parentScope.children.indexOf(scopeId), 1);
           }
-          for (var i = 0; i < message.data.subTree.length; i++){
+
+          for (var i = 0; i < message.data.subTree.length; i++) {
             delete scopes[message.data.subTree[i]];
           }
         } else if (message.event === 'model:change') {
@@ -108,6 +109,7 @@ function inspectedAppService($rootScope, $q) {
           perf[0] = message.data;
         }
       }
+
       $rootScope.$broadcast(message.event, message.data);
     }
   }
@@ -118,13 +120,17 @@ function inspectedAppService($rootScope, $q) {
   }
 
   function addNewScope (message) {
-    scopes[message.data.child] = {
-      parent: message.data.parent,
+    var childId = message.data.child;
+    var parentId = message.data.parent;
+
+    scopes[childId] = {
+      parent: parentId,
       children: [],
       models: {}
     };
-    if (scopes[message.data.parent]) {
-      scopes[message.data.parent].children.push(message.data.child);
+
+    if (scopes[parentId]) {
+      scopes[parentId].children.push(childId);
     }
   }
 

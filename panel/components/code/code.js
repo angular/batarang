@@ -22,7 +22,5 @@ directive('batCode', function() {
 // super lite version of markdown
 var CODE_RE = /\`(.+?)\`/g;
 function replaceCodeInString(str) {
-  return str.replace(CODE_RE, function (match, contents) {
-    return ['<code>', contents, '</code>'].join('');
-  });
+  return str.replace(CODE_RE, '<code>$1</code>');
 }
