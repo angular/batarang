@@ -1,15 +1,127 @@
+// BATARANG
+// Loader file based on `angular-loader.js` v1.6.5-local+sha.59dbff0c7
+// (https://github.com/angular/angular.js/pull/15881).
+// Modified regions should be marked with `// BATARANG` comments.
 /**
- * @license AngularJS v1.6.4-build.5322+sha.d96e58f
+ * @license AngularJS v1.6.5-local+sha.59dbff0c7
  * (c) 2010-2017 Google, Inc. http://angularjs.org
  * License: MIT
  */
 
 (function() {'use strict';
+    function isFunction(value) {return typeof value === 'function';}
+    function isDefined(value) {return typeof value !== 'undefined';}
+    function isNumber(value) {return typeof value === 'number';}
+    function isObject(value) {return value !== null && typeof value === 'object';}
+    function isScope(obj) {return obj && obj.$evalAsync && obj.$watch;}
+    function isWindow(obj) {return obj && obj.window === obj;}
+    function sliceArgs(args, startIndex) {return Array.prototype.slice.call(args, startIndex || 0);}
+    function toJsonReplacer(key, value) {
+      var val = value;
 
+      if (typeof key === 'string' && key.charAt(0) === '$' && key.charAt(1) === '$') {
+        val = undefined;
+      } else if (isWindow(value)) {
+        val = '$WINDOW';
+      } else if (value &&  window.document === value) {
+        val = '$DOCUMENT';
+      } else if (isScope(value)) {
+        val = '$SCOPE';
+      }
 
-function isFunction(value) { return typeof value === 'function'; }
-function isDefined(value) { return typeof value !== 'undefined'; }
-function isObject(value) { return value !== null && typeof value === 'object'; }
+      return val;
+    }
+
+/* exported toDebugString */
+
+// This file is also included in `angular-loader`, so `copy()` might not always be available in the
+// closure. In such cases, it is lazily retrieved as `angular.copy()` when needed.
+var copyFn;
+
+function serializeObject(obj, maxDepth) {
+  var seen = [];
+
+  // There is no direct way to stringify object until reaching a specific depth
+  // and a very deep object can cause a performance issue, so we copy the object
+  // based on this specific depth and then stringify it.
+  if (isValidObjectMaxDepth(maxDepth)) {
+    if (!copyFn) {
+      copyFn = copy || angular.copy;
+    }
+    obj = copyFn(obj, null, maxDepth);
+  }
+  return JSON.stringify(obj, function(key, val) {
+    val = toJsonReplacer(key, val);
+    if (isObject(val)) {
+
+      if (seen.indexOf(val) >= 0) return '...';
+
+      seen.push(val);
+    }
+    return val;
+  });
+}
+
+function toDebugString(obj, maxDepth) {
+  if (typeof obj === 'function') {
+    return obj.toString().replace(/ \{[\s\S]*$/, '');
+  } else if (isUndefined(obj)) {
+    return 'undefined';
+  } else if (typeof obj !== 'string') {
+    return serializeObject(obj, maxDepth);
+  }
+  return obj;
+}
+
+/* exported
+  minErrConfig,
+  errorHandlingConfig,
+  isValidObjectMaxDepth
+*/
+
+var minErrConfig = {
+  objectMaxDepth: 5
+};
+
+/**
+ * @ngdoc function
+ * @name angular.errorHandlingConfig
+ * @module ng
+ * @kind function
+ *
+ * @description
+ * Configure several aspects of error handling in AngularJS if used as a setter or return the
+ * current configuration if used as a getter. The following options are supported:
+ *
+ * - **objectMaxDepth**: The maximum depth to which objects are traversed when stringified for error messages.
+ *
+ * Omitted or undefined options will leave the corresponding configuration values unchanged.
+ *
+ * @param {Object=} config - The configuration object. May only contain the options that need to be
+ *     updated. Supported keys:
+ *
+ * * `objectMaxDepth`  **{Number}** - The max depth for stringifying objects. Setting to a
+ *   non-positive or non-numeric value, removes the max depth limit.
+ *   Default: 5
+ */
+function errorHandlingConfig(config) {
+  if (isObject(config)) {
+    if (isDefined(config.objectMaxDepth)) {
+      minErrConfig.objectMaxDepth = isValidObjectMaxDepth(config.objectMaxDepth) ? config.objectMaxDepth : NaN;
+    }
+  } else {
+    return minErrConfig;
+  }
+}
+
+/**
+ * @private
+ * @param {Number} maxDepth
+ * @return {boolean}
+ */
+function isValidObjectMaxDepth(maxDepth) {
+  return isNumber(maxDepth) && maxDepth > 0;
+}
 
 /**
  * @description
@@ -41,25 +153,15 @@ function isObject(value) { return value !== null && typeof value === 'object'; }
  * @returns {function(code:string, template:string, ...templateArgs): Error} minErr instance
  */
 
-function toDebugString(obj) {
-  if (typeof obj === 'function') {
-    return obj.toString().replace(/ ?\{[\s\S]*$/, '');
-  } else if (typeof obj === 'undefined') {
-    return 'undefined';
-  } else if (typeof obj !== 'string') {
-    return JSON.stringify(obj);
-  }
-  return obj;
-}
-
 function minErr(module, ErrorConstructor) {
   ErrorConstructor = ErrorConstructor || Error;
   return function() {
     var code = arguments[0],
       template = arguments[1],
-      version = (angular.version && angular.version.full) || 'snapshot',
       message = '[' + (module ? module + ':' : '') + code + '] ',
-      templateArgs = Array.prototype.slice.call(arguments, 2).map(toDebugString),
+      templateArgs = sliceArgs(arguments, 2).map(function(arg) {
+        return toDebugString(arg, minErrConfig.objectMaxDepth);
+      }),
       paramPrefix, i;
 
     message += template.replace(/\{\d+\}/g, function(match) {
@@ -68,9 +170,13 @@ function minErr(module, ErrorConstructor) {
       if (index < templateArgs.length) {
         return templateArgs[index];
       }
+
       return match;
     });
 
+    // BATARANG
+    // Use the app's version in error URLs instead of the version this file was based on.
+    var version = (angular.version && angular.version.full) || 'snapshot';
     message += '\nhttp://errors.angularjs.org/' + version + '/' +
       (module ? module + '/' : '') + code;
 
@@ -195,9 +301,11 @@ function setupModuleLoader(window) {
         /** @type {angular.Module} */
         var moduleInstance = {
           // Private state
-          // ANGULAR HINT ALTERATION
-          // See the definition of `_invokeQueue` below for more info.
-          _configBlocks: [],
+          // BATARANG
+          // `_invokeQueue` needs to be handled in a special way in order to support both v1.2 and
+          // v1.3+ apps. See its definition below for more details.
+          //_invokeQueue: invokeQueue,
+          _configBlocks: configBlocks,
           _runBlocks: runBlocks,
 
           /**
@@ -449,16 +557,13 @@ function setupModuleLoader(window) {
           }
         };
 
-        /**
-        * ANGULAR HINT ALTERATION
-        * To make this loader compatible with apps that are running both Angular 1.2 and 1.3+, the
-        * loader must handle 1.3+ applications that expect to initialize their config blocks after
-        * all providers are registered. Hence, an empty `_configBlocks` array is exposed on
-        * `moduleInstance` and the actual `configBlocks` are added to the end of the `invokeQueue`.
-        */
+        // BATARANG
+        // To make this loader compatible with both AngularJS v1.2 and v1.3+ apps, it must handle
+        // v1.2 apps that do not know about `_configBlocks` and expect everything to be on the
+        // `_invokeQueue`.
         Object.defineProperty(moduleInstance, '_invokeQueue', {
           get: function() {
-            return invokeQueue.concat(configBlocks);
+            return (angular.version.minor <= 2) ? invokeQueue.concat(configBlocks) : invokeQueue;
           }
         });
 

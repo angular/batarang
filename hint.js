@@ -3,7 +3,7 @@
  *
  * This gets loaded into the context of the app you are inspecting
  */
-require('./loader.js');
+require('./loader');
 require('angular-hint');
 
 angular.hint.onAny(function (event, data, severity) {
