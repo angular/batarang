@@ -238,8 +238,7 @@ body:focus .sidebar-tree-item.selected {
 
 .profile-launcher-view-tree-item > .icon {
   padding: 15px;
-  background-image: url(../img/toolbarIcons.png);
-  background-position-x: -160px;
+  visibility: hidden;
 }
 
 li .status {

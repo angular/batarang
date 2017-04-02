@@ -20,6 +20,7 @@ function brokerMessage(message, sender) {
     transformMessage(tabId, message);
     bufferData(tabId, message);
   }
+
   if (devToolsPort) {
     devToolsPort.postMessage(message);
   }
@@ -47,8 +48,8 @@ function transformMessage(tabId, message) {
   }
 
   if (message.event === 'model:change') {
-    message.data.value = (typeof message.data.value === 'undefined') ?
-        undefined : JSON.parse(message.data.value)
+    message.data.value = (message.data.value === undefined) ?
+        undefined : JSON.parse(message.data.value);
   }
 }
 
@@ -71,13 +72,18 @@ function bufferData(tabId, message) {
   }
 
   if (message.event === 'scope:new') {
-    tabData.scopes[message.data.child] = {
-      parent: message.data.parent,
+    var childId = message.data.child;
+    var parentId = message.data.parent;
+    var parentScopeData = tabData.scopes[parentId];
+
+    tabData.scopes[childId] = {
+      parent: parentId,
       children: [],
       models: {}
     };
-    if (tabData.scopes[message.data.parent]) {
-      tabData.scopes[message.data.parent].children.push(message.data.child);
+
+    if (parentScopeData) {
+      parentScopeData.children.push(childId);
     }
   } else if (message.data.id && (scope = tabData.scopes[message.data.id])) {
     if (message.event === 'scope:destroy') {
@@ -101,8 +107,7 @@ function bufferData(tabId, message) {
 // context script –> background
 chrome.runtime.onMessage.addListener(brokerMessage);
 
-chrome.runtime.onConnect.addListener(function(devToolsPort) {
-
+chrome.runtime.onConnect.addListener(function (devToolsPort) {
   devToolsPort.onMessage.addListener(registerInspectedTabId);
 
   function registerInspectedTabId(inspectedTabId) {
@@ -122,7 +127,6 @@ chrome.runtime.onConnect.addListener(function(devToolsPort) {
 
     //devToolsPort.onMessage.removeListener(registerInspectedTabId);
   }
-
 });
 
 chrome.tabs.onRemoved.addListener(function (tabId) {
