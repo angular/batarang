@@ -1,6 +1,6 @@
 {
   "name": "AngularJS Batarang",
-  "version": "0.10.8",
+  "version": "0.10.9",
   "description": "Extends the Developer Tools, adding tools for debugging and profiling AngularJS applications.",
   "devtools_page": "devtoolsBackground.html",
   "manifest_version": 2,
