@@ -1,5 +1,5 @@
 // BATARANG
-// Loader file based on `angular-loader.js` v1.6.5-local+sha.59dbff0c7
+// Loader file based on `angular-loader.js` v1.6.5-local+sha.c7e48c05b
 // (https://github.com/angular/angular.js/pull/15881).
 // Modified regions should be marked with `// BATARANG` comments.
 /**
@@ -9,11 +9,16 @@
  */
 
 (function() {'use strict';
+    // NOTE:
+    // These functions are copied here from `src/Angular.js`, because they are needed inside the
+    // `angular-loader.js` closure and need to be available before the main `angular.js` script has
+    // been loaded.
     function isFunction(value) {return typeof value === 'function';}
     function isDefined(value) {return typeof value !== 'undefined';}
     function isNumber(value) {return typeof value === 'number';}
     function isObject(value) {return value !== null && typeof value === 'object';}
     function isScope(obj) {return obj && obj.$evalAsync && obj.$watch;}
+    function isUndefined(value) {return typeof value === 'undefined';}
     function isWindow(obj) {return obj && obj.window === obj;}
     function sliceArgs(args, startIndex) {return Array.prototype.slice.call(args, startIndex || 0);}
     function toJsonReplacer(key, value) {
